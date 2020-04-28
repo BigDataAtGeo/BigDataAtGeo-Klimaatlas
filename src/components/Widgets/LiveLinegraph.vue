@@ -9,7 +9,7 @@
     import {mapState} from "vuex";
 
     export default {
-        name: "WidgetLiveLinegraph",
+        name: "LiveLinegraph",
         computed: {
             ...mapState(["scenario", "variable", "timerange"])
         },

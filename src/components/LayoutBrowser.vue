@@ -48,11 +48,12 @@ body {
     }
 
     #selection-container {
+        z-index: 2;
         width: 100vw;
         height: 10vh;
     }
     #projectionmap-container {
-        z-index: -1;
+        z-index: 1;
         width: 100vw;
         height: 100vh;
     }
@@ -63,6 +64,7 @@ body {
         flex-direction: column;
     }
     #widgets-container .row {
+        z-index: 2;
         width: 20vw;
         height: 35vh;
     }
