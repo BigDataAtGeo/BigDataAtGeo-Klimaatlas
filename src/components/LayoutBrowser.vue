@@ -49,8 +49,11 @@ body {
 
     #selection-container {
         z-index: 2;
-        width: 100vw;
-        height: 10vh;
+        margin-top: 5px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 80vw;
+        height: auto;
     }
     #projectionmap-container {
         z-index: 1;

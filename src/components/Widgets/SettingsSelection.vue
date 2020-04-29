@@ -1,21 +1,30 @@
 <template>
     <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <span>Variable: {{ variable }}</span><br>
-                <span>Szenario: {{ scenario }}</span>
+        <div class="row align-items-center">
+            <div class="col-md-1">
+                <label for="select-variable" class="h5">Variable</label>
             </div>
-            <div class="col-md-4">
-                <label for="select-variable">Variable</label>
-                <select id="select-variable" @change="setVariable">
-                    <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{ variable.description }}</option>
+            <div class="col-md-2 form-group">
+                <select id="select-variable" class="form-control form-control-sm" @change="setVariable" :disabled="index.variables === null">
+                    <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{ variable.var }}</option>
                 </select>
             </div>
-            <div class="col-md-4">
-                <label for="select-scenario">Szenario</label>
-                <select id="select-scenario" @change="setScenario">
+            <div class="col-md-1">
+                <label for="select-scenario" class="h5">Szenario</label>
+            </div>
+            <div class="col-md-2 form-group">
+                <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null">
                     <option v-for="scenario in index.scenarios" :value="scenario">{{ scenario }}</option>
                 </select>
+            </div>
+            <div class="col-md-1">
+                <label for="select-timerange" class="h5">Timerange</label>
+            </div>
+            <div class="col-md-4 form-group">
+                <input id="select-timerange" type="range" class="form-control-range form-control-sm" @change="setTimerange" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
+            </div>
+            <div class="col-md-1">
+                <span class="h6">{{ selectedTimerange }}</span>
             </div>
         </div>
     </div>
@@ -23,21 +32,17 @@
 
 <script>
     import {mapState} from 'vuex';
+    import axios from 'axios';
 
     export default {
         name: 'SettingsSelection',
         data() {
             return {
+                "selectedTimerange": null,
                 "index": {
-                    "scenarios": {
-                        "type": [Array, String]
-                    },
-                    "variables": {
-                        "type": [Array, Object]
-                    },
-                    "timeranges": {
-                        "type": [Array, String]
-                    }
+                    "scenarios": null,
+                    "variables": null,
+                    "timeranges": null
                 }
             }
         },
@@ -50,17 +55,23 @@
                 this.$store.commit("setScenario", e.target.value)
             },
             setVariable(e) {
-                this.$store.commit("setVariable", e.target.value)
+                const variable = this.index.variables.find(variable => variable.var_id === e.target.value);
+                this.$store.commit("setVariable", variable)
             },
             setTimerange(e) {
-                this.$store.commit("setTimerange", e.target.value)
+                const timerange = this.index.timeranges[e.target.value];
+                this.selectedTimerange = timerange;
+                this.$store.commit("setTimerange", timerange)
             },
         },
         mounted() {
-            fetch(process.env.VUE_APP_BDATA_API + "/index")
-                .then(stream => stream.json())
-                .then((data) => {
-                    this.index = data;
+            axios.get(process.env.VUE_APP_BDATA_API + "/index")
+                .then((response) => {
+                    this.index = response.data;
+                    this.$store.commit("setScenario", this.index.scenarios[0]);
+                    this.$store.commit("setVariable", this.index.variables[0]);
+                    this.$store.commit("setTimerange", this.index.timeranges[0]);
+                    this.selectedTimerange = this.index.timeranges[0];
                 })
                 .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
         }
@@ -69,13 +80,21 @@
 
 <style scoped lang="scss">
 div.container {
-    background-color: lightyellow;
+    background-color: rgba(255, 255, 255, 0.75);
     width: 100%;
     height: 100%;
     max-width: none;
     padding: 0;
 }
-select, option {
-    max-width: 30vw;
+.row > div {
+    padding: 10px 25px;
 }
+.form-group {
+    margin: 0;
+}
+label {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
 </style>

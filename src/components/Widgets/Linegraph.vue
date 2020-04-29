@@ -1,7 +1,8 @@
 <template>
 <div class="container">
-    <span>Variable: {{ variable }}</span><br>
-    <span>Szenario: {{ scenario }}</span>
+    <span>Variable: {{ variable ? variable.var_id : "" }}</span><br>
+    <span>Szenario: {{ scenario }}</span><br>
+    <span>Timerange: {{ timerange }}</span>
 </div>
 </template>
 
