@@ -3,7 +3,8 @@
         <l-tile-layer :url="url" :attribution="attribution"/>
         <l-rectangle v-for="feature in this.geojson.features"
                      :bounds="calculateRectangleBounds(feature.geometry.coordinates)"
-                     :options="calculateRectangleStyle(feature.properties)">
+                     :options="calculateRectangleStyle(feature.properties)"
+                     :key="feature.properties.id">
             <l-popup v-if="variable.unit">{{feature.properties.value}} {{variable.unit}}</l-popup>
             <l-popup v-else>{{feature.properties.value}}</l-popup>
         </l-rectangle>
