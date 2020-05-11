@@ -1,13 +1,15 @@
 <template>
-    <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: loading }">
+    <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }">
         <l-tile-layer :url="url" :attribution="attribution"/>
-        <l-rectangle v-for="feature in this.geojson.features"
-                     :bounds="calculateRectangleBounds(feature.geometry.coordinates)"
-                     :options="calculateRectangleStyle(feature.properties)"
-                     :key="feature.properties.id">
-            <l-popup v-if="variable.unit">{{feature.properties.value}} {{variable.unit}}</l-popup>
-            <l-popup v-else>{{feature.properties.value}}</l-popup>
-        </l-rectangle>
+        <div v-if="!loading">
+            <l-rectangle v-for="feature in this.geojson.features"
+                         :bounds="calculateRectangleBounds(feature.geometry.coordinates)"
+                         :options="calculateRectangleStyle(feature.properties)"
+                         :key="feature.properties.id">
+                <l-popup v-if="variable.unit">{{feature.properties.value}} {{variable.unit}}</l-popup>
+                <l-popup v-else>{{feature.properties.value}}</l-popup>
+            </l-rectangle>
+        </div>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
                 <span v-if="this.variable.unit">In {{this.variable.unit}}:</span>
@@ -37,13 +39,24 @@
             LControl,
         },
         computed: {
-            // set variable separately to directly compute color map
             ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
+            isLoading: {
+                get() {
+                    return this.loading;
+                },
+                set(value) {
+                    this.loading = value;
+                }
+            }
         },
         watch: {
             selectionUri: function () {
+                this.isLoading = true;
                 this.prepareLegend();
                 this.prepareGeoJson();
+                this.$forceNextTick(() => {
+                    this.isLoading = false;
+                });
             },
         },
         data() {
@@ -58,7 +71,6 @@
                     center: [50, 9.97],
                     maxBounds: [[50.687581, 8.755892], [49.344371, 11.010188]],
                     rasterSizeInMeters: 1000,
-                    renderer: L.canvas(),
                 },
                 url: 'https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -92,14 +104,12 @@
                 }
             },
             prepareGeoJson() {
-                this.loading = true;
                 axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/${this.selectionUri}`)
                     .catch(function (error) {
                         console.error('fetch data error: failed to load JSON from server', error)
                     }).then(function (response) {
                     this.geojson = response.data;
                 }.bind(this));
-                this.loading = false;
             },
             // refer to leaflet implementation
             calculateRectangleBounds(coordinates) {
