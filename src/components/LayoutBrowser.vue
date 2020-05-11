@@ -9,12 +9,12 @@
     </div>
 
     <div class="float-right" id="widgets-container">
-        <div class="row">
+        <WidgetShell class="row">
             <LiveLinegraph/>
-        </div>
-        <div class="row">
+        </WidgetShell>
+        <WidgetShell class="row">
             <Linegraph/>
-        </div>
+        </WidgetShell>
     </div>
 
 </div>
@@ -25,10 +25,11 @@
     import LiveLinegraph from "./Widgets/LiveLinegraph";
     import Linegraph from "./Widgets/Linegraph";
     import ProjectionMap from "./Widgets/ProjectionMap";
+    import WidgetShell from "./Widgets/WidgetShell";
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap}
+        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell}
     }
 </script>
 

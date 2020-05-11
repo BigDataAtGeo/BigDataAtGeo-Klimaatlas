@@ -14,7 +14,7 @@
             </div>
             <div class="col-md-2 form-group">
                 <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null">
-                    <option v-for="scenario in index.scenarios" :value="scenario">{{ scenario }}</option>
+                    <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
                 </select>
             </div>
             <div class="col-md-1">
