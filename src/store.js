@@ -7,7 +7,7 @@ const state = {
     scenario: null,
     variable: null,
     timerange: null,
-    selectedCells: [],
+    selectedCell: null,
     selectionUri: null,
 }
 
@@ -24,8 +24,8 @@ const mutations = {
         state.timerange = timerange;
         updateSelectionUri(state)
     },
-    addCell(state, cell) {
-        state.selectedCells.push(cell)
+    setSelectedCell(state, cell) {
+        state.selectedCell = cell;
     }
 }
 

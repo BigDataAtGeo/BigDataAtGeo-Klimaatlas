@@ -2,7 +2,8 @@
 <div class="container">
     <span>Variable: {{ variable ? variable.var_id : "" }}</span><br>
     <span>Szenario: {{ scenario }}</span><br>
-    <span>Timerange: {{ timerange }}</span>
+    <span>Timerange: {{ timerange }}</span><br>
+    <span>Selected Cell: {{ selectedCell }}</span>
 </div>
 </template>
 
@@ -12,7 +13,7 @@
     export default {
         name: "LiveLinegraph",
         computed: {
-            ...mapState(["scenario", "variable", "timerange"])
+            ...mapState(["scenario", "variable", "timerange", "selectedCell"])
         },
     }
 </script>

@@ -5,7 +5,8 @@
             <l-rectangle v-for="feature in this.geojson.features"
                          :bounds="calculateRectangleBounds(feature.geometry.coordinates)"
                          :options="calculateRectangleStyle(feature.properties)"
-                         :key="feature.properties.id">
+                         :key="feature.properties.id"
+                         v-on:click="setSelectedCell(feature)">
                 <l-popup v-if="variable.unit">{{feature.properties.value}} {{variable.unit}}</l-popup>
                 <l-popup v-else>{{feature.properties.value}}</l-popup>
             </l-rectangle>
@@ -23,8 +24,7 @@
 </template>
 
 <script>
-    import {mapState} from "vuex";
-    import * as L from "leaflet";
+    import {mapState, mapMutations} from "vuex";
     import {LMap, LTileLayer, LRectangle, LPopup, LControl} from "vue2-leaflet";
     import * as d3 from "d3";
     import axios from 'axios';
@@ -77,6 +77,7 @@
             }
         },
         methods: {
+            ...mapMutations(["setSelectedCell"]),
             prepareLegend() {
                 const min = this.variable.min;
                 const max = this.variable.max;
@@ -126,9 +127,6 @@
                     weight: 1,
                     opacity: 0.5,
                 }
-            },
-            rectangleOnClick(cell) {
-                this.$store.commit("addCell", cell);
             }
         }
     }
