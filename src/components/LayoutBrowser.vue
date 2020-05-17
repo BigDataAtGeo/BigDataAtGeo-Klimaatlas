@@ -7,12 +7,11 @@
     <div class="fixed-top" id="projectionmap-container">
         <ProjectionMap/>
     </div>
-
     <div class="float-right" id="widgets-container">
-        <WidgetShell class="row">
+        <WidgetShell widgetName="Wetter (live)" class="row justify-content-end rounded p-0" >
             <LiveLinegraph/>
         </WidgetShell>
-        <WidgetShell class="row">
+        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">
             <Linegraph/>
         </WidgetShell>
     </div>
@@ -63,13 +62,16 @@ body {
     }
     #widgets-container {
         height: 100vh;
-        display: flex;
-        justify-content: center;
+        display:flex;
+        justify-content:center;
         flex-direction: column;
     }
     #widgets-container .row {
         z-index: 2;
-        width: 20vw;
-        height: 35vh;
+        min-width: 18vh;
+        max-height: 30vh;
+        margin-bottom: 1vh;
+        justify-content: right;
+        margin-right: 1vh ;
     }
 </style>
