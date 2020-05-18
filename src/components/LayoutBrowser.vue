@@ -65,11 +65,10 @@ body {
         display:flex;
         justify-content:center;
         flex-direction: column;
+        max-width: 20vw;
     }
     #widgets-container .row {
         z-index: 2;
-        min-width: 18vh;
-        max-height: 30vh;
         margin-bottom: 1vh;
         justify-content: right;
         margin-right: 1vh ;

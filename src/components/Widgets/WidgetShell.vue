@@ -10,7 +10,7 @@
         </b-button>
       </b-col>
     </b-row>
-    <b-row v-if="showWidget" >
+    <b-row v-if="showWidget" id="widgetContent">
       <b-col>
         <slot ></slot>
       </b-col>
@@ -46,11 +46,16 @@ export default {
 
 <style scoped>
 #button{
-  width: 16vh;
+  width: 9vw;
   height: 4vh;
+  margin-bottom: 2px;
 }
 .container-bg{
-  background-color: rgba(122, 122, 122, 0.568);
-  max-width: 20vh;
+  background-color: rgba(179, 174, 174, 0.774);
+}
+#widgetContent{
+  width: 21vw;
+  min-height: 15vh;
+  overflow: hidden;
 }
 </style>
