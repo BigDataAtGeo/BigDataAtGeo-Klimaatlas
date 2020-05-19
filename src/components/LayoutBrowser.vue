@@ -61,16 +61,17 @@ body {
         height: 100vh;
     }
     #widgets-container {
-        height: 100vh;
+        height: 80vh;
         display:flex;
-        justify-content:center;
         flex-direction: column;
-        max-width: 20vw;
+        justify-self: end;
+        width: 20vw;
+        margin-right: 1vh;
+        margin-top: 10vh;
     }
     #widgets-container .row {
         z-index: 2;
         margin-bottom: 1vh;
         justify-content: right;
-        margin-right: 1vh ;
     }
 </style>
