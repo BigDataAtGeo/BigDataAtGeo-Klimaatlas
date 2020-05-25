@@ -1,16 +1,7 @@
 <template>
     <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }">
         <l-tile-layer :url="url" :attribution="attribution"/>
-        <div v-if="!loading">
-            <l-rectangle v-for="feature in this.geojson.features"
-                         :bounds="calculateRectangleBounds(feature.geometry.coordinates)"
-                         :options="calculateRectangleStyle(feature.properties)"
-                         :key="feature.properties.id"
-                         v-on:click="setSelectedCell(feature)">
-                <l-popup v-if="variable.unit">{{feature.properties.value}} {{variable.unit}}</l-popup>
-                <l-popup v-else>{{feature.properties.value}}</l-popup>
-            </l-rectangle>
-        </div>
+        <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions" :options-style="geoJsonStyle"></l-geo-json>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
                 <span v-if="this.variable.unit">In {{this.variable.unit}}:</span>
@@ -25,7 +16,7 @@
 
 <script>
     import {mapState, mapMutations} from "vuex";
-    import {LMap, LTileLayer, LRectangle, LPopup, LControl} from "vue2-leaflet";
+    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl} from "vue2-leaflet";
     import * as d3 from "d3";
     import axios from 'axios';
 
@@ -35,6 +26,7 @@
             LMap,
             LTileLayer,
             LRectangle,
+            LGeoJson,
             LPopup,
             LControl,
         },
@@ -47,6 +39,29 @@
                 set(value) {
                     this.loading = value;
                 }
+            },
+            geoJsonOptions() {
+                return {
+                    click: this.setSelectedCell,
+                    onEachFeature: this.onEachFeatureFunction
+                };
+            },
+            geoJsonStyle() {
+                return (feature) => {
+                    return {
+                        color: this.legendColorMap(feature.properties.value),
+                        weight: 1,
+                        opacity: 0.6,
+                    };
+                };
+            },
+            onEachFeatureFunction() {
+                return (feature, layer) => {
+                    layer.on('click', function(e) {
+                        this.setSelectedCell(e.latlng);
+                    }.bind(this));
+                    layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
+                };
             }
         },
         watch: {
@@ -61,10 +76,10 @@
         },
         data() {
             return {
-                geojson: {features: []},
+                geojson: null,
                 legend: null,
                 legendColorMap: null,
-                loading: false,
+                loading: true,
                 mapOptions: {
                     preferCanvas: true,
                     zoom: 8,
@@ -105,29 +120,29 @@
                 }
             },
             prepareGeoJson() {
-                axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/${this.selectionUri}`)
-                    .catch(function (error) {
-                        console.error('fetch data error: failed to load JSON from server', error)
-                    }).then(function (response) {
-                    this.geojson = response.data;
-                }.bind(this));
-            },
-            // refer to leaflet implementation
-            calculateRectangleBounds(coordinates) {
-                const latAccuracy = 180 * this.mapOptions.rasterSizeInMeters / 40075017;
-                const lngAccuracy = latAccuracy / Math.cos((Math.PI / 180) * coordinates[1]);
-                return [
-                    [coordinates[1] - latAccuracy, coordinates[0] - lngAccuracy],
-                    [coordinates[1] + latAccuracy, coordinates[0] + lngAccuracy]
-                ];
-            },
-            calculateRectangleStyle(properties) {
-                return {
-                    color: this.legendColorMap(properties.value),
-                    weight: 1,
-                    opacity: 0.5,
+                if (!this.geojson) {
+                    axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/grid/${this.selectionUri}`)
+                        .catch(function (error) {
+                            console.error('fetch data error: failed to load JSON from server', error)
+                        }).then(function (response) {
+                        this.geojson = response.data;
+                    }.bind(this));
+                } else {
+                    axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/values/${this.selectionUri}`)
+                        .catch(function (error) {
+                            console.error('fetch data error: failed to load JSON from server', error)
+                        }).then(function (response) {
+                            for (let feature of this.geojson.features) {
+                                const id = feature.properties.id
+                                if (id in response.data) {
+                                    feature.properties.value = response.data[id];
+                                } else {
+                                    console.error("cell id " + id + " not found in JSON");
+                                }
+                            }
+                    }.bind(this));
                 }
-            }
+            },
         }
     }
 </script>
