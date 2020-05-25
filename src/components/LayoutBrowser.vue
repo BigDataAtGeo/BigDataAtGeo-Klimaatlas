@@ -8,11 +8,14 @@
         <ProjectionMap/>
     </div>
     <div class="float-right" id="widgets-container">
-        <WidgetShell widgetName="Wetter (live)" class="row justify-content-end rounded p-0" >
+        <WidgetShell widgetName="Graph (Live)" class="row justify-content-end rounded p-0" >
             <LiveLinegraph/>
         </WidgetShell>
         <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">
             <Linegraph/>
+        </WidgetShell>
+        <WidgetShell widgetName="Wetter (Live)" class="row justify-content-end rounded p-0">
+           <WeatherLive/>
         </WidgetShell>
     </div>
 
@@ -25,10 +28,11 @@
     import Linegraph from "./Widgets/Linegraph";
     import ProjectionMap from "./Widgets/ProjectionMap";
     import WidgetShell from "./Widgets/WidgetShell";
+    import WeatherLive from "./Widgets/WeatherLive";
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell}
+        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherLive}
     }
 </script>
 
