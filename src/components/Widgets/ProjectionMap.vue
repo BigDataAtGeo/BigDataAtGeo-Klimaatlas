@@ -17,8 +17,8 @@
 <script>
     import {mapState, mapMutations} from "vuex";
     import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl} from "vue2-leaflet";
-    import * as d3 from "d3";
     import axios from 'axios';
+    import * as d3 from "d3";
 
     export default {
         name: "ProjectionMap",
@@ -57,8 +57,9 @@
             },
             onEachFeatureFunction() {
                 return (feature, layer) => {
-                    layer.on('click', function(e) {
-                        this.setSelectedCell(e.latlng);
+                    layer.on('click', function(cell) {
+                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
+                        this.setSelectedCell(updatedCell);
                     }.bind(this));
                     layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
                 };
@@ -137,7 +138,8 @@
                                 if (id in response.data) {
                                     feature.properties.value = response.data[id];
                                 } else {
-                                    console.error("cell id " + id + " not found in JSON");
+                                    this.geojson = null;
+                                    this.prepareGeoJson();
                                 }
                             }
                     }.bind(this));

@@ -3,7 +3,7 @@
     <span>Variable: {{ variable ? variable.var_id : "" }}</span><br>
     <span>Szenario: {{ scenario }}</span><br>
     <span>Timerange: {{ timerange }}</span><br>
-    <span>Selected Cell: {{ selectedCell }}</span>
+    <span>Selected Cell: {{ selectedCell ? selectedCell.latlng : "" }}</span>
 </div>
 </template>
 

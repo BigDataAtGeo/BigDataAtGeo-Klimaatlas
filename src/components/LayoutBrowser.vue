@@ -11,12 +11,16 @@
         <WidgetShell widgetName="Graph (Live)" class="row justify-content-end rounded p-0" >
             <LiveLinegraph/>
         </WidgetShell>
-        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">
-            <Linegraph/>
-        </WidgetShell>
+<!--        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">-->
+<!--            <Linegraph/>-->
+<!--        </WidgetShell>-->
         <WidgetShell widgetName="Wetter (Live)" class="row justify-content-end rounded p-0">
            <WeatherLive/>
         </WidgetShell>
+    </div>
+
+    <div class="fixed-bottom" id="timeline-container">
+        <Linegraph/>
     </div>
 
 </div>
@@ -58,6 +62,13 @@ body {
         margin-right: auto;
         width: 80vw;
         height: auto;
+    }
+    #timeline-container {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 10px;
+        height: 35vh;
+        width: 80vw;
     }
     #projectionmap-container {
         z-index: 1;
