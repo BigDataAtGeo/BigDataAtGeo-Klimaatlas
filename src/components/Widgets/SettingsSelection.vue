@@ -1,6 +1,9 @@
 <template>
     <div class="container">
         <div class="row align-items-center">
+            <div class="col-md-1 pr-0 pb-0 pt-0">
+                <img src="..\..\assets\BDAGlogo.svg" width="60px" height="60px">
+            </div>
             <div class="col-md-1">
                 <label for="select-variable" class="h5">Variable</label>
             </div>
@@ -13,18 +16,18 @@
                 <label for="select-scenario" class="h5">Szenario</label>
             </div>
             <div class="col-md-2 form-group">
-                <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null">
+                <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null" >
                     <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
                 </select>
             </div>
             <div class="col-md-1">
                 <label for="select-timerange" class="h5">Timerange</label>
             </div>
-            <div class="col-md-4 form-group">
-                <input id="select-timerange" type="range" class="form-control-range form-control-sm" @change="setTimerange" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
+            <div class="col-md-3 form-group">
+                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
             </div>
             <div class="col-md-1">
-                <span class="h6">{{ selectedTimerange }}</span>
+                <span>{{selectedTimerange}}</span>
             </div>
         </div>
     </div>
@@ -63,6 +66,10 @@
                 this.selectedTimerange = timerange;
                 this.$store.commit("setTimerange", timerange)
             },
+            liveSlider(e){
+                const timerange = this.index.timeranges[e.target.value];
+                this.selectedTimerange = timerange;
+            }
         },
         mounted() {
             axios.get(process.env.VUE_APP_BDATA_API + "/index")

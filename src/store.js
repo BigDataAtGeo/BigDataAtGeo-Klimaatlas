@@ -26,7 +26,12 @@ const mutations = {
         updateSelectionUri(state)
     },
     setSelectedCell(state, cell) {
-        state.selectedCell = cell;
+        if(state.selectedCell==cell){
+            state.selectedCell=null;
+        }else{
+            state.selectedCell = cell;
+        }
+        
     },
     addSelectedCell(state,cell){
         //check if array already contains cell
