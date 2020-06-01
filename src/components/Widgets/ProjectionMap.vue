@@ -60,6 +60,7 @@
                     layer.on('click', function(cell) {
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
                         this.setSelectedCell(updatedCell);
+                        this.addSelectedCell(updatedCell);
                     }.bind(this));
                     layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
                 };
@@ -93,7 +94,7 @@
             }
         },
         methods: {
-            ...mapMutations(["setSelectedCell"]),
+            ...mapMutations(["setSelectedCell","addSelectedCell"]),
             prepareLegend() {
                 const min = this.variable.min;
                 const max = this.variable.max;

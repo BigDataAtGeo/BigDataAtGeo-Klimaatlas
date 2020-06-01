@@ -9,6 +9,7 @@ const state = {
     timerange: null,
     selectedCell: null,
     selectionUri: null,
+    selectedCells:[],
 }
 
 const mutations = {
@@ -26,7 +27,17 @@ const mutations = {
     },
     setSelectedCell(state, cell) {
         state.selectedCell = cell;
-    }
+    },
+    addSelectedCell(state,cell){
+        //check if array already contains cell
+        if(state.selectedCells.indexOf(cell)!=-1) {
+            //if cell was already selected remove form list
+            state.selectedCells.splice(state.selectedCells.indexOf(cell),1);
+        }else{
+            //selectedCell gets added
+            state.selectedCells.push(cell);
+        }
+    },
 }
 
 const updateSelectionUri = (state) => {
