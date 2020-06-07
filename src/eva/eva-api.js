@@ -1,43 +1,41 @@
 import axios from 'axios';
 
-export class EvaApi {
-    constructor() {
-        this.API_URL_POINTS = process.env.VUE_APP_API_ORIGIN + '/api/v1/data/minimalpoint';
-        this.API_URL_POINTS_AGGREGATED = process.env.VUE_APP_API_ORIGIN + '/api/v1/data/minimalstats';
-        this.API_URL_FEEDS = process.env.VUE_APP_API_ORIGIN + '/api/v1/finalfeeds';
-        this.API_URL_PACKETS = process.env.VUE_APP_API_ORIGIN + '/api/v1/packets';
-        //Name of the Source/Channel that holds meta data concerning the
-        // feed/source
-        this.META_SOURCE_NAME = 'meta';
-        this.META_CHANNEL_NAME = 'meta';
-        this.EXTERNAL_WIDGETTYPES_URLS_SOURCEID = 'external-widgettypes-urls';
-        this.EXTERNAL_WIDGETTYPES_URLS_CHANNEL = 'urls';
-        this.EXTERNAL_WIDGETTYPES_URLS_COMPONENT = 'array';
-        //the following vars set the boundaries for requested timespans (in
-        // seconds) at which different aggregations are used for
-        // fetchDataByTimespan
-        this.AGGREGATION_BOUNDARY_L2 = 7 * 24 * 60 * 60; 	//timespan is larger than 7
-        // days -> get one
-        // aggregated value per day
-        this.AGGREGATION_BOUNDARY_L1 = 2 * 60 * 60; 		//timespan is larger than 2
-        // hours -> get one aggregated
-        // value per hour
-        this.AGGREGATION_BOUNDARY_L0 = 2 * 60; 		//timespan is larger than 2 Minutes
-        // -> get one aggregated value per
-        // minute
+export const EvaAPI = {
+    API_URL_POINTS: process.env.VUE_APP_API_ORIGIN + '/api/v1/data/minimalpoint',
+    API_URL_POINTS_AGGREGATED: process.env.VUE_APP_API_ORIGIN + '/api/v1/data/minimalstats',
+    API_URL_FEEDS: process.env.VUE_APP_API_ORIGIN + '/api/v1/finalfeeds',
+    API_URL_PACKETS: process.env.VUE_APP_API_ORIGIN + '/api/v1/packets',
+    //Name of the Source/Channel that holds meta data concerning the
+    // feed/source
+    META_SOURCE_NAME: 'meta',
+    META_CHANNEL_NAME: 'meta',
+    EXTERNAL_WIDGETTYPES_URLS_SOURCEID: 'external-widgettypes-urls',
+    EXTERNAL_WIDGETTYPES_URLS_CHANNEL: 'urls',
+    EXTERNAL_WIDGETTYPES_URLS_COMPONENT: 'array',
+    //the following vars set the boundaries for requested timespans (in
+    // seconds) at which different aggregations are used for
+    // fetchDataByTimespan
+    AGGREGATION_BOUNDARY_L2: 7 * 24 * 60 * 60, 	//timespan is larger than 7
+    // days -> get one
+    // aggregated value per day
+    AGGREGATION_BOUNDARY_L1: 2 * 60 * 60, 		//timespan is larger than 2
+    // hours -> get one aggregated
+    // value per hour
+    AGGREGATION_BOUNDARY_L0: 2 * 60, 		//timespan is larger than 2 Minutes
+    // -> get one aggregated value per
+    // minute
 
-        this.lastFeedsOffset = 0;
-        this.lastFeedsLimit = 20;
+    lastFeedsOffset: 0,
+    lastFeedsLimit: 20,
 
-        this.lastSourcesOffset = 0;
-        this.lastSourcesLimit = 20;
+    lastSourcesOffset: 0,
+    lastSourcesLimit: 20,
 
-        this.dashboards = {}
+    dashboards: {},
 
-        this.externalWidgettypeUrls = [];
+    externalWidgettypeUrls: [],
 
-        this.parsedData = null;
-    }
+    parsedData: null,
 
     getLastUpdatedForComponent(feedId,
                                sourceId,
@@ -51,7 +49,7 @@ export class EvaApi {
         return parseInt(timestamps.reduce(function (a, b) {
             return a < b ? b : a
         }));
-    }
+    },
 
     getLastUpdatedForChannel(feedId, sourceId, channel) {
         var components = Object.keys(this.parsedData.feeds[feedId].sources[sourceId].channels[channel]);
@@ -65,7 +63,7 @@ export class EvaApi {
         return timestamps.reduce(function (a, b) {
             return a < b ? b : a
         });
-    }
+    },
 
     getLastUpdatedForSource(feedId, sourceId) {
         //return null if there are no channels in this source
@@ -84,7 +82,7 @@ export class EvaApi {
         return timestamps.reduce(function (a, b) {
             return a < b ? b : a
         });
-    }
+    },
 
     getLastUpdatedForFeed(feedId) {
         //return null if there are no sources in this feed
@@ -103,7 +101,7 @@ export class EvaApi {
         return timestamps.reduce(function (a, b) {
             return a < b ? b : a
         });
-    }
+    },
 
     /**** END PARSED DATA ****/
 
@@ -116,7 +114,7 @@ export class EvaApi {
         }
 
         return axios.get(this.API_URL_FEEDS + "/" + feedId);
-    };
+    },
 
     fetchFeeds(offset, limit) {
         if (offset === undefined || offset === null) {
@@ -129,7 +127,7 @@ export class EvaApi {
         this.lastFeedsLimit = limit;
 
         return axios.get(this.API_URL_FEEDS + '?access=publicread&offset=' + offset + '&limit=' + limit);
-    }
+    },
 
     //create a new Feed
     postFeed(feedId, publicRead, publicWrite) {
@@ -160,7 +158,7 @@ export class EvaApi {
                     console.error('post feed error: ' + JSON.stringify(msg));
                 }
             }).catch(error => console.error('post feed error: ' + JSON.stringify(msg)));
-    }
+    },
 
     /**** END FEEDS ****/
 
@@ -180,7 +178,7 @@ export class EvaApi {
         // .fail(function (msg) {
         // 	console.error('fetch source error: ' + JSON.stringify(msg));
         // });
-    }
+    },
 
     fetchSources(feedId, offset, limit) {
         if (feedId === undefined || feedId === null) {
@@ -197,7 +195,7 @@ export class EvaApi {
         this.lastSourcesLimit = limit;
         return axios.get(this.API_URL_FEEDS + '/' + feedId + '/sources?offset=' + offset + '&limit=' + limit)
             .catch(error => console.error('fetch sources error: ' + error));
-    }
+    },
 
     /**** END SOURCES ****/
 
@@ -257,7 +255,7 @@ export class EvaApi {
             '&firstTS=' + firstTSDate.getTime() + '&lastTS=' +
             lastTSDate.getTime())
             .catch(error => console.error('fetch data error: failed to load JSON from server'));
-    }
+    },
 
     fetchDataByLimit(feedId, sourceId, channels, limit, offset) {
         if (feedId === undefined || feedId === null ||
@@ -276,7 +274,7 @@ export class EvaApi {
             '&sourceId=' + sourceId + '&channels=' + channels + '&limit=' +
             limit + '&offset=' + offset)
             .catch(error => console.error('fetch data error: failed to load JSON from server'));
-    }
+    },
 
     fetchAggregatedData(feedId,
                         sourceId,
@@ -300,7 +298,7 @@ export class EvaApi {
             '&firstTS=' + firstTS.getTime() + '&lastTS=' +
             lastTS.getTime() + '&level=' + level)
             .catch(error => console.error('fetch aggregated data error: failed to load JSON from server'));
-    }
+    },
 
     postData(feeds, sourceId, data) {
 
@@ -322,7 +320,7 @@ export class EvaApi {
                 contentType: 'application/json;charset=utf-8',
             })
             .catch(error => console.error('post external widgettype urls error: ' + error));
-    }
+    },
 
     /**** END DATA ****/
 
@@ -334,9 +332,9 @@ export class EvaApi {
             //also initialize external widgettype urls source
             //note: via bind() it's possible to pass arguments without using an
             // inner anonymous function
-            .catch(() => this.postFeed(this.dashboard_feedid,false,false)
+            .catch(() => this.postFeed(this.dashboard_feedid, false, false)
                 .then(this.postExternalWidgettypeUrls.bind(null, [])));
-    }
+    },
 
     //store and manage urls for external widgettypes here
     fetchExternalWidgettypeUrls() {
@@ -347,7 +345,7 @@ export class EvaApi {
                     [this.EXTERNAL_WIDGETTYPES_URLS_CHANNEL]
                     [this.EXTERNAL_WIDGETTYPES_URLS_COMPONENT].val;
             });
-    }
+    },
 
     //store an array of urls on the server that specify locations for
     // external widgettypes (e.g. from github)
@@ -373,6 +371,4 @@ export class EvaApi {
 
         return this.postData(feeds, sourceId, data);
     }
-
-    /**** END DASHBOARD PERSISTENCE ****/
 }

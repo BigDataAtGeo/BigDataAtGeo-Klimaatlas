@@ -1,0 +1,27 @@
+
+module.exports = {
+    devServer: {
+        proxy: {
+            "/api/v1/": {
+                target: process.env.VUE_APP_API_ORIGIN_PROXY,
+                secure: false
+            },
+            "/socketentry": {
+                target: process.env.VUE_APP_API_ORIGIN_PROXY,
+                secure: false
+            },
+            "/user": {
+                target: process.env.VUE_APP_API_ORIGIN_PROXY,
+                secure: false
+            },
+            "/oauth/authorize": {
+                target: process.env.VUE_APP_AUTH_ORIGIN_PROXY,
+                secure: false
+            },
+            "/userinfo": {
+                target: process.env.VUE_APP_AUTH_ORIGIN_PROXY,
+                secure: false
+            },
+        }
+    }
+};

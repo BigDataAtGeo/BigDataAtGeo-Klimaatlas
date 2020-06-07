@@ -16,6 +16,9 @@
         watch: {
             chartData() {
                 this.renderChart(this.chartData, this.options);
+            },
+            chartOptions() {
+                this.renderChart(this.chartData, this.options);
             }
         },
         mounted() {

@@ -28,9 +28,7 @@ export class EvaLiveConnection {
 	connectStomp() {
 		this.createStompClient();
 
-		var headers = {
-			'Access-Control-Allow-Origin': process.env.VUE_APP_API_ORIGIN,
-		};
+		var headers = {};
 
 		if (this.evaAuth.user != null) {
 			// Set authorization header if logged in
@@ -67,7 +65,13 @@ export class EvaLiveConnection {
 				}
 			});
 
-			this.stomp.trigger('stomp:connected');
+			// this.stomp._connected = true;
+			// var event = document.createEvent('HTMLEvents');
+			// event.initEvent('stomp:connected', true, false);
+			// console.log(this.stomp);
+			// this.stomp.dispatchEvent(event);
+			// this.stomp.connected = true;
+			// this.stomp.trigger('stomp:connected');
 			// $(this.stomp).trigger('stomp:connected');
 
 
