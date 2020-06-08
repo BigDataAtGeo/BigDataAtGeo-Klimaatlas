@@ -15,7 +15,7 @@
 </template>
 
 <script>
-    import {mapState, mapMutations} from "vuex";
+    import {mapState, mapMutations, mapGetters} from "vuex";
     import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl} from "vue2-leaflet";
     import axios from 'axios';
     import * as d3 from "d3";
@@ -32,6 +32,9 @@
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
+            selectedCells() {
+                return this.$store.state.selectedCells;
+            },
             isLoading: {
                 get() {
                     return this.loading;
@@ -42,7 +45,6 @@
             },
             geoJsonOptions() {
                 return {
-                    click: this.setSelectedCell,
                     onEachFeature: this.onEachFeatureFunction
                 };
             },
@@ -60,9 +62,21 @@
                     layer.on('click', function(cell) {
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
                         this.setSelectedCell(updatedCell);
-                        this.addSelectedCell(updatedCell);
                     }.bind(this));
                     layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
+                    layer.on('contextmenu', function(cell){
+                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
+                        //the new Cell gets added to the list of selected Cells and is the new selectedCell
+                        this.addSelectedCell(updatedCell);
+                        this.setSelectedCell(updatedCell);
+                        //if celectedCell got removed and selectedCells still contains Cells the last Cell is now the selected Cell
+                        if(this.$store.state.selectedCell==null&&this.$store.state.selectedCells.length!=0){
+                            this.setSelectedCell(this.$store.state.selectedCells[this.$store.state.selectedCells.length-1]);
+                        }
+                        console.log(this.$store.state.selectedCells);
+                        console.log(this.$store.state.selectedCell);
+                        this.features.push(feature);                       
+                    }.bind(this));
                 };
             }
         },
@@ -82,6 +96,7 @@
                 legend: null,
                 legendColorMap: null,
                 loading: true,
+                features:[],
                 mapOptions: {
                     preferCanvas: true,
                     zoom: 8,
