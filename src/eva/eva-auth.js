@@ -7,9 +7,9 @@ export class EvaAuth {
 		this.REDIRECT_URI = process.env.VUE_APP_ORIGIN + '/';
 
 		this.OAUTH_PROVIDER_ID = 'everyaware';
-		this.OAUTH_AUTHORIZATION_URL = process.env.VUE_APP_AUTH_ORIGIN + '/oauth/authorize';
+		this.OAUTH_AUTHORIZATION_URL = process.env.VUE_APP_AUTH_ORIGIN_PROXY + '/oauth/authorize';
 
-		this.USERINFO_URL = process.env.VUE_APP_AUTH_ORIGIN + '/userinfo';
+		this.USERINFO_URL = process.env.VUE_APP_AUTH_ORIGIN_PROXY + '/userinfo';
 
 		this.user = null;
 
