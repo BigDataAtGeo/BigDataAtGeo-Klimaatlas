@@ -1,7 +1,11 @@
 <template>
     <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }">
         <l-tile-layer :url="url" :attribution="attribution"/>
+        
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions" :options-style="geoJsonStyle"></l-geo-json>
+        <div v-for="polygon of this.polygons">
+            <l-polygon :lat-lngs="polygon" color="black" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
+        </div>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
                 <span v-if="this.variable.unit">In {{this.variable.unit}}:</span>
@@ -16,7 +20,7 @@
 
 <script>
     import {mapState, mapMutations, mapGetters} from "vuex";
-    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl} from "vue2-leaflet";
+    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl,LPolygon} from "vue2-leaflet";
     import axios from 'axios';
     import * as d3 from "d3";
 
@@ -29,11 +33,15 @@
             LGeoJson,
             LPopup,
             LControl,
+            LPolygon,
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
             selectedCells() {
                 return this.$store.state.selectedCells;
+            },
+            polygons(){
+                return this.$store.state.polygons;
             },
             isLoading: {
                 get() {
@@ -60,22 +68,30 @@
             onEachFeatureFunction() {
                 return (feature, layer) => {
                     layer.on('click', function(cell) {
+                        var polygon=[];
+                        for (var i = 0; i < feature.geometry.coordinates[0].length-1; i++) {
+                            var coordinates=[];
+                            coordinates.push(feature.geometry.coordinates[0][i][1]);
+                            coordinates.push(feature.geometry.coordinates[0][i][0]);
+                             polygon.push(coordinates);
+                        }
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-                        this.setSelectedCell(updatedCell);
+                        const cellFeature={polygon,updatedCell};
+                        this.setSelectedCell(cellFeature);
                     }.bind(this));
                     layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
                     layer.on('contextmenu', function(cell){
-                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-                        //the new Cell gets added to the list of selected Cells and is the new selectedCell
-                        this.addSelectedCell(updatedCell);
-                        this.setSelectedCell(updatedCell);
-                        //if celectedCell got removed and selectedCells still contains Cells the last Cell is now the selected Cell
-                        if(this.$store.state.selectedCell==null&&this.$store.state.selectedCells.length!=0){
-                            this.setSelectedCell(this.$store.state.selectedCells[this.$store.state.selectedCells.length-1]);
+                        var polygon=[];
+                        for (var i = 0; i < feature.geometry.coordinates[0].length-1; i++) {
+                            var coordinates=[];
+                            coordinates.push(feature.geometry.coordinates[0][i][1]);
+                            coordinates.push(feature.geometry.coordinates[0][i][0]);
+                            polygon.push(coordinates);
                         }
-                        console.log(this.$store.state.selectedCells);
-                        console.log(this.$store.state.selectedCell);
-                        this.features.push(feature);                       
+                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
+                        const cellFeature={polygon,updatedCell};
+                        //the new Cell gets added to the list of selected Cells and is the new selectedCell
+                        this.addSelectedCell(cellFeature);                
                     }.bind(this));
                 };
             }
@@ -96,7 +112,8 @@
                 legend: null,
                 legendColorMap: null,
                 loading: true,
-                features:[],
+                booleanF:false,
+                booleanT:true,
                 mapOptions: {
                     preferCanvas: true,
                     zoom: 8,

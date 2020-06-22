@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { polygon } from 'leaflet'
 
 Vue.use(Vuex)
 
@@ -7,9 +8,9 @@ const state = {
     scenario: null,
     variable: null,
     timerange: null,
-    selectedCell: null,
     selectionUri: null,
     selectedCells:[],
+    polygons:[],
 }
 
 const mutations = {
@@ -25,22 +26,31 @@ const mutations = {
         state.timerange = timerange;
         updateSelectionUri(state)
     },
-    setSelectedCell(state, cell) {
-        if(state.selectedCell==cell){
-            state.selectedCell=null;
+    setSelectedCell(state, cellFeature) {
+        //remove all multiple selected cells
+        if(state.selectedCells.length==1&&state.selectedCells[0]==cellFeature.updatedCell){
+            state.selectedCells.length=0;
+            state.polygons.splice(0,1);
         }else{
-            state.selectedCell = cell;
+            state.polygons.length=0;
+            state.selectedCells.length=0;
+            state.polygons.push(cellFeature.polygon);
+            state.selectedCells.push(cellFeature.updatedCell);
         }
-        
     },
-    addSelectedCell(state,cell){
+    addSelectedCell(state,cellFeature){
         //check if array already contains cell
+        var cell=cellFeature.updatedCell;
+        var polygon=cellFeature.polygon;
         if(state.selectedCells.indexOf(cell)!=-1) {
             //if cell was already selected remove form list
-            state.selectedCells.splice(state.selectedCells.indexOf(cell),1);
+            var index=state.selectedCells.indexOf(cell);
+            state.selectedCells.splice(index,1);
+            state.polygons.splice(index,1);
         }else{
             //selectedCell gets added
             state.selectedCells.push(cell);
+            state.polygons.push(polygon);
         }
     },
 }

@@ -28,7 +28,7 @@
             };
         },
         computed: {
-            ...mapState(["scenario", "variable", "timerange", "selectedCell", "selectionUri"]),
+            ...mapState(["scenario", "variable", "timerange", "selectedCells", "selectionUri"]),
             isLoading: {
                 get() {
                     return this.loading;
@@ -43,13 +43,13 @@
                 this.chartData = null;
                 this.chartOptions = null;
             },
-            selectedCell(val) {
+            selectedCells(val) {
                 this.$forceNextTick(() => {
                     this.chartData = null;
                     this.isLoading = true;
                 });
                 // BDATG_ORIGIN + '/all_times/' + id + '/' + this.scenario + '/' + this.variable)
-                axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val.properties.id}/${this.scenario}/${this.variable.var_id}`)
+                axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[0].properties.id}/${this.scenario}/${this.variable.var_id}`)
                     .catch(function (error) {
                         console.error('fetch data error: failed to load JSON from server', error)
                         this.isLoading = false;
@@ -75,7 +75,7 @@
                     title: {
                         display: true,
                         fontSize: 20,
-                        text: `${this.variable.var} bei Szenario ${this.scenario} (Koordinaten: ${this.selectedCell.latlng.lat.toFixed(2)}/${this.selectedCell.latlng.lng.toFixed(2)})`
+                        text: `${this.variable.var} bei Szenario ${this.scenario} (Koordinaten: ${this.selectedCells[0].latlng.lat.toFixed(2)}/${this.selectedCells[0].latlng.lng.toFixed(2)})`
                     },
                     legend: {
                         display: false,

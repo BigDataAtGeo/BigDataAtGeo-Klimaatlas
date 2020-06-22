@@ -45,7 +45,7 @@
             }
         },
         computed: {
-            ...mapState(["scenario", "variable", "timerange", "selectedCell"]),
+            ...mapState(["scenario", "variable", "timerange", "selectedCells"]),
             isLoading: {
                 get() {
                     return this.loading;
