@@ -29,7 +29,7 @@ const mutations = {
     setSelectedCell(state, cellFeature) {
         //remove all multiple selected cells
         if(state.selectedCells.length==1&&state.selectedCells[0]==cellFeature.updatedCell){
-            state.selectedCells.length=0;
+            state.selectedCells.splice(0,1);
             state.polygons.splice(0,1);
         }else{
             state.polygons.length=0;

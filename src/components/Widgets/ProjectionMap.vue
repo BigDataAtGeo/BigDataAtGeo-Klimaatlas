@@ -3,8 +3,8 @@
         <l-tile-layer :url="url" :attribution="attribution"/>
         
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions" :options-style="geoJsonStyle"></l-geo-json>
-        <div v-for="polygon of this.polygons">
-            <l-polygon :lat-lngs="polygon" color="black" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
+        <div v-for="(polygon, index) in this.polygons">
+            <l-polygon :lat-lngs="polygon" :color="polygonStyle(index)" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
         </div>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
@@ -91,7 +91,7 @@
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
                         const cellFeature={polygon,updatedCell};
                         //the new Cell gets added to the list of selected Cells and is the new selectedCell
-                        this.addSelectedCell(cellFeature);                
+                        this.addSelectedCell(cellFeature);               
                     }.bind(this));
                 };
             }
@@ -177,6 +177,9 @@
                             }
                     }.bind(this));
                 }
+            },
+            polygonStyle:function(index){
+                return d3.interpolateRainbow(index/(this.polygons.length));
             },
         }
     }

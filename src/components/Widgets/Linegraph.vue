@@ -16,7 +16,7 @@
     import {mapState} from "vuex";
     import axios from 'axios';
     import LineChart from "./LineChart";
-
+    import * as d3 from "d3";
     export default {
         name: "Linegraph",
         components: {LineChart},
@@ -25,6 +25,9 @@
                 chartData: null,
                 chartOptions: null,
                 loading: false,
+                datasets:[],
+                labels:[],
+                selectedCellsOld:[],
             };
         },
         computed: {
@@ -44,32 +47,66 @@
                 this.chartOptions = null;
             },
             selectedCells(val) {
-                this.$forceNextTick(() => {
+                console.log(this.selectedCellsOld);
+                console.log(this.selectedCells);
+            if(val.length>0){
+                    this.$forceNextTick(() => {
                     this.chartData = null;
                     this.isLoading = true;
-                });
-                // BDATG_ORIGIN + '/all_times/' + id + '/' + this.scenario + '/' + this.variable)
-                axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[0].properties.id}/${this.scenario}/${this.variable.var_id}`)
-                    .catch(function (error) {
-                        console.error('fetch data error: failed to load JSON from server', error)
-                        this.isLoading = false;
-                    }.bind(this)).then(function (response) {
-                    this.drawTimeline(response.data.data);
+                    });
+                    var added=true;
+                    var index=0;
+                    for (var i=0; i<this.selectedCellsOld.length;i++){
+                        if(this.selectedCells.includes(this.selectedCellsOld[i]));
+                        else{
+                            added=false;
+                        }
+                    }
+                    /*this.datasets.splice(0,this.datasets.length);
+                    for(var i=0;i<val.length;i++){
+                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[i].properties.id}/${this.scenario}/${this.variable.var_id}`)
+                            .catch(function (error) {
+                            console.error('fetch data error: failed to load JSON from server', error)
+                            this.isLoading = false;
+                        }.bind(this)).then(function (response) {
+                            var dataset={data: response.data.data.values, borderColor: "black", fill: false,};
+                            this.datasets.push(dataset);
+                            this.labels= response.data.data.keys;
+                            this.drawTimeline(response.data.data);
+                        }.bind(this));
+                    }
+                    this.isLoading = false;*/
+                    if(added){
+                        //   BDATG_ORIGIN + '/all_times/' + id + '/' + this.scenario + '/' + this.variable)
+                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[val.length-1].properties.id}/${this.scenario}/${this.variable.var_id}`)
+                            .catch(function (error) {
+                                console.error('fetch data error: failed to load JSON from server', error)
+                                this.isLoading = false;
+                            }.bind(this)).then(function (response) {
+                                var dataset={data: response.data.data.values, borderColor: d3.interpolateRainbow(this.datasets.length/(this.datasets.length+1)), fill: false,};
+                                this.datasets.push(dataset);    
+                                this.labels.push(response.data.data.keys);
+                                this.drawTimeline(response.data.data.keys);
+                                this.isLoading = false;
+                        }.bind(this));
+                    }else{
+                        this.datasets.splice(index,1);
+                        this.labels.splice(index,1);
+                        this.drawTimeline(this.labels[val.length]);
+                    }
+                    this.selectedCellsOld=Array.from(this.selectedCells);
+                }else{
+                    this.datasets=[];
                     this.isLoading = false;
-                }.bind(this));
+                    this.selectedCellsOld=[];
+                }
             }
         },
         methods: {
             drawTimeline(data) {
                 this.chartData = {
-                    labels: data.keys,
-                    datasets: [
-                        {
-                            data: data.values,
-                            borderColor: "black",
-                            fill: false,
-                        }
-                    ]
+                    labels: data,
+                    datasets: Array.from(this.datasets),
                 };
                 this.chartOptions = {
                     title: {
