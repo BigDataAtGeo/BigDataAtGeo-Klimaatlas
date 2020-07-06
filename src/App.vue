@@ -9,6 +9,9 @@
 
     export default {
         name: 'App',
+        created() {
+            document.title = "BigData@Geo — Webportal";
+        },
         components: {
             LayoutBrowser
         }
