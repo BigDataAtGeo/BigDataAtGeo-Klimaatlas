@@ -30,7 +30,7 @@
                 <label for="select-timerange" class="h5">Timerange</label>
             </div>
             <div class="col-md-4 form-group" id="colElement">
-                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
+                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" value=0 min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
                 <br>
                 <div id="timerangeLabels">
                     <label class="float-left">{{minRange}}</label>
@@ -111,7 +111,7 @@
 }
 #timerangeLabels{
     padding-top:-8%;
-    margin-top: -8%;
+    margin-top: -5%;
 }
 div.container {
     background-color: rgba(255, 255, 255, 0.75);

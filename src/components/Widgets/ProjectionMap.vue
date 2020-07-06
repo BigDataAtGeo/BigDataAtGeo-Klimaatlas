@@ -4,7 +4,7 @@
         
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions" :options-style="geoJsonStyle"></l-geo-json>
         <div v-for="(polygon, index) in this.polygons">
-            <l-polygon :lat-lngs="polygon" :color="polygonStyle(index)" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
+            <l-polygon :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
         </div>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
@@ -23,9 +23,11 @@
     import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl,LPolygon} from "vue2-leaflet";
     import axios from 'axios';
     import * as d3 from "d3";
+    import { colorGenerate } from '../mixins/colorGenerate'; 
 
     export default {
         name: "ProjectionMap",
+        mixins:[colorGenerate],
         components: {
             LMap,
             LTileLayer,
@@ -42,6 +44,9 @@
             },
             polygons(){
                 return this.$store.state.polygons;
+            },
+            ids(){
+                return this.$store.state.ids; 
             },
             isLoading: {
                 get() {
@@ -179,7 +184,7 @@
                 }
             },
             polygonStyle:function(index){
-                return d3.interpolateRainbow(index/(this.polygons.length));
+                return this.generateColor(index,this.polygons.length);
             },
         }
     }

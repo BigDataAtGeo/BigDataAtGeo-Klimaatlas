@@ -9,6 +9,7 @@ const state = {
     variable: null,
     timerange: null,
     selectionUri: null,
+    ids:[],
     selectedCells:[],
     polygons:[],
 }
@@ -27,13 +28,16 @@ const mutations = {
         updateSelectionUri(state)
     },
     setSelectedCell(state, cellFeature) {
+        console.log(cellFeature);
         //remove all multiple selected cells
         if(state.selectedCells.length==1&&state.selectedCells[0]==cellFeature.updatedCell){
             state.selectedCells.splice(0,1);
             state.polygons.splice(0,1);
+            state.ids.splice(0,1);
         }else{
             state.polygons.length=0;
             state.selectedCells.length=0;
+            state.ids.push(cellFeature.updatedCell.properties.id)
             state.polygons.push(cellFeature.polygon);
             state.selectedCells.push(cellFeature.updatedCell);
         }
@@ -45,10 +49,12 @@ const mutations = {
         if(state.selectedCells.indexOf(cell)!=-1) {
             //if cell was already selected remove form list
             var index=state.selectedCells.indexOf(cell);
+            state.ids.splice(index,1);
             state.selectedCells.splice(index,1);
             state.polygons.splice(index,1);
         }else{
             //selectedCell gets added
+            state.ids.push(cellFeature.updatedCell.properties.id)
             state.selectedCells.push(cell);
             state.polygons.push(polygon);
         }
