@@ -1,10 +1,12 @@
 <template>
     <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }">
         <l-tile-layer :url="url" :attribution="attribution"/>
-        
-        <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions" :options-style="geoJsonStyle"></l-geo-json>
+
+        <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
+                    :options-style="geoJsonStyle"></l-geo-json>
         <div v-for="polygon of this.polygons">
-            <l-polygon :lat-lngs="polygon" color="black" :interactive="booleanF"  :bubblingMouseEvents="booleanF" :fill="booleanF" :options="geoJsonOptions"></l-polygon>
+            <l-polygon :lat-lngs="polygon" color="black" :interactive="booleanF" :bubblingMouseEvents="booleanF"
+                       :fill="booleanF" :options="geoJsonOptions"></l-polygon>
         </div>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
@@ -20,7 +22,7 @@
 
 <script>
     import {mapState, mapMutations, mapGetters} from "vuex";
-    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl,LPolygon} from "vue2-leaflet";
+    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl, LPolygon} from "vue2-leaflet";
     import axios from 'axios';
     import * as d3 from "d3";
 
@@ -40,7 +42,7 @@
             selectedCells() {
                 return this.$store.state.selectedCells;
             },
-            polygons(){
+            polygons() {
                 return this.$store.state.polygons;
             },
             isLoading: {
@@ -67,31 +69,35 @@
             },
             onEachFeatureFunction() {
                 return (feature, layer) => {
-                    layer.on('click', function(cell) {
-                        var polygon=[];
-                        for (var i = 0; i < feature.geometry.coordinates[0].length-1; i++) {
-                            var coordinates=[];
-                            coordinates.push(feature.geometry.coordinates[0][i][1]);
-                            coordinates.push(feature.geometry.coordinates[0][i][0]);
-                             polygon.push(coordinates);
-                        }
-                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-                        const cellFeature={polygon,updatedCell};
-                        this.setSelectedCell(cellFeature);
-                    }.bind(this));
-                    layer.bindTooltip("<div>" + feature.properties.value + "</div>", { permanent: false, sticky: true });
-                    layer.on('contextmenu', function(cell){
-                        var polygon=[];
-                        for (var i = 0; i < feature.geometry.coordinates[0].length-1; i++) {
-                            var coordinates=[];
+                    layer.on('click', function (cell) {
+                        var polygon = [];
+                        for (var i = 0; i < feature.geometry.coordinates[0].length - 1; i++) {
+                            var coordinates = [];
                             coordinates.push(feature.geometry.coordinates[0][i][1]);
                             coordinates.push(feature.geometry.coordinates[0][i][0]);
                             polygon.push(coordinates);
                         }
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-                        const cellFeature={polygon,updatedCell};
+                        const cellFeature = {polygon, updatedCell};
+                        this.setSelectedCell(cellFeature);
+                    }.bind(this));
+                    const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
+                    layer.bindTooltip("<div>" + value + "</div>", {
+                        permanent: false,
+                        sticky: true
+                    });
+                    layer.on('contextmenu', function (cell) {
+                        var polygon = [];
+                        for (var i = 0; i < feature.geometry.coordinates[0].length - 1; i++) {
+                            var coordinates = [];
+                            coordinates.push(feature.geometry.coordinates[0][i][1]);
+                            coordinates.push(feature.geometry.coordinates[0][i][0]);
+                            polygon.push(coordinates);
+                        }
+                        const updatedCell = Object.assign(feature, {latlng: cell.latlng});
+                        const cellFeature = {polygon, updatedCell};
                         //the new Cell gets added to the list of selected Cells and is the new selectedCell
-                        this.addSelectedCell(cellFeature);                
+                        this.addSelectedCell(cellFeature);
                     }.bind(this));
                 };
             }
@@ -112,8 +118,8 @@
                 legend: null,
                 legendColorMap: null,
                 loading: true,
-                booleanF:false,
-                booleanT:true,
+                booleanF: false,
+                booleanT: true,
                 mapOptions: {
                     preferCanvas: true,
                     zoom: 8,
@@ -126,7 +132,7 @@
             }
         },
         methods: {
-            ...mapMutations(["setSelectedCell","addSelectedCell"]),
+            ...mapMutations(["setSelectedCell", "addSelectedCell"]),
             prepareLegend() {
                 const min = this.variable.min;
                 const max = this.variable.max;
@@ -166,15 +172,15 @@
                         .catch(function (error) {
                             console.error('fetch data error: failed to load JSON from server', error)
                         }).then(function (response) {
-                            for (let feature of this.geojson.features) {
-                                const id = feature.properties.id
-                                if (id in response.data) {
-                                    feature.properties.value = response.data[id];
-                                } else {
-                                    this.geojson = null;
-                                    this.prepareGeoJson();
-                                }
+                        for (let feature of this.geojson.features) {
+                            const id = feature.properties.id
+                            if (id in response.data) {
+                                feature.properties.value = response.data[id];
+                            } else {
+                                this.geojson = null;
+                                this.prepareGeoJson();
                             }
+                        }
                     }.bind(this));
                 }
             },
