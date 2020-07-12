@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row align-items-center" v-if="this.index.variables!=null&&this.index.scenarios!=null">
             <div class="col-md-1 pr-0 pb-0 pt-0">
-                <img src="..\..\assets\BDAGlogo.svg" width="60px" height="60px">
+                <img src="assets/BDAGlogo.svg" width="60px" height="60px">
             </div>
             <div class="col-md-1" id="colElement">
                 <label for="select-variable" class="h5">Variable</label>
@@ -21,7 +21,7 @@
             <div class="col-md-1 d-flex justify-content-end" id="colElement">
                     <label for="select-scenario" class="h5">Szenario</label>
             </div>
-            <div class="col-md-1 form-group" id="colElement"> 
+            <div class="col-md-1 form-group" id="colElement">
                 <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null" >
                     <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
                 </select>

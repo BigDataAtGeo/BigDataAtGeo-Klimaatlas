@@ -1,5 +1,5 @@
 <template>
-    <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }">
+    <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom" :center="mapOptions.center">
         <l-tile-layer :url="url" :attribution="attribution"/>
 
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
@@ -8,6 +8,7 @@
             <l-polygon :lat-lngs="polygon" color="black" :interactive="booleanF" :bubblingMouseEvents="booleanF"
                        :fill="booleanF" :options="geoJsonOptions"></l-polygon>
         </div>
+        <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="sensorIcon" :key="sensor.id"></l-marker>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
                 <span v-if="this.variable.unit">In {{this.variable.unit}}:</span>
@@ -22,7 +23,9 @@
 
 <script>
     import {mapState, mapMutations, mapGetters} from "vuex";
-    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl, LPolygon} from "vue2-leaflet";
+    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl, LPolygon, LMarker} from "vue2-leaflet";
+    import { icon } from 'leaflet';
+    import {EvaAPI} from "../../eva/eva-api";
     import axios from 'axios';
     import * as d3 from "d3";
 
@@ -36,6 +39,7 @@
             LPopup,
             LControl,
             LPolygon,
+            LMarker,
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
@@ -120,16 +124,36 @@
                 loading: true,
                 booleanF: false,
                 booleanT: true,
+                sensors: [],
+                sensorIcon: icon({
+                    iconUrl: "assets/sensor.svg",
+                    iconSize: [25, 25],
+                    iconAnchor: [12.5, 12.5]
+                }),
                 mapOptions: {
                     preferCanvas: true,
                     zoom: 8,
                     center: [50, 9.97],
-                    maxBounds: [[50.687581, 8.755892], [49.344371, 11.010188]],
+                    maxBounds: [[44.75, 2.33],[54.37, 17.53]],
                     rasterSizeInMeters: 1000,
                 },
                 url: 'https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }
+        },
+        mounted() {
+            EvaAPI.fetchAllSources().then(result => {
+                let id = 0;
+                for (const sensorData of result.data) {
+                    if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
+                        continue
+                    const geoData = sensorData.recentData.geo;
+                    this.sensors.push({
+                        latlng: [geoData.lat.val, geoData.lon.val],
+                        id: id++,
+                    })
+                }
+            })
         },
         methods: {
             ...mapMutations(["setSelectedCell", "addSelectedCell"]),
