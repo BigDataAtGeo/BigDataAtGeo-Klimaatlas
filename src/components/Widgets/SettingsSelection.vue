@@ -30,7 +30,7 @@
                 <label for="select-timerange" class="h5">Timerange</label>
             </div>
             <div class="col-md-4 form-group" id="colElement">
-                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" value=0 min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
+                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
                 <br>
                 <div id="timerangeLabels">
                     <label class="float-left">{{minRange}}</label>
@@ -57,9 +57,14 @@
                 "index": {
                     "scenarios": null,
                     "variables": null,
-                    "timeranges": null
-                }
+                    "timeranges": null,
+                    
+                },
+                "timerangeValue":null,
             }
+        },
+        ready: function(){
+            this.timerangeValue=valueStart();
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange"]),
@@ -83,22 +88,32 @@
             },
             setTimerange(e) {
                 const timerange = this.index.timeranges[e.target.value];
+                
                 this.selectedTimerange = timerange;
                 this.$store.commit("setTimerange", timerange)
             },
             liveSlider(e){
+                this.timerangeValue=e.target.value;
                 const timerange = this.index.timeranges[e.target.value];
                 this.selectedTimerange = timerange;
+            },
+            valueStart: function(){
+                var year = new Date().getYear()
+                var year =year-50;
+                return year;
             }
         },
         mounted() {
             axios.get(process.env.VUE_APP_BDATA_API + "/index")
                 .then((response) => {
+                    //setting timerange to actual year
+                    var year = new Date().getYear()
+                    var year =year-70;
                     this.index = response.data;
                     this.$store.commit("setScenario", this.index.scenarios[0]);
                     this.$store.commit("setVariable", this.index.variables[0]);
-                    this.$store.commit("setTimerange", this.index.timeranges[0]);
-                    this.selectedTimerange = this.index.timeranges[0];
+                    this.$store.commit("setTimerange", this.index.timeranges[year]);
+                    this.selectedTimerange = this.index.timeranges[year];
                 })
                 .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
         }

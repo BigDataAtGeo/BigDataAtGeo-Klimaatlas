@@ -55,6 +55,7 @@
             selectedCells(val) {   
             if(val.length>0){
                     this.isLoading = true;
+                    var id=val[val.length-1].properties.id;
                     var added=true;
                     var index=0;
                     this.noCell=false;
@@ -62,42 +63,51 @@
                         if(this.selectedCells.includes(this.selectedCellsOld[i]));
                         else{
                             added=false;
+                            index=i;
                         }
                     }
                     if(added){
                         //   BDATG_ORIGIN + '/all_times/' + id + '/' + this.scenario + '/' + this.variable)
-                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[val.length-1].properties.id}/${this.scenario}/${this.variable.var_id}`)
+                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
                             .catch(function (error) {
                                 console.error('fetch data error: failed to load JSON from server', error)
                                 this.isLoading = false;
                             }.bind(this)).then(function (response) {
+                                //check if cell didnt get removed while waiting for api response
+                                if(this.$store.state.ids.indexOf(id)!=-1){
                                 var dataset={data: response.data.data.values, fill: false,};
                                 this.datasets.push(dataset);
                                 this.setColors();      
                                 this.labels.push(response.data.data.keys);
                                 this.drawTimeline(response.data.data.keys);
                                 this.isLoading = false;
+                                }
                         }.bind(this));
                     }else if(this.selectedCells.length==1){
                         this.datasets.splice(0,this.datasets.length);
                         this.datasets.splice(0,this.datasets.length);
-                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${val[val.length-1].properties.id}/${this.scenario}/${this.variable.var_id}`)
+                        
+                        axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
                             .catch(function (error) {
                                 console.error('fetch data error: failed to load JSON from server', error)
                                 this.isLoading = false;
                             }.bind(this)).then(function (response) {
-                                var dataset={data: response.data.data.values, fill: false,};
-                                this.datasets.push(dataset);
-                                this.setColors();  
-                                this.labels.push(response.data.data.keys);
-                                this.drawTimeline(response.data.data.keys);
-                                this.isLoading = false;
+                                //check if cell didnt get removed while waiting for api response
+                                if(this.$store.state.ids.indexOf(id)!=-1){
+                                    var dataset={data: response.data.data.values, fill: false,};
+                                    this.datasets.push(dataset);
+                                    this.setColors();  
+                                    this.labels.push(response.data.data.keys);
+                                    this.drawTimeline(response.data.data.keys);
+                                    this.isLoading = false;
+                                }
                         }.bind(this));
                     }
                     else{
                         this.datasets.splice(index,1);
                         this.labels.splice(index,1);
-                        this.drawTimeline(this.labels[val.length-1]);
+                        this.setColors(); 
+                        this.drawTimeline(this.labels[0]);
                         this.isLoading=false;
                     }
                     this.selectedCellsOld=Array.from(this.selectedCells);
@@ -112,7 +122,7 @@
         methods: {
             setColors(){
                 for(var i=0;i<this.datasets.length;i++){
-                    this.datasets[i].borderColor=this.generateColor(this.ids[i]);
+                    this.datasets[i].borderColor=this.generateColor(this.ids[i],0);
                 }
             },
             drawTimeline(data) {

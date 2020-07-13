@@ -96,7 +96,11 @@
                         const updatedCell = Object.assign(feature, {latlng: cell.latlng});
                         const cellFeature={polygon,updatedCell};
                         //the new Cell gets added to the list of selected Cells and is the new selectedCell
-                        this.addSelectedCell(cellFeature);               
+                        if(this.selectedCells.length==5&&this.selectedCells.indexOf(updatedCell)==-1){
+                            ;
+                        }else{
+                            this.addSelectedCell(cellFeature);  
+                        }         
                     }.bind(this));
                 };
             }
@@ -184,7 +188,7 @@
                 }
             },
             polygonStyle:function(index){
-                return this.generateColor(index,this.polygons.length);
+                return this.generateColor(index,0);
             },
         }
     }

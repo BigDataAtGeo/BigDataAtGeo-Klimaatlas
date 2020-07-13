@@ -12,6 +12,7 @@ const state = {
     ids:[],
     selectedCells:[],
     polygons:[],
+    colors:[0,0,0,0,0,0,0,0,0,0],
 }
 
 const mutations = {
@@ -28,16 +29,18 @@ const mutations = {
         updateSelectionUri(state)
     },
     setSelectedCell(state, cellFeature) {
-        console.log(cellFeature);
         //remove all multiple selected cells
         if(state.selectedCells.length==1&&state.selectedCells[0]==cellFeature.updatedCell){
             state.selectedCells.splice(0,1);
             state.polygons.splice(0,1);
             state.ids.splice(0,1);
+            state.colors=[0,0,0,0,0,0,0,0,0,0];
         }else{
+            state.colors=[0,0,0,0,0,0,0,0,0,0];
             state.polygons.length=0;
             state.selectedCells.length=0;
-            state.ids.push(cellFeature.updatedCell.properties.id)
+            state.ids.length=0;
+            state.ids.push(cellFeature.updatedCell.properties.id);
             state.polygons.push(cellFeature.polygon);
             state.selectedCells.push(cellFeature.updatedCell);
         }
@@ -52,6 +55,11 @@ const mutations = {
             state.ids.splice(index,1);
             state.selectedCells.splice(index,1);
             state.polygons.splice(index,1);
+            var cellID=cellFeature.updatedCell.properties.id;
+            while(state.colors[cellID%10]!=cellFeature.updatedCell.properties.id&&cellID-11!=cellFeature.updatedCell.properties.id){
+                    cellID++; 
+            }
+            state.colors[cellID%10]=0;
         }else{
             //selectedCell gets added
             state.ids.push(cellFeature.updatedCell.properties.id)
@@ -71,5 +79,5 @@ export default new Vuex.Store({
     state,
     mutations,
     actions: {},
-    modules: {}
+    modules: {},
 })
