@@ -180,6 +180,12 @@ export const EvaAPI = {
         // });
     },
 
+
+    fetchAllSources(){
+        return axios.get(this.API_URL_FEEDS + "/fieldclimate/sources")
+            .catch(error => console.error('fetch all sources error: ' + error));
+    },
+
     fetchSources(feedId, offset, limit) {
         if (feedId === undefined || feedId === null) {
             console.error(
