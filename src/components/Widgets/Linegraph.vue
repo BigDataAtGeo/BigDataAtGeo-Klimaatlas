@@ -80,7 +80,9 @@
                                 this.setColors();      
                                 this.labels.push(response.data.data.keys);
                                 this.drawTimeline(response.data.data.keys);
-                                this.isLoading = false;
+                                if(this.datasets.length==this.selectedCells.length){
+                                    this.isLoading = false;
+                                }
                                 }
                         }.bind(this));
                     }else if(this.selectedCells.length==1){
@@ -99,7 +101,9 @@
                                     this.setColors();  
                                     this.labels.push(response.data.data.keys);
                                     this.drawTimeline(response.data.data.keys);
+                                    if(this.datasets.length==this.selectedCells.length){
                                     this.isLoading = false;
+                                }
                                 }
                         }.bind(this));
                     }
@@ -108,7 +112,9 @@
                         this.labels.splice(index,1);
                         this.setColors(); 
                         this.drawTimeline(this.labels[0]);
-                        this.isLoading=false;
+                        if(this.datasets.length==this.selectedCells.length){
+                            this.isLoading = false;
+                        }
                     }
                     this.selectedCellsOld=Array.from(this.selectedCells);
                 }else{

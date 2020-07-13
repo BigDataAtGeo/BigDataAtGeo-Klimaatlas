@@ -4,8 +4,8 @@
 
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
                     :options-style="geoJsonStyle"></l-geo-json>
-        <div v-for="polygon of this.polygons">
-            <l-polygon :lat-lngs="polygon" color="polygonStyle(ids[index])" :interactive="booleanF" :bubblingMouseEvents="booleanF"
+        <div v-for="polygon,index of this.polygons">
+            <l-polygon :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive="booleanF" :bubblingMouseEvents="booleanF"
                        :fill="booleanF" :options="geoJsonOptions"></l-polygon>
         </div>
         <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="sensorIcon" :key="sensor.id"></l-marker>
