@@ -31,6 +31,7 @@
                 labels:[],
                 selectedCellsOld:[],
                 noCell:true,
+                oldUri:"",
             };
         },
         computed: {
@@ -46,14 +47,31 @@
             ids(){
                 return this.$store.state.ids; 
             },
+            
         },
         watch: {
-            selectionUri(val) {
-                this.chartData = null;
-                this.chartOptions = null;
+            selectionUri(val){
+                if(this.uriSplitter(this.oldUri)!==this.uriSplitter(this.selectionUri)){
+                    this.chartData = null;
+                    this.chartOptions = null;
+                    this.datasets=[];
+                    this.labels=[];
+                    this.addCompleteChartdata(this.selectedCells);
+                    this.oldUri=this.selectionUri;
+                } 
             },
             selectedCells(val) {   
-            if(val.length>0){
+                this.loadChartdata(val);
+            }
+        },
+        methods: {
+            uriSplitter(value){
+                var uriSplit=value.split('/');
+                if (uriSplit.length<2) return " ";
+                return uriSplit[0]+uriSplit[1];
+            },
+            loadChartdata(val){
+                if(val.length>0){
                     this.isLoading = true;
                     var id=val[val.length-1].properties.id;
                     var added=true;
@@ -123,9 +141,34 @@
                     this.isLoading = true;
                     this.noCell=true;
                 }
-            }
-        },
-        methods: {
+            },
+            addCompleteChartdata(allCells){
+                if(allCells.length!=0){
+                    this.isLoading=true;
+                    this.noCell=false;
+                for(var i=0;i<allCells.length;i++){
+                    var id=allCells[i].properties.id;
+                    axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
+                            .catch(function (error) {
+                                console.error('fetch data error: failed to load JSON from server', error)
+                                this.isLoading = false;
+                            }.bind(this)).then(function (response) {
+                                //check if cell didnt get removed while waiting for api response
+                                if(this.$store.state.ids.indexOf(id)!=-1){
+                                var dataset={data: response.data.data.values, fill: false,};
+                                this.datasets.push(dataset);
+                                this.setColors();      
+                                this.labels.push(response.data.data.keys);
+                                this.drawTimeline(response.data.data.keys);
+                                if(this.datasets.length==this.selectedCells.length){
+                                    this.isLoading = false;
+                                }
+                                }
+                        }.bind(this));
+                }
+                this.selectedCellsOld=Array.from(this.selectedCells);
+                }  
+            },
             setColors(){
                 for(var i=0;i<this.datasets.length;i++){
                     this.datasets[i].borderColor=this.generateColor(this.ids[i],0);

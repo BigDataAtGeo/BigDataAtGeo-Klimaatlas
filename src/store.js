@@ -44,6 +44,8 @@ const mutations = {
             state.polygons.push(cellFeature.polygon);
             state.selectedCells.push(cellFeature.updatedCell);
         }
+        localStorage.polygons=JSON.stringify(state.polygons);
+        localStorage.selectedCells=JSON.stringify(state.selectedCells);
     },
     addSelectedCell(state,cellFeature){
         //check if array already contains cell
@@ -66,6 +68,8 @@ const mutations = {
             state.selectedCells.push(cell);
             state.polygons.push(polygon);
         }
+        localStorage.polygons=JSON.stringify(state.polygons);
+        localStorage.selectedCells=JSON.stringify(state.selectedCells);
     },
 }
 

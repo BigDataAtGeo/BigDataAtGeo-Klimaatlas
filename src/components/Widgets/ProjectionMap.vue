@@ -1,13 +1,15 @@
 <template>
     <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom" :center="mapOptions.center">
         <l-tile-layer :url="url" :attribution="attribution"/>
-
+        <l-layer-group layerType="overlay">
+            <div v-if="geojson">
+            <l-polygon v-for="polygon,index of this.polygons" :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive="booleanF" :bubblingMouseEvents="booleanF"
+                       :fill="booleanF" :options="geoJsonOptions"></l-polygon>
+            </div>
+        </l-layer-group>
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
                     :options-style="geoJsonStyle"></l-geo-json>
-        <div v-for="polygon,index of this.polygons">
-            <l-polygon :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive="booleanF" :bubblingMouseEvents="booleanF"
-                       :fill="booleanF" :options="geoJsonOptions"></l-polygon>
-        </div>
+        
         <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="sensorIcon" :key="sensor.id"></l-marker>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
@@ -23,7 +25,7 @@
 
 <script>
     import {mapState, mapMutations, mapGetters} from "vuex";
-    import {LMap, LTileLayer, LRectangle, LGeoJson, LPopup, LControl, LPolygon, LMarker} from "vue2-leaflet";
+    import {LMap, LTileLayer, LRectangle, LGeoJson, LLayerGroup, LPopup, LControl, LPolygon, LMarker} from "vue2-leaflet";
     import { icon } from 'leaflet';
     import {EvaAPI} from "../../eva/eva-api";
     import axios from 'axios';
@@ -42,6 +44,19 @@
             LControl,
             LPolygon,
             LMarker,
+            LLayerGroup,
+        },
+        created :function(){
+            if(localStorage.selectedCells){
+                var selectedCells=JSON.parse(localStorage.getItem('selectedCells'));
+                var polygons=JSON.parse(localStorage.getItem('polygons'));
+                for(var i=0; i<selectedCells.length;i++){
+                    var updatedCell = selectedCells[i];
+                    var polygon = polygons[i];
+                    var cellFeature = {polygon, updatedCell};
+                    this.addSelectedCell(cellFeature);
+                }
+            }
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
@@ -123,6 +138,7 @@
                 this.$forceNextTick(() => {
                     this.isLoading = false;
                 });
+                this.reloadPolygons();
             },
         },
         data() {
@@ -220,6 +236,11 @@
             polygonStyle:function(index){
                 return this.generateColor(index,0);
             },
+            reloadPolygons: function(){
+                var polygonscopy= this.polygons;
+                this.$store.state.polygons=[];
+                this.$store.state.polygons=polygonscopy;
+            }
         }
     }
 </script>

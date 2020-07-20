@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="col-md-2 form-group" id="colElement">
-                <select id="select-variable" class="form-control form-control-sm" @change="setVariable" :disabled="index.variables === null">
+                <select id="select-variable" class="form-control form-control-sm"  @change="setVariable" :disabled="index.variables === null" v-model="this.variableName">
                     <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{ variable.var }}</option>
                 </select>
             </div>
@@ -22,8 +22,8 @@
                     <label for="select-scenario" class="h5">Szenario</label>
             </div>
             <div class="col-md-1 form-group" id="colElement">
-                <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null" >
-                    <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
+                <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null" :value="$store.state.scenario" >
+                    <option v-for="scenario in index.scenarios"  :key="scenario">{{ scenario }}</option>
                 </select>
             </div>
             <div class="col-md-1 d-flex justify-content-end" id="colElement">
@@ -58,13 +58,12 @@
                     "scenarios": null,
                     "variables": null,
                     "timeranges": null,
-                    
                 },
                 "timerangeValue":null,
             }
         },
-        ready: function(){
-            this.timerangeValue=valueStart();
+        created: function(){
+            this.timerangeValue=this.valueStart();
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange"]),
@@ -75,31 +74,41 @@
             maxRange: function(){
                 var value=this.index.timeranges[this.index.timeranges.length-1];
                 return value.slice(-4);
+            },
+            variableName: function(){
+                return this.$store.state.variable.var;
             }
         },
         methods: { // https://vuex.vuejs.org/guide/forms.html
             // ...mapMutations(["setVariable"])
             setScenario(e) {
                 this.$store.commit("setScenario", e.target.value)
+                localStorage.scenario=e.target.value;
             },
             setVariable(e) {
                 const variable = this.index.variables.find(variable => variable.var_id === e.target.value);
-                this.$store.commit("setVariable", variable)
+                this.$store.commit("setVariable", variable);
+                localStorage.setItem('variables', JSON.stringify(variable));
             },
             setTimerange(e) {
                 const timerange = this.index.timeranges[e.target.value];
-                
                 this.selectedTimerange = timerange;
                 this.$store.commit("setTimerange", timerange)
+                localStorage.timerange=timerange;
             },
             liveSlider(e){
                 this.timerangeValue=e.target.value;
                 const timerange = this.index.timeranges[e.target.value];
                 this.selectedTimerange = timerange;
             },
-            valueStart: function(){
+            valueStart(){
+                if(localStorage.timerange){
+                    var x=localStorage.timerange.substring(0,4);
+                    var x=x-1970;
+                    return x;
+                }
                 var year = new Date().getYear()
-                var year =year-50;
+                var year =year-70;
                 return year;
             }
         },
@@ -110,12 +119,21 @@
                     var year = new Date().getYear()
                     var year =year-70;
                     this.index = response.data;
-                    this.$store.commit("setScenario", this.index.scenarios[0]);
-                    this.$store.commit("setVariable", this.index.variables[0]);
-                    this.$store.commit("setTimerange", this.index.timeranges[year]);
-                    this.selectedTimerange = this.index.timeranges[year];
+                    if(localStorage.scenario){
+                        this.$store.commit("setScenario", localStorage.scenario);
+                    }else this.$store.commit("setScenario", this.index.scenarios[0]);
+                    if(localStorage.variables){
+                        this.$store.commit("setVariable", JSON.parse(localStorage.getItem('variables')));
+                    }else this.$store.commit("setVariable", this.index.variables[0]);
+                    if(localStorage.timerange){
+                        this.$store.commit("setTimerange", localStorage.timerange);
+                        this.selectedTimerange = localStorage.timerange;
+                    }else{
+                        this.selectedTimerange = this.index.timeranges[year];
+                        this.$store.commit("setTimerange", this.index.timeranges[year]);
+                    } 
                 })
-                .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
+                .catch((error) => console.error("fetch data error: failed to load JSON from server", error));     
         }
     }
 </script>
