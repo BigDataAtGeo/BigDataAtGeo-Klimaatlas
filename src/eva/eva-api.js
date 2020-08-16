@@ -247,7 +247,7 @@ export const EvaAPI = {
                     1);
             }
             if (timespanInSeconds > this.AGGREGATION_BOUNDARY_L0) {
-                return EvaApi.fetchAggregatedData(feedId,
+                return this.fetchAggregatedData(feedId,
                     sourceId,
                     channels,
                     firstTSDate,

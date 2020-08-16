@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { polygon } from 'leaflet'
+import {polygon} from 'leaflet'
 
 Vue.use(Vuex)
 
@@ -9,10 +9,11 @@ const state = {
     variable: null,
     timerange: null,
     selectionUri: null,
-    ids:[],
-    selectedCells:[],
-    polygons:[],
-    colors:[0,0,0,0,0,0,0,0,0,0],
+    ids: [],
+    selectedCells: [],
+    selectedSensors: [],
+    polygons: [],
+    colors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
 const mutations = {
@@ -28,48 +29,57 @@ const mutations = {
         state.timerange = timerange;
         updateSelectionUri(state)
     },
+    addSelectedSensor(state, sensor) {
+        for (let x of state.selectedSensors)
+            if (x.id === sensor.id)
+                return;
+        state.selectedSensors.push(sensor);
+    },
+    removeSelectedSensor(state, sensor) {
+        state.selectedSensors = state.selectedSensors.filter(x => x.id !== sensor.id);
+    },
     setSelectedCell(state, cellFeature) {
         //remove all multiple selected cells
-        if(state.selectedCells.length==1&&state.selectedCells[0]==cellFeature.updatedCell){
-            state.selectedCells.splice(0,1);
-            state.polygons.splice(0,1);
-            state.ids.splice(0,1);
-            state.colors=[0,0,0,0,0,0,0,0,0,0];
-        }else{
-            state.colors=[0,0,0,0,0,0,0,0,0,0];
-            state.polygons.length=0;
-            state.selectedCells.length=0;
-            state.ids.length=0;
+        if (state.selectedCells.length == 1 && state.selectedCells[0] == cellFeature.updatedCell) {
+            state.selectedCells.splice(0, 1);
+            state.polygons.splice(0, 1);
+            state.ids.splice(0, 1);
+            state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        } else {
+            state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            state.polygons.length = 0;
+            state.selectedCells.length = 0;
+            state.ids.length = 0;
             state.ids.push(cellFeature.updatedCell.properties.id);
             state.polygons.push(cellFeature.polygon);
             state.selectedCells.push(cellFeature.updatedCell);
         }
-        localStorage.polygons=JSON.stringify(state.polygons);
-        localStorage.selectedCells=JSON.stringify(state.selectedCells);
+        localStorage.polygons = JSON.stringify(state.polygons);
+        localStorage.selectedCells = JSON.stringify(state.selectedCells);
     },
-    addSelectedCell(state,cellFeature){
+    addSelectedCell(state, cellFeature) {
         //check if array already contains cell
-        var cell=cellFeature.updatedCell;
-        var polygon=cellFeature.polygon;
-        if(state.selectedCells.indexOf(cell)!=-1) {
+        var cell = cellFeature.updatedCell;
+        var polygon = cellFeature.polygon;
+        if (state.selectedCells.indexOf(cell) != -1) {
             //if cell was already selected remove form list
-            var index=state.selectedCells.indexOf(cell);
-            state.ids.splice(index,1);
-            state.selectedCells.splice(index,1);
-            state.polygons.splice(index,1);
-            var cellID=cellFeature.updatedCell.properties.id;
-            while(state.colors[cellID%10]!=cellFeature.updatedCell.properties.id&&cellID-11!=cellFeature.updatedCell.properties.id){
-                    cellID++; 
+            var index = state.selectedCells.indexOf(cell);
+            state.ids.splice(index, 1);
+            state.selectedCells.splice(index, 1);
+            state.polygons.splice(index, 1);
+            var cellID = cellFeature.updatedCell.properties.id;
+            while (state.colors[cellID % 10] != cellFeature.updatedCell.properties.id && cellID - 11 != cellFeature.updatedCell.properties.id) {
+                cellID++;
             }
-            state.colors[cellID%10]=0;
-        }else{
+            state.colors[cellID % 10] = 0;
+        } else {
             //selectedCell gets added
             state.ids.push(cellFeature.updatedCell.properties.id)
             state.selectedCells.push(cell);
             state.polygons.push(polygon);
         }
-        localStorage.polygons=JSON.stringify(state.polygons);
-        localStorage.selectedCells=JSON.stringify(state.selectedCells);
+        localStorage.polygons = JSON.stringify(state.polygons);
+        localStorage.selectedCells = JSON.stringify(state.selectedCells);
     },
 }
 
