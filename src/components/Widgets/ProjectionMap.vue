@@ -1,15 +1,12 @@
 <template>
     <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom" :center="mapOptions.center">
-        <l-tile-layer :url="url" :attribution="attribution"/>
-        <l-layer-group layerType="overlay">
-            <div v-if="geojson">
-            <l-polygon v-for="polygon,index of this.polygons" :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive="booleanF" :bubblingMouseEvents="booleanF"
-                       :fill="booleanF" :options="geoJsonOptions"></l-polygon>
-            </div>
-        </l-layer-group>
+        <l-tile-layer :url="url" :attribution="attribution"/>        
         <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
-                    :options-style="geoJsonStyle"></l-geo-json>
-        
+                    :options-style="geoJsonStyle" style="z-index: 250"></l-geo-json>    
+        <l-layer-group v-if="geojson">
+            <l-polygon v-for="(polygon,index) of this.polygons" :key="index" :lat-lngs="polygon" :color="polygonStyle(ids[index])" :interactive=false :bubblingMouseEvents=false
+                    :fill=false :options="geoJsonOptions"></l-polygon>
+        </l-layer-group>
         <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="sensorIcon" :key="sensor.id"></l-marker>
         <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
             <div>
@@ -146,9 +143,7 @@
                 geojson: null,
                 legend: null,
                 legendColorMap: null,
-                loading: true,
-                booleanF: false,
-                booleanT: true,
+                loading: true,               
                 sensors: [],
                 sensorIcon: icon({
                     iconUrl: "assets/sensor.svg",

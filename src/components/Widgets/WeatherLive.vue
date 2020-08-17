@@ -48,6 +48,12 @@
                 weather: {},
             }
         },
+        props: {
+            CellIndex:{
+                required:true,
+                type:Number,
+            },
+        },
         computed: {
             ...mapState(["scenario", "variable", "timerange", "selectedCells"]),
             weatherIconURL: function () {
@@ -67,9 +73,9 @@
                 this.weather = response;
             },
             loadWeather() {
-                if (this.selectedCells.length>0) {
-                    axios.get('https://api.openweathermap.org/data/2.5/weather?lat=' + this.selectedCells[this.selectedCells.length-1].latlng.lat + '&lon=' +
-                        this.selectedCells[this.selectedCells.length-1].latlng.lng + '&units=metric&lang=de&appid=e1281e3f9e6ce6ea4db955a47f9f2fca&lang=de')
+                if (this.CellIndex>=0) {
+                    axios.get('https://api.openweathermap.org/data/2.5/weather?lat=' + this.selectedCells[this.CellIndex].latlng.lat + '&lon=' +
+                        this.selectedCells[this.CellIndex].latlng.lng + '&units=metric&lang=de&appid=e1281e3f9e6ce6ea4db955a47f9f2fca&lang=de')
                         .then(response => this.weather = response.data)
                         .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
                 } else {

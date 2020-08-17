@@ -15,7 +15,7 @@
 <!--            <Linegraph/>-->
 <!--        </WidgetShell>-->
         <WidgetShell widgetName="Wetter (Live)" class="row justify-content-end rounded p-0">
-           <WeatherLive/>
+           <WeatherCarousel/>
         </WidgetShell>
     </div>
 
@@ -32,11 +32,11 @@
     import Linegraph from "./Widgets/Linegraph";
     import ProjectionMap from "./Widgets/ProjectionMap";
     import WidgetShell from "./Widgets/WidgetShell";
-    import WeatherLive from "./Widgets/WeatherLive";
+    import WeatherCarousel from "./Widgets/WeatherCarousel";
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherLive}
+        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel}
     }
 </script>
 

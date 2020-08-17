@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="col-md-2 form-group" id="colElement">
-                <select id="select-variable" class="form-control form-control-sm"  @change="setVariable" :disabled="index.variables === null" v-model="this.variableName">
+                <select id="select-variable" class="form-control form-control-sm"  @change="setVariable" :disabled="index.variables === null" :value="$store.state.variable.var_id" >
                     <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{ variable.var }}</option>
                 </select>
             </div>
@@ -27,7 +27,51 @@
                 </select>
             </div>
             <div class="col-md-1 d-flex justify-content-end" id="colElement">
-                <label for="select-timerange" class="h5">Timerange</label>
+                <label for="select-timerange" class="h5">Zeitspanne</label>
+            </div>
+            <div class="col-md-3 form-group" id="colElement">
+                <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
+                <br>
+                <div id="timerangeLabels">
+                    <label class="float-left">{{minRange}}</label>
+                    <label class="float-right">{{maxRange}}</label>
+                </div>
+            </div>
+            <div class="col-md-2" id="colElement">
+                <div class="pl-3 float-left"><span class="h6">Aktuell: </span><br>
+                <span class="h6">{{selectedTimerange}}</span></div>
+                <div class=" float-right align-items-center"> <b-button v-b-modal.modal-2 class="btn btn-light" v-if="this.$store.state.variable!=null"><b-icon icon="gear-fill"></b-icon></b-button></div>            
+            </div>
+        </div>
+        <b-modal id="modal-2" :title="'Einstellungen'" size="xl" :hide-footer="true" :hide-header="true"  >
+            <div class="row pb-5 d-flex justify-content-center">
+                <div class="text-center">
+                    <h2>Einstellungen</h2>
+                </div>
+            </div>
+            <div class="row pb-5 align-items-center">
+                <div class="col-md-1 d-flex justify-content-end" id="colElement"></div>
+                <div class="col-md-2" id="colElement">
+                <label for="select-variable" class="h5">Variable</label>       
+                </div>
+                <div class="col-md-4 form-group" id="colElement">
+                <select id="select-variable" class="form-control form-control-sm"  @change="setVariable" :disabled="index.variables === null" :value="$store.state.variable.var_id" >
+                    <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{ variable.var }}</option>
+                </select>
+                </div>
+                <div class="col-md-1 d-flex justify-content-end" id="colElement"></div>
+                <div class="col-md-1 d-flex justify-content-end" id="colElement">
+                    <label for="select-scenario" class="h5">Szenario</label>
+                </div>
+                <div class="col-md-1 form-group" id="colElement">
+                    <select id="select-scenario" class="form-control form-control-sm" @change="setScenario" :disabled="index.scenarios === null" :value="$store.state.scenario" >
+                        <option v-for="scenario in index.scenarios"  :key="scenario">{{ scenario }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row align-items-center justify-content-center pb-5">
+                <div class="col-md-1 d-flex justify-content-end" id="colElement">
+                <label for="select-timerange" class="h5">Zeitspanne</label>
             </div>
             <div class="col-md-4 form-group" id="colElement">
                 <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm" @change="setTimerange" :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
@@ -37,20 +81,35 @@
                     <label class="float-right">{{maxRange}}</label>
                 </div>
             </div>
-            <div class="col-md-1" id="colElement">
-                <span class="h6">Aktuell: </span><br>
-                <span class="h6">{{selectedTimerange}}</span>
+            <div class="col-md-2" id="colElement">
+                <div class="pl-3 float-left"><span class="h6">Aktuell: </span><br>
+                <span class="h6">{{selectedTimerange}}</span></div>
             </div>
-        </div>
+            </div>
+            <div class="row align-items-center ">
+                <div class="col-md-12 text-center"> <h4 class="pb-3">Ausgewählte Zellen:</h4> </div>
+                <div v-for="(cell,index) in this.selectedCells" :key="index" class="col-md-6 text-center pt-0 pb-0">
+                    <h5 :style="{color: generateColor(cell.properties.id,0)}">{{index}}:     {{cell.latlng.lat | round}} , {{cell.latlng.lng | round}} </h5>
+                </div>
+            </div>
+            <div class="row flex-row-reverse">
+                <div class="col-md-2"><b-button class="btn"  @click="$bvModal.hide('modal-2')">Schließen</b-button></div>               
+                <div class="col-md-4"><b-button class="btn" v-on:click="resetSettings">Einstellungen und Zellen zurücksetzten</b-button> </div>
+                
+            </div>
+        </b-modal>
     </div>
 </template>
 
 <script>
     import {mapState} from 'vuex';
+    import { mapMutations } from 'vuex'
     import axios from 'axios';
+    import { colorGenerate } from '../mixins/colorGenerate';
 
     export default {
         name: 'SettingsSelection',
+        mixins:[colorGenerate],
         data() {
             return {
                 "selectedTimerange": null,
@@ -67,6 +126,7 @@
         },
         computed: {
             ...mapState(["scenario", "variable", "timerange"]),
+            
             minRange: function(){
                 var value= this.index.timeranges[0].toString();
                 return value.slice(0,4);
@@ -77,7 +137,10 @@
             },
             variableName: function(){
                 return this.$store.state.variable.var;
-            }
+            },
+            selectedCells() {
+                return this.$store.state.selectedCells;
+            },
         },
         methods: { // https://vuex.vuejs.org/guide/forms.html
             // ...mapMutations(["setVariable"])
@@ -110,7 +173,18 @@
                 var year = new Date().getYear()
                 var year =year-70;
                 return year;
+            },
+            resetSettings:function(){
+                //resetting all the settings and celected cells
+                var year = new Date().getYear()
+                var year =year-70;
+                this.$store.commit("setScenario", this.index.scenarios[0]);
+                this.$store.commit("setVariable", this.index.variables[0]);
+                this.selectedTimerange = this.index.timeranges[year];
+                this.$store.commit("setTimerange", this.index.timeranges[year]);
+                this.$store.commit("resetCells");
             }
+            
         },
         mounted() {
             axios.get(process.env.VUE_APP_BDATA_API + "/index")
@@ -134,6 +208,11 @@
                     } 
                 })
                 .catch((error) => console.error("fetch data error: failed to load JSON from server", error));     
+        },
+        filters:{
+            round: function(value){
+                return value.toFixed(2);
+            }
         }
     }
 </script>
@@ -143,8 +222,8 @@
     padding: 5px;
 }
 #timerangeLabels{
-    padding-top:-8%;
-    margin-top: -5%;
+    padding-top:-10%;
+    margin-top: -8%;
 }
 div.container {
     background-color: rgba(255, 255, 255, 0.75);
