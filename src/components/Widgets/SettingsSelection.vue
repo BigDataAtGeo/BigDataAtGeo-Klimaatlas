@@ -89,7 +89,7 @@
             <div class="row align-items-center ">
                 <div class="col-md-12 text-center"> <h4 class="pb-3">Ausgewählte Zellen:</h4> </div>
                 <div v-for="(cell,index) in this.selectedCells" :key="index" class="col-md-6 text-center pt-0 pb-0">
-                    <h5 :style="{color: generateColor(cell.properties.id,0)}">{{index}}:     {{cell.latlng.lat | round}} , {{cell.latlng.lng | round}} </h5>
+                    <h5> <b-icon icon="square-fill" :style="{color: generateColor(cell.properties.id,0)}"></b-icon> {{index}}:     {{cell.latlng.lat | round}} , {{cell.latlng.lng | round}} </h5>
                 </div>
             </div>
             <div class="row flex-row-reverse">
@@ -178,11 +178,14 @@
                 //resetting all the settings and celected cells
                 var year = new Date().getYear()
                 var year =year-70;
+                this.$store.commit("resetCells");
                 this.$store.commit("setScenario", this.index.scenarios[0]);
                 this.$store.commit("setVariable", this.index.variables[0]);
                 this.selectedTimerange = this.index.timeranges[year];
                 this.$store.commit("setTimerange", this.index.timeranges[year]);
-                this.$store.commit("resetCells");
+                
+                
+                
             }
             
         },

@@ -60,7 +60,8 @@
                     this.oldUri=this.selectionUri;
                 } 
             },
-            selectedCells(val) {   
+            selectedCells(val) {
+                console.log("watcher");   
                 this.loadChartdata(val);
             }
         },
@@ -167,7 +168,10 @@
                         }.bind(this));
                 }
                 this.selectedCellsOld=Array.from(this.selectedCells);
-                }  
+                } 
+                else{
+                    this.noCell=true;
+                } 
             },
             setColors(){
                 for(var i=0;i<this.datasets.length;i++){
