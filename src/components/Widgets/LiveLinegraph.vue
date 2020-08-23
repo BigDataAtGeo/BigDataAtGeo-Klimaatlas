@@ -1,14 +1,32 @@
 <template>
   <div class="container">
-    <line-chart id="line-chart"
-                v-if="chartData"
-                :chartData="chartData"
-                :options="chartOptions"/>
-    <button v-for="sensor of this.selectedSensors" class="btn remove-sensor-button" :key="sensor.id"
-            v-on:click="removeSelectedSensor(sensor)"
-            :style="{backgroundColor: sensor.color, color: 'white'}">
-      {{ sensor.id }} <span class="h5">&times;</span>
-    </button>
+    <div v-if="sensorVariables.hasOwnProperty(sensor.id)">
+      <div class="form-group d-flex flex-row align-items-center">
+        <div class="flex">
+          <button class="btn remove-sensor-button"
+                  v-on:click="removeSelectedSensor(sensor)"
+                  :style="{backgroundColor: sensor.color, color: 'white'}">
+            {{ sensor.id }} <span class="h5">&times;</span>
+          </button>
+        </div>
+        <div class="flex-grow-1">
+          <select class="form-control form-control-sm" id="variable-select" v-model="selectedChannel">
+            <option disabled selected value="">Variable auswählen</option>
+            <option v-for="(channel,index) of sensor.channels" :key="index" v-bind:value="channel">{{
+                channel
+              }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <line-chart id="line-chart"
+                  v-if="chartData"
+                  :chartData="chartData"
+                  :options="chartOptions"/>
+    </div>
+    <div v-else>
+      <h3>Unbekannte Sensor-ID '{{ sensor.id }}'</h3>
+    </div>
   </div>
 </template>
 
@@ -21,16 +39,30 @@ import 'chartjs-plugin-zoom';
 export default {
   name: "LiveLinegraph",
   components: {LineChart},
+  props: {
+    sensor: {
+      required: true,
+      type: Object,
+    },
+  },
   data() {
     return {
       chartData: null,
       chartOptions: null,
+      lineTimes: {},
       lineData: {},
-      lines: [],
+      line: null,
       defaultTimespan: 60 * 24 * 7,
       startTime: null,
       endTime: null,
       aggregation: false,
+      selectedChannel: "",
+      sensorVariables: {
+        "00206B4B": {},
+        "000017E0": {},
+        "000017DD": {},
+        "000017DE": {},
+      }
     }
   },
   computed: {
@@ -45,51 +77,50 @@ export default {
     },
   },
   watch: {
-    selectedSensors: function () {
-      this.lines = []
-      for (let sensor of this.selectedSensors) {
-        this.lines.push({
-          "feedId": "fieldclimate",
-          "sourceId": sensor.id,
-          "channel": "Precipitation",
-          "component": "value",
-          "id": "fieldclimate:" + sensor.id + ":Precipitation:value",
-          "color": sensor.color
-        })
-      }
+    selectedChannel: function () {
+      this.setLine();
       this.loadLineDate();
     }
   },
-  mounted() {
-    this.endTime = Date.now();
-    this.startTime = new Date(this.endTime - this.defaultTimespan * 60 * 1000);
-  },
   methods: {
     ...mapMutations(["removeSelectedSensor"]),
+    setLine() {
+      if (!this.lineTimes.hasOwnProperty(this.selectedChannel)) {
+        this.lineTimes[this.selectedChannel] = {
+          startTime: new Date(Date.now() - this.defaultTimespan * 60 * 1000),
+          endTime: Date.now(),
+        };
+      }
+      this.line = {
+        "feedId": "fieldclimate",
+        "sourceId": this.sensor.id,
+        "channel": this.selectedChannel,
+        "component": "value",
+        "id": "fieldclimate:" + this.sensor.id + ":" + this.selectedChannel + ":value",
+        "color": this.sensor.color
+      };
+    },
     loadLineDate() {
-      const promises = [];
-      this.lines.forEach(line => {
-        promises.push(EvaAPI.fetchDataByTimespan(line.feedId, line.sourceId, line.channel, this.startTime, this.endTime, !this.aggregation)
-            .then(data => {
-              this.lineData[line.id] = this.parseLineData(data.data.data, line.id)
-            })
-        );
-      });
-      Promise.all(promises).then(() => this.drawGraph());
+      EvaAPI.fetchDataByTimespan(
+          this.line.feedId,
+          this.line.sourceId,
+          this.line.channel,
+          this.lineTimes[this.selectedChannel].startTime,
+          this.lineTimes[this.selectedChannel].endTime,
+          !this.aggregation)
+          .then(data => {
+            this.lineData[this.selectedChannel] = this.parseLineData(data.data.data, this.line.id)
+          }).then(() => this.drawGraph());
     },
     drawGraph() {
-      const datasets = []
-      for (let line of this.lines) {
-        datasets.push(this.lineData[line.id])
-      }
       this.chartData = {
-        datasets: datasets,
+        datasets: [this.lineData[this.selectedChannel]],
       };
       this.chartOptions = {
         title: {
           display: true,
           // fontSize: 20,
-          text: "Niederschlag (mm)"
+          text: this.selectedChannel,
         },
         legend: {
           display: false,
@@ -155,22 +186,22 @@ export default {
     chartDragComplete(chart) {
       const startTime = new Date(chart.chart.scales["x-axis-0"].min);
       const endTime = new Date(chart.chart.scales["x-axis-0"].max);
-      if (startTime < this.startTime || endTime > this.endTime) {
-        this.startTime = startTime;
-        this.endTime = endTime;
+      if (startTime < this.lineTimes[this.selectedChannel].startTime || endTime > this.lineTimes[this.selectedChannel].endTime) {
+        this.lineTimes[this.selectedChannel].startTime = startTime;
+        this.lineTimes[this.selectedChannel].endTime = endTime;
         this.loadLineDate(startTime, endTime);
       }
     },
     parseLineData(data, lineId) {
       // Find the config that corresponds to lineId in order to know
       // which channel/component we are looking for in the data
-      var lineConfig = this.lines.find(line => line.id === lineId);
+      // var lineConfig = this.lines.find(line => line.id === lineId);
 
       const result = {
         label: lineId,
         data: [],
         // backgroundColor: lineConfig.color,
-        borderColor: lineConfig.color,
+        borderColor: this.line.color,
         borderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 5,
@@ -181,7 +212,7 @@ export default {
         result.data.push({
           t: new Date(element.timestamp),
           // convert to number with '+'
-          y: +element.channels[lineConfig.channel][lineConfig.component]
+          y: +element.channels[this.line.channel][this.line.component]
         })
       }
 

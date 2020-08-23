@@ -9,7 +9,7 @@
     </div>
     <div class="float-right" id="widgets-container">
         <WidgetShell widgetName="Graph (Live)" class="row justify-content-end rounded p-0" >
-            <LiveLinegraph/>
+            <LiveLineCarousel/>
         </WidgetShell>
 <!--        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">-->
 <!--            <Linegraph/>-->
@@ -28,15 +28,17 @@
 
 <script>
     import SettingsSelection from "./Widgets/SettingsSelection";
-    import LiveLinegraph from "./Widgets/LiveLinegraph";
     import Linegraph from "./Widgets/Linegraph";
     import ProjectionMap from "./Widgets/ProjectionMap";
     import WidgetShell from "./Widgets/WidgetShell";
     import WeatherCarousel from "./Widgets/WeatherCarousel";
+    import LiveLineCarousel from "@/components/Widgets/LiveLineCarousel";
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel}
+        components: {
+          LiveLineCarousel,
+          SettingsSelection, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel}
     }
 </script>
 
@@ -80,7 +82,7 @@ body {
         display:flex;
         flex-direction: column;
         justify-self: end;
-        width: 20vw;
+        width: 25vw;
         margin-right: 1vh;
         margin-top: 10vh;
     }
