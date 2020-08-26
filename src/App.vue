@@ -23,7 +23,7 @@
                             <img src="assets/adjust-icon.svg" width="40px" height="40px" alt="Einstellungen">
                         </div>
                         <div class="col-11">
-                            Die Auswahl von <u>Variable</u>, <u>Szenario</u> und <u>Zeitram</u> kann über die Auswahl am
+                            Die Auswahl von <u>Variable</u>, <u>Szenario</u> und <u>Zeitraum</u> kann über die Auswahl am
                             oberen Rand des Bildschirms eingestellt werden.
                         </div>
                     </div>

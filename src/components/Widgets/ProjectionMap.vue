@@ -176,7 +176,8 @@ export default {
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
-          color: this.generateColor(id++, 0)
+          color: this.generateColor(id++, 0),
+          channels: Object.keys(sensorData.recentData),
         })
       }
     })

@@ -54,8 +54,9 @@ export default {
   background-color: rgba(255, 255, 255, 0.75);
 }
 #widgetContent{
-  width: 21vw;
+  width: 100%;
+  min-height: 8vh;
   overflow: hidden;
-  max-height: 40vh;
+  margin: 0;
 }
 </style>
