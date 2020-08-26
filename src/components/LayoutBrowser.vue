@@ -40,7 +40,7 @@
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel,LiveLineCarousel, VariableInfo}
+        components: {SettingsSelection, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel,LiveLineCarousel, VariableInfo}
     }
 </script>
 
