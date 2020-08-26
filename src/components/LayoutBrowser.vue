@@ -14,8 +14,11 @@
 <!--        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">-->
 <!--            <Linegraph/>-->
 <!--        </WidgetShell>-->
-        <WidgetShell widgetName="Wetter (Live)" class="row justify-content-end rounded p-0">
+        <WidgetShell v-if="this.$store.state.selectedCells.length!=0" widgetName="Wetter (Live)" class="row justify-content-end rounded p-0">
            <WeatherCarousel/>
+        </WidgetShell>
+        <WidgetShell widgetName="Variable" class="row justify-content-end rounded p-0">
+            <VariableInfo :variable="this.$store.state.variable"></VariableInfo>
         </WidgetShell>
     </div>
 
@@ -33,10 +36,12 @@
     import ProjectionMap from "./Widgets/ProjectionMap";
     import WidgetShell from "./Widgets/WidgetShell";
     import WeatherCarousel from "./Widgets/WeatherCarousel";
+    import VariableInfo from "./Widgets/VariableInfo";
+    
 
     export default {
         name: "LayoutBrowser",
-        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel}
+        components: {SettingsSelection, LiveLinegraph, Linegraph, ProjectionMap, WidgetShell, WeatherCarousel, VariableInfo}
     }
 </script>
 

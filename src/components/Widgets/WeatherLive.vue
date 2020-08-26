@@ -8,7 +8,7 @@
                 </b-col>
                 <b-col>
                     <h6>{{weather.weather[0].description}}</h6>
-                    <img class="crop" :src=this.weatherIconURL alt="">
+                    <img class="crop" :src="this.weatherIconURL" alt="">
                 </b-col>
             </b-row>
             <b-row>

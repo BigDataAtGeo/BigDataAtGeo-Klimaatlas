@@ -1,17 +1,15 @@
 <template>
     <div class="container">
-        <div class="row align-items-center" v-if="this.index.variables!=null&&this.index.scenarios!=null">
+        <div class="row align-items-center rounded" v-if="this.index.variables!=null&&this.index.scenarios!=null">
             <div class="col-md-1 pr-0 pb-0 pt-0">
-                <img src="assets/BDAGlogo.svg" width="60px" height="60px">
+                <img src="assets/BDAGlogo.svg" width="50px" height="60px">
+                <b-button v-b-modal.m3 class="btn btn-light"><b-icon icon="info-circle-fill"></b-icon></b-button>
+                <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
+                    <Datengrundlage/>
+                </b-modal>   
             </div>
-            <div class="col-md-1" id="colElement">
+            <div class="col-md-1" id="colElement">                                   
                 <label for="select-variable" class="h5">Variable</label>
-                <div class="float-right">
-                    <b-button v-b-modal.modal-1 class="btn btn-light p-0" v-if="this.$store.state.variable!=null"><b-icon icon="question-circle"></b-icon></b-button>
-                        <b-modal id="modal-1" size="lg" :title="this.$store.state.variable.var" :hide-footer="true" >
-                    <span v-html="this.$store.state.variable.description"></span>
-                    </b-modal>
-                </div>
             </div>
             <div class="col-md-2 form-group" id="colElement">
                 <select id="select-variable" class="form-control form-control-sm"  @change="setVariable" :disabled="index.variables === null" :value="$store.state.variable.var_id" >
@@ -40,8 +38,9 @@
             <div class="col-md-2" id="colElement">
                 <div class="pl-3 float-left"><span class="h6">Aktuell: </span><br>
                 <span class="h6">{{selectedTimerange}}</span></div>
-                <div class=" float-right align-items-center"> <b-button v-b-modal.modal-2 class="btn btn-light" v-if="this.$store.state.variable!=null"><b-icon icon="gear-fill"></b-icon></b-button></div>            
+                <div class=" float-right align-items-center mr-3"> <b-button v-b-modal.modal-2 class="btn btn-light" v-if="this.$store.state.variable!=null"><b-icon icon="gear-fill"></b-icon></b-button></div>            
             </div>
+            
         </div>
         <b-modal id="modal-2" :title="'Einstellungen'" size="xl" :hide-footer="true" :hide-header="true"  >
             <div class="row pb-5 d-flex justify-content-center">
@@ -92,10 +91,11 @@
                     <h5> <b-icon icon="square-fill" :style="{color: generateColor(cell.properties.id,0)}"></b-icon> {{index}}:     {{cell.latlng.lat | round}} , {{cell.latlng.lng | round}} </h5>
                 </div>
             </div>
-            <div class="row flex-row-reverse">
+            <div class="row pt-2 flex-row-reverse">
                 <div class="col-md-2"><b-button class="btn"  @click="$bvModal.hide('modal-2')">Schließen</b-button></div>               
                 <div class="col-md-4"><b-button class="btn" v-on:click="resetSettings">Einstellungen und Zellen zurücksetzten</b-button> </div>
-                
+                <div class="col-md-2"><a href="https://www.uni-wuerzburg.de/sonstiges/impressum/">Impressum</a></div>
+                <div class="col-md-2"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>                                
             </div>
         </b-modal>
     </div>
@@ -106,10 +106,12 @@
     import { mapMutations } from 'vuex'
     import axios from 'axios';
     import { colorGenerate } from '../mixins/colorGenerate';
+    import Datengrundlage from "./Datengrundlage";
 
     export default {
         name: 'SettingsSelection',
         mixins:[colorGenerate],
+        components: {Datengrundlage},
         data() {
             return {
                 "selectedTimerange": null,
@@ -245,5 +247,11 @@ label {
     margin-top: auto;
     margin-bottom: auto;
 }
+a{
+    text-decoration: underline;
+    color: gray;
+    font-size: large;
+}
+
 
 </style>

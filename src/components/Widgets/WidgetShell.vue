@@ -22,7 +22,7 @@
 export default {
     data: function(){
     return {
-      showWidget:true
+      showWidget:false
     }
   },
   methods:{
@@ -55,7 +55,7 @@ export default {
 }
 #widgetContent{
   width: 21vw;
-  min-height: 15vh;
   overflow: hidden;
+  max-height: 40vh;
 }
 </style>
