@@ -60,6 +60,10 @@
         <div class="text-center mt-4">
           <b-button class="align-middle btn-lg" variant="primary" v-on:click="closeWelcomeModal">Verstanden</b-button>
         </div>
+        <div class="row mt-3 text-center">
+          <div class="col-md-6"><a href="https://www.uni-wuerzburg.de/sonstiges/impressum/">Impressum</a></div>
+          <div class="col-md-6"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>
+        </div>
       </b-modal>
     </div>
   </div>
