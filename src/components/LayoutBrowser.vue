@@ -112,6 +112,6 @@ body {
 }
 
 .focus-on-hover:hover {
-  z-index: 2000 !important;
+  z-index: 2000 !important; /* bootstrap row has 1030 */
 }
 </style>
