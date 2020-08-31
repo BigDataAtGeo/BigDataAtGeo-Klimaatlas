@@ -22,7 +22,7 @@
 export default {
     data: function(){
     return {
-      showWidget:false
+      showWidget:true
     }
   },
   methods:{

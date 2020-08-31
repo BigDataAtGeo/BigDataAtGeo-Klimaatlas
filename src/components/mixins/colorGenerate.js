@@ -14,6 +14,15 @@ export const colorGenerate= {
             }else{
                 return this.generateColor(++id,++counter);
             }
+        },
+        generateSensorColor(id,counter){
+            if(counter>5) return d3.interpolateTurbo(0);           
+            if(this.$store.state.colors[(id%5)+5]==0){
+                this.$store.state.colors[(id%5)+5]=id-counter;
+                return d3.interpolateTurbo((id%5)/4);
+            }else{
+                return this.generateColor(++id,++counter);
+            }
         }
     }
 }

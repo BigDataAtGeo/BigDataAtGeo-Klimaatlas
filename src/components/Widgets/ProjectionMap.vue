@@ -110,7 +110,7 @@ export default {
           this.setSelectedCell(cellFeature);
         }.bind(this));
         const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
-        layer.bindTooltip("<div>" + value + "</div>", {
+        layer.bindTooltip("<div>" + value +' '+this.variable.unit+ "</div>", {
           permanent: false,
           sticky: true
         });
@@ -140,7 +140,6 @@ export default {
       this.$forceNextTick(() => {
         this.isLoading = false;
       });
-      this.reloadPolygons();
     },
   },
   data() {
@@ -176,7 +175,7 @@ export default {
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
-          color: this.generateColor(id++, 0),
+          color: this.generateSensorColor(id++, 0),
           channels: Object.keys(sensorData.recentData),
         })
       }
