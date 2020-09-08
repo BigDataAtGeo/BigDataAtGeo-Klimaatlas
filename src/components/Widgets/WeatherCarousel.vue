@@ -1,6 +1,6 @@
 <template>
 <div>
-  <carousel :perPage="1" :autoplay="false">
+  <carousel :perPage="1" :autoplay="false" paginationColor="#A9A9A9">
     <slide v-for="(cell,index) in this.$store.state.selectedCells" :key="cell.properties.id" >
       <WeatherLive :CellIndex="index" />
     </slide>

@@ -62,7 +62,6 @@ export default {
       }
     },
     selectedCells(val) {
-      console.log("watcher");
       this.loadChartdata(val);
     }
   },
@@ -219,13 +218,17 @@ export default {
               suggestedMin: this.variable.min,
               suggestedMax: this.variable.max,
               fontSize: 16,
+              callback: (value, index, values)=>{
+                        return value + ' '+ this.variable.unit;
+                    }
             }
           }]
         },
         tooltips: {
           callbacks: {
-            label: function (tooltipItem) {
-              return tooltipItem.yLabel;
+            label: (tooltipItem) => {
+              const value = (Math.round(tooltipItem.yLabel * 100) / 100).toLocaleString("de-DE");
+              return value+' '+ this.variable.unit;
             }
           }
         }

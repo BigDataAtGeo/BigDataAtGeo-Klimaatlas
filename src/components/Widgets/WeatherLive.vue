@@ -3,7 +3,8 @@
         <b-container v-if="typeof weather.main != 'undefined'">
             <b-row style="margin-bottom:-2vh">
                 <b-col>
-                    <h4>{{weather.name}} </h4>
+                    
+                    <h4> <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>  {{weather.name}} </h4>
                     <p class="text-muted" style="margin-left:10px;">{{weather.coord.lon}} / {{weather.coord.lat}}</p>
                 </b-col>
                 <b-col>
@@ -40,6 +41,7 @@
 <script>
     import {mapState} from 'vuex';
     import axios from 'axios';
+    import {colorGenerate} from '../mixins/colorGenerate';
 
     export default {
         name: 'WeatherLive',
@@ -48,6 +50,7 @@
                 weather: {},
             }
         },
+        mixins: [colorGenerate],
         props: {
             CellIndex:{
                 required:true,

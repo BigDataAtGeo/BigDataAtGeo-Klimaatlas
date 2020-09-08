@@ -6,14 +6,21 @@
           <template v-slot:button-content>
             <b-icon icon="list"></b-icon>
           </template>
-          <b-dropdown-item v-b-modal.modal-2 v-if="variable!=null">
-            <b-icon icon="gear-fill"></b-icon> Einstellungen
-          </b-dropdown-item>
           <b-dropdown-item v-b-modal.m3>
-            <b-icon icon="info-circle-fill"></b-icon> Datengrundlage
+            <b-icon icon="info-circle-fill"></b-icon>  Datengrundlage
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.modal-welcome>
-            <b-icon icon="question-circle-fill"></b-icon> Steuerung
+            <b-icon icon="question-circle-fill"></b-icon>  Steuerung
+          </b-dropdown-item>
+          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
+            <b-icon icon="person-lines-fill"></b-icon>  Impressum
+          </b-dropdown-item>
+          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
+            <b-icon icon="shield-lock-fill"></b-icon>  Datenschutz
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item v-on:click="resetSettings" >
+             <h6 style="color:red"> <b-icon icon="gear"></b-icon> Einstellungen und Zellen zurücksetzten</h6> 
           </b-dropdown-item>
         </b-dropdown>
         <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" width="50px" height="60px">
@@ -60,77 +67,6 @@
         </div>
       </div>
     </div>
-    <b-modal id="modal-2" :title="'Einstellungen'" size="xl" :hide-footer="true" :hide-header="true">
-      <div class="row pb-5 d-flex justify-content-center">
-        <div class="text-center">
-          <h2>Einstellungen</h2>
-        </div>
-      </div>
-      <div class="row pb-5 align-items-center">
-        <div class="col-md-1 d-flex justify-content-end col-element"></div>
-        <div class="col-md-2 col-element">
-          <label for="modal-select-variable" class="h5">Variable</label>
-        </div>
-        <div class="col-md-4 form-group col-element">
-          <select id="modal-select-variable" class="form-control form-control-sm col-element" @change="setVariable"
-                  :disabled="index.variables === null" :value="$store.state.variable.var_id">
-            <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{
-                variable.var
-              }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-1 d-flex justify-content-end col-element"></div>
-        <div class="col-md-1 d-flex justify-content-end col-element">
-          <label for="modal-select-scenario" class="h5">Szenario</label>
-        </div>
-        <div class="col-md-1 form-group col-element">
-          <select id="modal-select-scenario" class="form-control form-control-sm" @change="setScenario"
-                  :disabled="index.scenarios === null" :value="$store.state.scenario">
-            <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="row align-items-center justify-content-center pb-5">
-        <div class="col-md-1 d-flex justify-content-end col-element">
-          <label for="modal-select-timerange" class="h5">Zeitspanne</label>
-        </div>
-        <div class="col-md-4 form-group col-element">
-          <input id="modal-select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm"
-                 @change="setTimerange" :value="timerangeValue" min="0"
-                 :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1"
-                 :disabled="index.variables === null">
-          <br>
-          <div id="modal-timerangeLabels">
-            <label class="float-left">{{ minRange }}</label>
-            <label class="float-right">{{ maxRange }}</label>
-          </div>
-        </div>
-        <div class="col-md-2 col-element">
-          <div class="pl-3 float-left"><span class="h6">Aktuell: </span><br>
-            <span class="h6">{{ selectedTimerange }}</span></div>
-        </div>
-      </div>
-      <div class="row align-items-center ">
-        <div class="col-md-12 text-center"><h4 class="pb-3">Ausgewählte Zellen:</h4></div>
-        <div v-for="(cell,index) in this.selectedCells" :key="index" class="col-md-6 text-center pt-0 pb-0">
-          <h5>
-            <b-icon icon="square-fill" :style="{color: generateColor(cell.properties.id,0)}"></b-icon>
-            {{ index }}: {{ cell.latlng.lat | round }} , {{ cell.latlng.lng | round }}
-          </h5>
-        </div>
-      </div>
-      <div class="row pt-2 flex-row-reverse">
-        <div class="col-md-2">
-          <b-button class="btn" @click="$bvModal.hide('modal-2')">Schließen</b-button>
-        </div>
-        <div class="col-md-4">
-          <b-button class="btn" v-on:click="resetSettings">Einstellungen und Zellen zurücksetzten</b-button>
-        </div>
-        <div class="col-md-2"><a href="https://www.uni-wuerzburg.de/sonstiges/impressum/">Impressum</a></div>
-        <div class="col-md-2"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>
-      </div>
-    </b-modal>
     <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
       <Datengrundlage/>
     </b-modal>

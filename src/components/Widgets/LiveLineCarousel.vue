@@ -5,7 +5,8 @@
               :pagination-padding="5"
               :pagination-position="'top'"
               :adjustable-height="true"
-              :navigate-to="[navigateTo, true]">
+              :navigate-to="[navigateTo, true]"
+              paginationColor="#A9A9A9">
       <slide class="full-width" v-for="sensor in selectedSensors" :key="sensor.id">
         <LiveLinegraph :sensor="sensor"/>
       </slide>

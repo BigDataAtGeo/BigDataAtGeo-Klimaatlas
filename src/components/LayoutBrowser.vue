@@ -8,18 +8,15 @@
       <ProjectionMap/>
     </div>
     <div class="float-right" id="widgets-container">
-      <WidgetShell widgetName="Graph (Live)" class="row justify-content-end rounded p-0 focus-on-hover">
-        <LiveLineCarousel/>
-      </WidgetShell>
-      <!--        <WidgetShell widgetName="WetterGraph" class="row justify-content-end rounded p-0">-->
-      <!--            <Linegraph/>-->
-      <!--        </WidgetShell>-->
       <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (Live)"
                    class="row justify-content-end rounded p-0 focus-on-hover">
         <WeatherCarousel/>
       </WidgetShell>
       <WidgetShell widgetName="Variable" class="row justify-content-end rounded p-0 focus-on-hover">
         <VariableInfo :variable="variable"></VariableInfo>
+      </WidgetShell>
+      <WidgetShell widgetName="Graph (Live)"  v-if="this.$store.state.selectedSensors.length!=0" class="row justify-content-end rounded p-0 focus-on-hover">
+        <LiveLineCarousel/>
       </WidgetShell>
     </div>
 

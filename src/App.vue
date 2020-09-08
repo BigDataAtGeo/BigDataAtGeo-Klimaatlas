@@ -65,6 +65,9 @@
           <div class="col-md-6"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>
         </div>
       </b-modal>
+      <div id="euLogo">
+        <img src="assets/assets_img_EFRE-Foerderhinweis.svg" height="70px" alt="EU">
+      </div>
     </div>
   </div>
 </template>
@@ -100,7 +103,7 @@ export default {
   margin-top: 35px;
 }
 
-#open-welcome-modal-button {
+#euLogo{
   position: fixed;
   right: 25px;
   bottom: 45px;
