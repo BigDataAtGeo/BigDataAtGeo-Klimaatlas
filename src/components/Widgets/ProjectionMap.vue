@@ -263,9 +263,9 @@ export default {
   padding: 6px 8px;
   font: 14px/16px Arial, Helvetica, sans-serif;
   background: white;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
   height: 100%;
 
   text-align: left;
@@ -284,5 +284,10 @@ export default {
 .leaflet-control span {
   float: right;
   margin-right: 8px;
+}
+
+/* FIXME: Does not show on the page */
+.sensor-svg {
+  filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.5));
 }
 </style>

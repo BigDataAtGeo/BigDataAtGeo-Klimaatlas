@@ -1,21 +1,15 @@
 <template>
-  <b-container class="container-bg p-0 rounded">
-    <b-row align-h="end" class="justify-content-right">
-      <b-col class="">
-        <b-button @click="hideWidget" v-if="showWidget" class="btn btn-secondary" id="button">
-          {{widgetName}} <b-icon icon="box-arrow-in-up-right"></b-icon>
-        </b-button>
-        <b-button  @click="hideWidget" v-else  class="btn btn-secondary" id="button">
-          {{widgetName}} <b-icon icon="box-arrow-in-down-left"></b-icon>
-        </b-button>
-      </b-col>
-    </b-row>
-    <b-row v-if="showWidget" id="widgetContent">
-      <b-col>
-        <slot ></slot>
-      </b-col>
-    </b-row>
-  </b-container>
+  <div class="container-bg">
+    <div @click="hideWidget" v-if="showWidget" class="container-header text-secondary">
+        <b-icon icon="caret-down-fill"></b-icon> {{widgetName}}
+    </div>
+    <div @click="hideWidget" v-else  class="container-header text-secondary">
+      <b-icon icon="caret-right-fill"> </b-icon> {{widgetName}}
+    </div>
+    <div v-if="showWidget" id="widgetContent">
+      <slot></slot>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -45,18 +39,27 @@ export default {
 </script>
 
 <style scoped>
-#button{
-  width: 150px;
-  height: 4vh;
-  margin-bottom: 5px;
+.container-header{
+  width: 100%;
+  padding: 15px;
+  cursor: pointer;
 }
+
 .container-bg{
-  background-color: rgba(255, 255, 255, 0.75);
+  box-sizing: border-box;
+
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 8px 0px 0px 8px;
+  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
+
+  margin-bottom: 10px;
 }
+
 #widgetContent{
   width: 100%;
-  min-height: 8vh;
+  /* min-height: 8vh; */
   overflow: hidden;
   margin: 0;
+  padding: 0px 20px 20px 20px;
 }
 </style>

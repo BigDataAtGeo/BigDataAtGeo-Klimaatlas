@@ -1,6 +1,7 @@
 <template>
-  <div class="container d-flex justify-content-center">
-    <div class="align-self-center" v-if="isLoading&&!noCell">
+  <div>
+    <h5>{{ this.variable.var }} bei Szenario {{ this.scenario }}</h5>
+    <div style="text-align: center" v-if="isLoading&&!noCell">
       <div class="spinner-border text-primary loader" role="status">
         <span class="sr-only">Loading...</span>
       </div>
@@ -185,7 +186,8 @@ export default {
         title: {
           display: true,
           fontSize: 20,
-          text: `${this.variable.var} bei Szenario ${this.scenario} (Koordinaten: ${this.selectedCells[0].latlng.lat.toFixed(2)}/${this.selectedCells[0].latlng.lng.toFixed(2)})`
+          // text: `${this.variable.var} bei Szenario ${this.scenario} (Koordinaten: ${this.selectedCells[0].latlng.lat.toFixed(2)}/${this.selectedCells[0].latlng.lng.toFixed(2)})`
+          // text: `${this.variable.var} bei Szenario ${this.scenario}`
         },
         legend: {
           display: false,
@@ -211,15 +213,15 @@ export default {
             },
             scaleLabel: {
               display: true,
-              labelString: this.variable.var,
-              fontSize: 20,
+              labelString: this.variable.var + ' [in ' + this.variable.unit + ']',
+              fontSize: 14
             },
             ticks: {
               suggestedMin: this.variable.min,
               suggestedMax: this.variable.max,
               fontSize: 16,
               callback: (value, index, values)=>{
-                        return value + ' '+ this.variable.unit;
+                        return value + ' '; //+ this.variable.unit;
                     }
             }
           }]
@@ -248,7 +250,6 @@ export default {
 #line-chart {
   width: 100%;
   height: 100%;
-  max-height: 35vh;
-  background-color: rgba(255, 255, 255, 0.75);
+  /* max-height: 35vh; */
 }
 </style>

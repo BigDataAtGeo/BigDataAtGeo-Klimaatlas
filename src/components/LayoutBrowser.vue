@@ -1,29 +1,31 @@
 <template>
-  <div id="layout">
-    <div class="fixed-top" id="selection-container">
-      <SettingsSelection/>
-    </div>
-
-    <div class="fixed-top" id="projectionmap-container">
+  <div>
+    <div id="projectionmap-container">
       <ProjectionMap/>
     </div>
-    <div class="float-right" id="widgets-container">
-      <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (Live)"
-                   class="row justify-content-end rounded p-0 focus-on-hover">
-        <WeatherCarousel/>
-      </WidgetShell>
-      <WidgetShell widgetName="Variable" class="row justify-content-end rounded p-0 focus-on-hover">
-        <VariableInfo :variable="variable"></VariableInfo>
-      </WidgetShell>
-      <WidgetShell widgetName="Graph (Live)"  v-if="this.$store.state.selectedSensors.length!=0" class="row justify-content-end rounded p-0 focus-on-hover">
-        <LiveLineCarousel/>
-      </WidgetShell>
-    </div>
+    <div id="layout">
+      <div id="selection-container">
+        <SettingsSelection/>
+      </div>
 
-    <div class="fixed-bottom focus-on-hover" id="timeline-container">
-      <Linegraph/>
-    </div>
+      <div id="widgets-container">
+        <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter">
+          <WeatherCarousel/>
+        </WidgetShell>
 
+        <WidgetShell widgetName="Variablenbeschreibung">
+          <VariableInfo :variable="variable"></VariableInfo>
+        </WidgetShell>
+
+        <WidgetShell widgetName="Timeline" v-if="selectedCells.length!==0">
+          <Linegraph/>
+        </WidgetShell>
+
+        <WidgetShell widgetName="Sensordaten" v-if="this.$store.state.selectedSensors.length!=0">
+          <LiveLineCarousel/>
+        </WidgetShell>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -63,52 +65,59 @@ body {
 </style>
 
 <style scoped>
-#layout {
-  width: 100vw;
-  height: 100vh;
-  max-width: none;
-}
-
-#selection-container {
-  z-index: 2;
-  margin-top: 5px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 80vw;
-  height: auto;
-}
-
-#timeline-container {
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 10px;
-  max-height: 35vh;
-  max-width: 80vw;
-}
-
 #projectionmap-container {
   z-index: 1;
   width: 100vw;
   height: 100vh;
 }
 
+#layout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1030;
+  pointer-events: none;
+  
+  display: grid;
+  grid-template-areas:
+    "selection selection"
+    ". widgets";
+  grid-template-columns: 1fr 25vw;
+  grid-template-rows: auto 1fr;
+  column-gap: 10px;
+  row-gap: 10px;
+}
+
+#layout > * {
+  pointer-events: all;
+}
+
+#selection-container {
+  width: auto;
+  margin: 0 auto;
+  /* text-align: center; */
+  grid-area: selection;
+}
+
 #widgets-container {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-self: end;
-  width: 25vw;
-  margin-right: 1vh;
-  margin-top: 10vh;
+  grid-area: widgets;
+  pointer-events: none;
+  overflow-y: scroll;
 }
 
-#widgets-container .row {
-  z-index: 2;
-  margin-bottom: 1vh;
-  justify-content: right;
+#widgets-container > * {
+  pointer-events: all;
+  z-index: 1030 !important; /* bootstrap row has 1030 */
 }
 
-.focus-on-hover:hover {
-  z-index: 2000 !important; /* bootstrap row has 1030 */
+#timeline-container {
+  text-align: right;
+  
+  height: 100%;
+  width: 100%;
+
+  grid-area: timeline;
 }
 </style>

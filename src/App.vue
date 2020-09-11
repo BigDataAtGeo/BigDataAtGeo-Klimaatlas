@@ -14,8 +14,8 @@
               <p class="h1 mb-2"><b-icon icon="list"></b-icon></p>
             </div>
             <div class="col-11">
-              Im Menü links oben können die Einstellungen <b-icon icon="gear-fill"></b-icon>, die Datengrundlage
-              <b-icon icon="info-circle-fill"></b-icon> und die Hilfe <b-icon icon="question-circle-fill"></b-icon> geöffnet werden.
+              Im Menü rechts oben können die Datengrundlage
+              <b-icon icon="info-circle-fill"></b-icon> und die Hilfe <b-icon icon="question-circle-fill"></b-icon> geöffnet werden, sowie die Einstellungen <b-icon icon="gear-fill"></b-icon> zurückgesetzt werden.
             </div>
           </div>
           <div class="row">
@@ -55,7 +55,7 @@
           </div>
         </div>
         <div class="text-center">
-          <h5>Diese Übersicht lässt sich später erneut über das Menü <b-icon icon="list"></b-icon> öffnen.</h5>
+          <h5>Diese Übersicht lässt sich später erneut über das Menü öffnen.</h5>
         </div>
         <div class="text-center mt-4">
           <b-button class="align-middle btn-lg" variant="primary" v-on:click="closeWelcomeModal">Verstanden</b-button>
@@ -65,9 +65,9 @@
           <div class="col-md-6"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>
         </div>
       </b-modal>
-      <div id="euLogo">
-        <img src="assets/assets_img_EFRE-Foerderhinweis.svg" height="70px" alt="EU">
-      </div>
+    </div>
+    <div id="eu-logo">
+      <img class="eu-logo" src="assets/assets_img_EFRE-Foerderhinweis.svg" alt="EU">
     </div>
   </div>
 </template>
@@ -103,7 +103,7 @@ export default {
   margin-top: 35px;
 }
 
-#euLogo{
+#eu-logo{
   position: fixed;
   right: 25px;
   bottom: 45px;

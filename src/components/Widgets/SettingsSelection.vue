@@ -1,35 +1,12 @@
 <template>
-  <div class="container">
-    <div class="row align-items-center rounded" v-if="this.index.variables!=null&&this.index.scenarios!=null">
-      <div class="col-md-2 col-element">
-        <b-dropdown id="selection-menu-dropdown" class="m-md-2">
-          <template v-slot:button-content>
-            <b-icon icon="list"></b-icon>
-          </template>
-          <b-dropdown-item v-b-modal.m3>
-            <b-icon icon="info-circle-fill"></b-icon>  Datengrundlage
-          </b-dropdown-item>
-          <b-dropdown-item v-b-modal.modal-welcome>
-            <b-icon icon="question-circle-fill"></b-icon>  Steuerung
-          </b-dropdown-item>
-          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
-            <b-icon icon="person-lines-fill"></b-icon>  Impressum
-          </b-dropdown-item>
-          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
-            <b-icon icon="shield-lock-fill"></b-icon>  Datenschutz
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item v-on:click="resetSettings" >
-             <h6 style="color:red"> <b-icon icon="gear"></b-icon> Einstellungen und Zellen zurücksetzten</h6> 
-          </b-dropdown-item>
-        </b-dropdown>
-        <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" width="50px" height="60px">
+  <form class="form-inline settings-container">
+    <div class="form-row">
+      <div class="col-auto element">
+        <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="60px">
       </div>
-      <div class="col-md-1 col-element">
-        <label for="select-variable" class="h5">Variable</label>
-      </div>
-      <div class="col-md-2 form-group col-element">
-        <select id="select-variable" class="form-control form-control-sm" @change="setVariable"
+      <div class="col-auto form-group element">
+        <label for="select-variable" class="h6">Variable:</label>
+        <select id="select-variable" class="custom-select" @change="setVariable"
                 :disabled="index.variables === null" :value="$store.state.variable.var_id">
           <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{
               variable.var
@@ -37,40 +14,53 @@
           </option>
         </select>
       </div>
-      <div class="col-md-1 d-flex justify-content-end col-element">
-        <label for="select-scenario" class="h5">Szenario</label>
-      </div>
-      <div class="col-md-1 form-group col-element">
-        <select id="select-scenario" class="form-control form-control-sm" @change="setScenario"
+      <div class="col-auto form-group element">
+        <label for="select-scenario" class="h6">Szenario:</label>
+        <select id="select-scenario" class="custom-select" @change="setScenario"
                 :disabled="index.scenarios === null" :value="$store.state.scenario">
           <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
         </select>
       </div>
-      <div class="col-md-1 d-flex justify-content-end col-element">
-        <label for="select-timerange" class="h5">Zeitspanne</label>
+      <div class="col-auto form-group element">
+        <label for="select-timerange" class="h6">Zeitspanne:</label>
+        <label class="small">{{ minRange }}</label>
+        <b-form-input id="select-timerange" @input="liveSlider" type="range" @change="setTimerange" :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null"></b-form-input>
+        <label class="small">{{ maxRange }}</label>
       </div>
-      <div class="col-md-3 form-group col-element">
-        <input id="select-timerange" type="range" @input="liveSlider" class="form-control-range form-control-sm"
-               @change="setTimerange" :value="timerangeValue" min="0"
-               :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null">
-        <br>
-        <div id="timerangeLabels">
-          <label class="float-left">{{ minRange }}</label>
-          <label class="float-right">{{ maxRange }}</label>
-        </div>
+      <div class="col-auto form-group element">
+        <label for="selected-timerange" class="h6">Aktuell:</label>
+        <span id="selected-timerange">{{ selectedTimerange }}</span>
       </div>
-      <div class="col-md-1 col-element">
-        <div>
-          <span class="h6">Aktuell:</span>
-          <br>
-          <span class="h6">{{ selectedTimerange }}</span>
-        </div>
+      <div class="col-auto form-group element">
+        <b-dropdown right variant="outline-secondary" class="m-md-2">
+          <template v-slot:button-content>
+            <!-- <b-icon icon="list"></b-icon> -->
+            Menü
+          </template>
+          <b-dropdown-item v-b-modal.modal-welcome>
+            <b-icon icon="question-circle-fill"></b-icon> Willkommensbildschirm
+          </b-dropdown-item>
+          <b-dropdown-item v-b-modal.m3>
+            <b-icon icon="info-circle-fill"></b-icon> Datengrundlage
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
+            <b-icon icon="person-lines-fill"></b-icon> Impressum
+          </b-dropdown-item>
+          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
+            <b-icon icon="shield-lock-fill"></b-icon> Datenschutz
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item variant="danger" v-on:click="resetSettings" >
+            <b-icon icon="gear"></b-icon>  Einstellungen und ausgewählte Zellen zurücksetzen
+          </b-dropdown-item>
+        </b-dropdown>
       </div>
+      <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
+        <Datengrundlage/>
+      </b-modal>
     </div>
-    <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
-      <Datengrundlage/>
-    </b-modal>
-  </div>
+  </form>
 </template>
 
 <script>
@@ -127,15 +117,15 @@ export default {
       this.$store.commit("setVariable", variable);
       localStorage.setItem('variables', JSON.stringify(variable));
     },
-    setTimerange(e) {
-      const timerange = this.index.timeranges[e.target.value];
+    setTimerange(value) {
+      const timerange = this.index.timeranges[value];
       this.selectedTimerange = timerange;
       this.$store.commit("setTimerange", timerange)
       localStorage.timerange = timerange;
     },
-    liveSlider(e) {
-      this.timerangeValue = e.target.value;
-      const timerange = this.index.timeranges[e.target.value];
+    liveSlider(value) {
+      this.timerangeValue = value;
+      const timerange = this.index.timeranges[value];
       this.selectedTimerange = timerange;
     },
     valueStart() {
@@ -149,16 +139,17 @@ export default {
       return year;
     },
     resetSettings: function () {
-      //resetting all the settings and celected cells
-      var year = new Date().getYear()
-      var year = year - 70;
-      this.$store.commit("resetCells");
-      this.$store.commit("setScenario", this.index.scenarios[0]);
-      this.$store.commit("setVariable", this.index.variables[0]);
-      this.selectedTimerange = this.index.timeranges[year];
-      this.$store.commit("setTimerange", this.index.timeranges[year]);
-
-
+      const choice = confirm("Alle Einstellungen und ausgewählte Zellen werden zurückgesetzt. Sind Sie wirklich sicher, dass Sie die Plattform zurücksetzen wollen?");
+      if (choice) {
+        //resetting all the settings and celected cells
+        var year = new Date().getYear()
+        var year = year - 70;
+        this.$store.commit("resetCells");
+        this.$store.commit("setScenario", this.index.scenarios[0]);
+        this.$store.commit("setVariable", this.index.variables[0]);
+        this.selectedTimerange = this.index.timeranges[year];
+        this.$store.commit("setTimerange", this.index.timeranges[year]);
+      }
     }
 
   },
@@ -194,34 +185,34 @@ export default {
 </script>
 
 <style scoped>
-.col-element {
-  padding: 5px;
+.settings-container {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 0 0 8px 8px;
+  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
+  padding: 5px 10px;
+  display: inline-block;
 }
 
-#timerangeLabels {
-  padding-top: -10%;
-  margin-top: -8%;
+.element {
+  padding: 0px 10px !important;
 }
 
-div.container {
-  background-color: rgba(255, 255, 255, 0.75);
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  padding: 0;
+#select-timerange {
+  width: auto;
+  min-width: 200px;
 }
 
-#selection-menu-dropdown {
-  padding-left: 25px;
+#selected-timerange {
+  width: 6em;
 }
 
 .form-group {
-  margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 label {
-  margin-top: auto;
-  margin-bottom: auto;
+  padding: 0px 5px;
 }
 
 a {

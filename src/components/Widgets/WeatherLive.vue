@@ -1,40 +1,45 @@
 <template>
-    <div>
-        <b-container v-if="typeof weather.main != 'undefined'">
-            <b-row style="margin-bottom:-2vh">
-                <b-col>
-                    
-                    <h4> <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>  {{weather.name}} </h4>
-                    <p class="text-muted" style="margin-left:10px;">{{weather.coord.lon}} / {{weather.coord.lat}}</p>
-                </b-col>
-                <b-col>
-                    <h6>{{weather.weather[0].description}}</h6>
-                    <img class="crop" :src="this.weatherIconURL" alt="">
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <h5>Temperatur</h5>
-                    <h5>
-                        {{weather.main.temp}}
-                        <small class="text-muted">°C</small>
-                    </h5>
-                    <p class="text-muted">{{weather.main.temp_min}} - {{weather.main.temp_max}}</p>
-                </b-col>
-                <b-col>
-                    <h6>Luftfeuchtigkeit : </h6>
-                    <h5>
-                        {{weather.main.humidity}}
-                        <small class="text-muted">%</small>
-                    </h5>
-                    <h6>Luftdruck : </h6>
-                    <h5>
-                        {{weather.main.pressure}}
-                        <small class="text-muted">hPa</small>
-                    </h5>
-                </b-col>
-            </b-row>
-        </b-container>
+    <div class="weather-container" v-if="typeof weather.main != 'undefined'">
+        <div class="city">
+            <h4>
+                <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>
+                {{weather.name}}
+                <small class="text-muted">({{weather.coord.lon.toFixed(2)}} / {{weather.coord.lat.toFixed(2)}})</small>
+            </h4>
+        </div>
+        <!-- <div class="coordinates">
+            <h5>Koordinaten</h5>
+            <p class="text-muted" style="margin-left:10px;">{{weather.coord.lon.toFixed(2)}} / {{weather.coord.lat.toFixed(2)}}</p>
+        </div> -->
+        <div class="weather">
+            <h5 class="mb-0">Aktuell</h5>
+            <div class="weather-icon">
+                <img class="crop" :src="this.weatherIconURL">
+            </div>
+            <span class="weather-description text-muted">{{weather.weather[0].description}}</span>
+        </div>
+        <div class="temperature">
+            <h5>Temperatur</h5>
+            <span class="text-muted">
+                {{weather.main.temp}} <small>°C</small>
+            </span><br>
+            <small class="text-muted">Minimum: {{weather.main.temp_min}} <small class="text-muted">°C</small></small><br>
+            <small class="text-muted">Maximum: {{weather.main.temp_max}} <small class="text-muted">°C</small></small>
+        </div>
+        <div class="humidity">
+            <h5>Luftfeuchtigkeit</h5>
+            <span class="text-muted">
+                {{weather.main.humidity}}
+                <small class="text-muted">%</small>
+            </span>
+        </div>
+        <div class="pressure">
+            <h5>Luftdruck</h5>
+            <span class="text-muted">
+                {{weather.main.pressure}}
+                <small class="text-muted">hPa</small>
+            </span>
+        </div>
     </div>
 </template>
 
@@ -92,7 +97,50 @@
 </script>
 
 <style scoped>
+    .weather-container {
+        display: grid;
+        grid-template-areas:
+            "city city"
+            "temperature weather"
+            "humidity pressure";
+        column-gap: 3px;
+        row-gap: 10px;
+    }
+
+    .city {
+        grid-area: city;
+    }
+
+    .weather {
+        grid-area: weather;
+    }
+
+    .weather-icon {
+        text-align: center;
+    }
+
+    .temp-title {
+        grid-area: temp-title;
+    }
+
+    .temperature {
+        grid-area: temperature;
+    }
+
+    .temp-min-max {
+        grid-area: temp-min-max;
+    }
+
+    .humidity {
+        grid-area: humidity;
+    }
+
+    .pressure {
+        grid-area: pressure;
+    }
+
     .crop {
         margin-top: 0;
+        width: 50%;
     }
 </style>
