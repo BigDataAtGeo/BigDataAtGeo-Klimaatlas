@@ -91,7 +91,8 @@ export default {
         return {
           color: this.legendColorMap(feature.properties.value),
           weight: 1,
-          opacity: 0.6,
+          opacity: 0.15,
+          fillOpacity: 0.35,
         };
       };
     },
