@@ -81,11 +81,12 @@ const mutations = {
         localStorage.polygons = JSON.stringify(state.polygons);
         localStorage.selectedCells = JSON.stringify(state.selectedCells);
     },
-    resetCells(){
-        this.state.ids.length=0;
-        this.state.selectedCells.length=0;
-        this.state.polygons.length=0;
-        this.state.colors=[0,0,0,0,0,0,0,0,0,0];
+    resetCells() {
+        this.state.ids.length = 0;
+        this.state.selectedCells.length = 0;
+        this.state.selectedSensors = [];
+        this.state.polygons.length = 0;
+        this.state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         localStorage.clear();
         localStorage.setItem("welcome-message", true);
     }
