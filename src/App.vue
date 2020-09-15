@@ -3,7 +3,7 @@
     <LayoutBrowser/>
     <div>
       <b-modal id="modal-welcome" size="xl" :title="'Willkommen'" :hide-footer="true" :hide-header="true"
-               :no-close-on-backdrop="true" centered>
+               @hidden="closeWelcomeModal" centered>
         <div class="text-center">
           <img class="mb-3" src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="60px">
           <h1>Willkommen auf dem BigData@Geo Webportal</h1>
