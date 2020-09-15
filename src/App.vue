@@ -5,6 +5,7 @@
       <b-modal id="modal-welcome" size="xl" :title="'Willkommen'" :hide-footer="true" :hide-header="true"
                :no-close-on-backdrop="true" centered>
         <div class="text-center">
+          <img class="mb-3" src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="60px">
           <h1>Willkommen auf dem BigData@Geo Webportal</h1>
           <h4>Zusammenfassung der Steuerung</h4>
         </div>

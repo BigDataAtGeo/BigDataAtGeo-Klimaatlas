@@ -2,7 +2,9 @@
   <form class="form-inline settings-container">
     <div class="form-row">
       <div class="col-auto element">
-        <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="60px">
+        <a href="https://bigdata-at-geo.eu/">
+          <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="60px">
+        </a>
       </div>
       <div class="col-auto form-group element">
         <label for="select-variable" class="h6">Variable:</label>
@@ -24,7 +26,9 @@
       <div class="col-auto form-group element">
         <label for="select-timerange" class="h6">Zeitspanne:</label>
         <label class="small">{{ minRange }}</label>
-        <b-form-input id="select-timerange" @input="liveSlider" type="range" @change="setTimerange" :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1" :disabled="index.variables === null"></b-form-input>
+        <b-form-input id="select-timerange" @input="liveSlider" type="range" @change="setTimerange"
+                      :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1"
+                      :disabled="index.variables === null"></b-form-input>
         <label class="small">{{ maxRange }}</label>
       </div>
       <div class="col-auto form-group element">
@@ -38,21 +42,30 @@
             Menü
           </template>
           <b-dropdown-item v-b-modal.modal-welcome>
-            <b-icon icon="question-circle-fill"></b-icon> Willkommensbildschirm
+            <b-icon icon="question-circle-fill"></b-icon>
+            Willkommensbildschirm
           </b-dropdown-item>
           <b-dropdown-item v-b-modal.m3>
-            <b-icon icon="info-circle-fill"></b-icon> Datengrundlage
+            <b-icon icon="info-circle-fill"></b-icon>
+            Datengrundlage
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
-            <b-icon icon="person-lines-fill"></b-icon> Impressum
+            <b-icon icon="person-lines-fill"></b-icon>
+            Impressum
           </b-dropdown-item>
           <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
-            <b-icon icon="shield-lock-fill"></b-icon> Datenschutz
+            <b-icon icon="shield-lock-fill"></b-icon>
+            Datenschutz
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item variant="danger" v-on:click="resetSettings" >
-            <b-icon icon="gear"></b-icon>  Einstellungen und ausgewählte Zellen zurücksetzen
+          <b-dropdown-item variant="danger" v-on:click="resetSettings">
+            <b-icon icon="gear"></b-icon>
+            Einstellungen und ausgewählte Zellen zurücksetzen
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item href="https://ec.europa.eu">
+            <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="40px">
           </b-dropdown-item>
         </b-dropdown>
       </div>
