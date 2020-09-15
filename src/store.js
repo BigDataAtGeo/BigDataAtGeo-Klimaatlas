@@ -29,11 +29,15 @@ const mutations = {
         state.timerange = timerange;
         updateSelectionUri(state)
     },
-    addSelectedSensor(state, sensor) {
-        for (let x of state.selectedSensors)
-            if (x.id === sensor.id)
-                return;
-        state.selectedSensors.push(sensor);
+    addSelectedSensor(state, data) {
+        if (data.replace) {
+            state.selectedSensors = [data.sensor]
+        } else {
+            for (let x of state.selectedSensors)
+                if (x.id === data.sensor.id)
+                    return;
+            state.selectedSensors.push(data.sensor);
+        }
     },
     removeSelectedSensor(state, sensor) {
         state.selectedSensors = state.selectedSensors.filter(x => x.id !== sensor.id);

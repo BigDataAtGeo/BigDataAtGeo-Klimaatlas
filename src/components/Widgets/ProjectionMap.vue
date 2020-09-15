@@ -14,7 +14,9 @@
 
     <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="createSensorIcon(sensor.color)"
               :key="sensor.id"
-              v-on:click="addSelectedSensor(sensor)"></l-marker>
+              v-on:click="addSelectedSensor({sensor: sensor, replace: true})"
+              v-on:contextmenu="addSelectedSensor({sensor: sensor, replace: false})">
+    </l-marker>
     <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
       <div>
         <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
