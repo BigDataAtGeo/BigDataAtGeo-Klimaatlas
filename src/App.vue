@@ -19,13 +19,21 @@
               <b-icon icon="info-circle-fill"></b-icon> und die Hilfe <b-icon icon="question-circle-fill"></b-icon> geöffnet werden, sowie die Einstellungen <b-icon icon="gear-fill"></b-icon> zurückgesetzt werden.
             </div>
           </div>
-          <div class="row">
+          <div class="row mt-3">
             <div class="col-1 text-center">
               <img src="assets/map-icon.svg" width="40px" height="40px" alt="Karte">
             </div>
             <div class="col-11">
               Die Grundlage der Anwendung bietet die Karte. Hier können Zellen zur näheren Betrachtung
               ausgewählt werden.
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-1 text-center">
+              <img src="assets/sensor.svg" width="40px" height="40px" alt="Sensor">
+            </div>
+            <div class="col-11">
+              Auf der Karte werden Sensoren angezeigt, deren Daten per Klick näher untersucht werden können.
             </div>
           </div>
           <div class="row mt-3">
@@ -42,7 +50,7 @@
               <img src="assets/left-click.png" height="40px" alt="Links-Klick">
             </div>
             <div class="col-11">
-              Mit Linksklicks werden immer <u>einzelne</u> Zellen ausgewählt.
+              Mit Linksklicks werden immer <u>einzelne</u> Zellen und Sensoren ausgewählt.
             </div>
           </div>
           <div class="row mt-3">
@@ -50,7 +58,7 @@
               <img src="assets/right-click.png" height="40px" alt="Rechts-Klick">
             </div>
             <div class="col-11">
-              Mit Rechtsklicks werden Zellen zur Auswahl hinzugefügt (weitere Linksklicks heben diese
+              Mit Rechtsklicks werden Zellen oder Sensoren zur Auswahl hinzugefügt (weitere Linksklicks heben diese
               Auswahl auf!).
             </div>
           </div>
