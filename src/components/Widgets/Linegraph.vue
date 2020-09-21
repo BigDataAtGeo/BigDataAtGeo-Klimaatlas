@@ -1,15 +1,18 @@
 <template>
-  <div>
+  <div v-if="$store.state.variable!=null">
     <h5>{{ this.variable.var }} bei Szenario {{ this.scenario }}</h5>
     <div style="text-align: center" v-if="isLoading&&!noCell">
       <div class="spinner-border text-primary loader" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <line-chart id="line-chart"
+    <div class="chart-container" style="position: relative;">
+      <line-chart id="line-chart"
                 v-if="!isLoading && chartData"
                 :chartData="chartData"
                 :options="chartOptions"/>
+    </div>
+    
   </div>
 </template>
 
@@ -62,9 +65,13 @@ export default {
         this.oldUri = this.selectionUri;
       }
     },
-    selectedCells(val) {
-      this.loadChartdata(val);
+    selectedCells: {
+      deep:true,
+      handler(val){
+        this.loadChartdata(val);
+      }
     }
+    
   },
   methods: {
     uriSplitter(value) {
@@ -193,7 +200,7 @@ export default {
           display: false,
         },
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         scales: {
           xAxes: [{
             gridLines: {
@@ -250,6 +257,5 @@ export default {
 #line-chart {
   width: 100%;
   height: 100%;
-  /* max-height: 35vh; */
-}
+  }
 </style>

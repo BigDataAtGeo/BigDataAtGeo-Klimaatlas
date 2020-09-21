@@ -1,5 +1,5 @@
 <template>
-  <div id="content" class="pb-2">
+  <div id="content" class="pb-2" v-if="$store.state.variable!=null">
     <h5>{{ this.variable.var }} </h5>
     <span v-html="this.variable.description"></span>
   </div>
@@ -10,7 +10,6 @@ export default {
   name: "variableInfo",
   props: {
     variable: {
-      type: Object,
       required: true
     }
   }

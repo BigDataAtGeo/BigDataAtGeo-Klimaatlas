@@ -6,7 +6,7 @@
     <div @click="hideWidget" v-else  class="container-header text-secondary">
       <b-icon icon="caret-right-fill"> </b-icon> {{widgetName}}
     </div>
-    <div v-if="showWidget" id="widgetContent">
+    <div v-show="showWidget" id="widgetContent">
       <slot></slot>
     </div>
   </div>

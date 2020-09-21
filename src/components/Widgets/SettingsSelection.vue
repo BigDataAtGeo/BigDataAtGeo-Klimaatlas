@@ -1,5 +1,5 @@
 <template>
-  <form class="form-inline settings-container">
+  <form class="form-inline settings-container" v-if="$store.state.variable!=null">
     <div class="form-row">
       <div class="col-auto element">
         <a href="https://bigdata-at-geo.eu/">

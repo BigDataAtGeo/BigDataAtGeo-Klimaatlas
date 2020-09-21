@@ -141,10 +141,16 @@ export default {
       this.isLoading = true;
       this.prepareLegend();
       this.prepareGeoJson();
-      this.$forceNextTick(() => {
-        this.isLoading = false;
-      });
+      
     },
+    geojson: {
+      deep:true,
+      handler(){
+        this.$forceNextTick(() => {
+        this.isLoading = false; 
+      });
+      }
+    }
   },
   data() {
     return {
@@ -239,9 +245,16 @@ export default {
       }
     },
     reloadPolygons: function () {
-      var polygonscopy = this.polygons;
-      this.$store.state.polygons = [];
-      this.$store.state.polygons = polygonscopy;
+      var length=this.polygons.length;
+      var polygonscopy=[];
+      for(var i=0;i<length;i++){
+        polygonscopy[i]=this.polygons[i];
+        this.polygons.splice(i,1);
+      }
+      length=polygonscopy.length;
+      for(var i=0;i<length;i++){
+        this.polygons[i]=polygonscopy[i];
+      }
     },
     createSensorIcon: (color) => divIcon({
       className: "sensor-svg",

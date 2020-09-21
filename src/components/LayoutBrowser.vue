@@ -3,12 +3,12 @@
     <div id="projectionmap-container">
       <ProjectionMap/>
     </div>
-    <div id="layout">
+    <div id="layout" v-bind:style="{ 'grid-template-columns': gridColumns}">
       <div id="selection-container">
         <SettingsSelection/>
       </div>
 
-      <div id="widgets-container">
+      <div id="widgets-container" >
         <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter">
           <WeatherCarousel/>
         </WidgetShell>
@@ -50,9 +50,28 @@ export default {
     LiveLineCarousel,
     VariableInfo
   },
-  computed: {
-    ...mapState(["selectedCells", "variable"])
+  data(){
+    return{
+      windowWidth:window.innerWidth
+    }
   },
+  computed: {
+    ...mapState(["selectedCells", "variable"]),
+    gridColumns(){
+      if(this.windowWidth>1280) return '1fr minmax(20rem,25vw)'
+      else return '1fr minmax(20rem,40vw)'
+    },
+  },
+  mounted() {
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.onResize);
+    })
+  },
+  methods: {  
+    onResize() {
+      this.windowWidth = window.innerWidth;
+    }
+  }
 }
 </script>
 
@@ -84,7 +103,6 @@ body {
   grid-template-areas:
     "selection selection"
     ". widgets";
-  grid-template-columns: 1fr 25vw;
   grid-template-rows: auto 1fr;
   column-gap: 10px;
   row-gap: 10px;
