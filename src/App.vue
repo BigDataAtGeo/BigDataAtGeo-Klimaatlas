@@ -5,7 +5,10 @@
       <b-modal id="modal-welcome" size="xl" :title="'Willkommen'" :hide-footer="true" :hide-header="true"
                @hidden="closeWelcomeModal" centered>
         <div class="text-center">
-          <img class="mb-3" src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="60px">
+          <img class="mb-3" src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="85px">
+          <img class="mb-3 offset-md-1" src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="60px">
+        </div>
+        <div class="text-center">
           <h1>Willkommen auf dem BigData@Geo Webportal</h1>
           <h4>Zusammenfassung der Steuerung</h4>
         </div>
@@ -30,10 +33,10 @@
           </div>
           <div class="row mt-3">
             <div class="col-1 text-center">
-              <img src="assets/sensor.svg" width="40px" height="40px" alt="Sensor">
+              <img src="assets/sensor.svg" width="40px" height="40px" alt="Bodenwasserstation">
             </div>
             <div class="col-11">
-              Auf der Karte werden Sensoren angezeigt, deren Daten per Klick näher untersucht werden können.
+              Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
             </div>
           </div>
           <div class="row mt-3">
@@ -41,7 +44,7 @@
               <img src="assets/adjust-icon.svg" width="40px" height="40px" alt="Einstellungen">
             </div>
             <div class="col-11">
-              Die Auswahl von <u>Variable</u>, <u>Szenario</u> und <u>Zeitraum</u> kann über die Auswahl am
+              Die Auswahl von <i>Variable</i>, <i>Szenario</i> und <i>Zeitraum</i> kann über die Auswahl am
               oberen Rand des Bildschirms eingestellt werden.
             </div>
           </div>
@@ -50,7 +53,7 @@
               <img src="assets/left-click.png" height="40px" alt="Links-Klick">
             </div>
             <div class="col-11">
-              Mit Linksklicks werden immer <u>einzelne</u> Zellen und Sensoren ausgewählt.
+              Mit Linksklicks werden immer <i>einzelne</i> Zellen und Bodenwasserstationen ausgewählt.
             </div>
           </div>
           <div class="row mt-3">
@@ -58,8 +61,7 @@
               <img src="assets/right-click.png" height="40px" alt="Rechts-Klick">
             </div>
             <div class="col-11">
-              Mit Rechtsklicks werden Zellen oder Sensoren zur Auswahl hinzugefügt (weitere Linksklicks heben diese
-              Auswahl auf!).
+              Mit Rechtsklicks werden Zellen oder Bodenwasserstationen zur Auswahl hinzugefügt (weitere Linksklicks heben diese Auswahl auf).
             </div>
           </div>
         </div>
@@ -74,9 +76,6 @@
           <div class="col-md-6"><a href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">Datenschutz</a></div>
         </div>
       </b-modal>
-    </div>
-    <div id="eu-logo">
-      <img class="eu-logo" src="assets/assets_img_EFRE-Foerderhinweis.svg" alt="EU">
     </div>
   </div>
 </template>
@@ -110,14 +109,6 @@ export default {
   max-width: 75%;
   margin-bottom: 35px;
   margin-top: 35px;
-}
-
-#eu-logo{
-  position: fixed;
-  right: 25px;
-  bottom: 45px;
-  z-index: 10;
-  cursor: pointer;
 }
 
 .loader {
