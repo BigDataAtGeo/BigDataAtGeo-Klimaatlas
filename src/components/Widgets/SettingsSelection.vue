@@ -161,6 +161,7 @@ export default {
         this.$store.commit("setScenario", this.index.scenarios[0]);
         this.$store.commit("setVariable", this.index.variables[0]);
         this.selectedTimerange = this.index.timeranges[year];
+        this.timerangeValue = this.valueStart();
         this.$store.commit("setTimerange", this.index.timeranges[year]);
       }
     }

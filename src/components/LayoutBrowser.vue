@@ -17,7 +17,7 @@
           <VariableInfo :variable="variable"></VariableInfo>
         </WidgetShell>
 
-        <WidgetShell widgetName="Timeline" v-if="selectedCells.length!==0">
+        <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0">
           <Linegraph/>
         </WidgetShell>
 
