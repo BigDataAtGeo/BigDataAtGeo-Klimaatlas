@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div @mouseup="resizeWidgetsEnd($event)"
+       @mousemove="isResizing ? resizeWidgets($event) : null">
     <div id="projectionmap-container">
       <ProjectionMap/>
     </div>
@@ -8,7 +9,7 @@
         <SettingsSelection/>
       </div>
 
-      <div id="widgets-container" >
+      <div id="widgets-container" ref="widgets" v-bind:style="widgetsContainerStyle">
         <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter">
           <WeatherCarousel/>
         </WidgetShell>
@@ -21,9 +22,11 @@
           <Linegraph/>
         </WidgetShell>
 
-        <WidgetShell widgetName="Sensordaten" v-if="this.$store.state.selectedSensors.length!=0">
+        <WidgetShell widgetName="Sensordaten" v-if="selectedSensors.length!==0">
           <LiveLineCarousel/>
         </WidgetShell>
+
+        <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
       </div>
     </div>
   </div>
@@ -50,26 +53,64 @@ export default {
     LiveLineCarousel,
     VariableInfo
   },
-  data(){
-    return{
-      windowWidth:window.innerWidth
+  data() {
+    return {
+      windowWidth: window.innerWidth,
+      isResizing: false,
+      resizeStart: null,
+      widgetsContainerStyle: {},
     }
   },
   computed: {
-    ...mapState(["selectedCells", "variable"]),
-    gridColumns(){
-      if(this.windowWidth>1280) return '1fr minmax(20rem,25vw)'
+    ...mapState(["selectedCells", "selectedSensors", "variable"]),
+    gridColumns() {
+      if (this.windowWidth > 1280) return '1fr minmax(20rem,25vw)'
       else return '1fr minmax(20rem,40vw)'
     },
   },
   mounted() {
+    // reload old widgets container width from local storage
+    const oldWidgetContainerWidth = localStorage.getItem("widgetsContainerWidth");
+    if (oldWidgetContainerWidth !== null) {
+      this.widgetsContainerStyle = JSON.parse(oldWidgetContainerWidth);
+    }
     this.$nextTick(() => {
       window.addEventListener('resize', this.onResize);
     })
   },
-  methods: {  
+  methods: {
     onResize() {
       this.windowWidth = window.innerWidth;
+    },
+
+    /**
+     * Enables the widget container resizing listener by setting isResizing to true and saves the mouse start position
+     * @param event HTML mouse event (mousedown)
+     */
+    resizeWidgetsStart(event) {
+      event.preventDefault(); // prevent text selection
+      this.isResizing = true; // enable resizing listener
+      this.resizeStart = event.x;
+    },
+
+    /**
+     * Ends the widget container resizing listener and saves changes to local storage
+     * @param event HTML mouse event (mouseup)
+     */
+    resizeWidgetsEnd(event) {
+      this.isResizing = false; // disable resizing listener
+      localStorage.setItem("widgetsContainerWidth", JSON.stringify(this.widgetsContainerStyle));
+    },
+
+    /**
+     * Calculates and sets a new widget container width from the mouse's delta x
+     * @param event HTML mouse event (mousemove)
+     */
+    resizeWidgets(event) {
+      const dx = this.resizeStart - event.x; // new additional width
+      const containerWidth = parseInt(getComputedStyle(this.$refs.widgets).width); // old width
+      this.widgetsContainerStyle = {"width": (containerWidth + dx) + "px !important"}; // bound by vue
+      this.resizeStart = event.x; // save new width for next delta
     }
   }
 }
@@ -98,7 +139,7 @@ body {
   height: 100%;
   z-index: 1030;
   pointer-events: none;
-  
+
   display: grid;
   grid-template-areas:
     "selection selection"
@@ -117,12 +158,16 @@ body {
   margin: 0 auto;
   /* text-align: center; */
   grid-area: selection;
+  z-index: 1040;
 }
 
 #widgets-container {
   grid-area: widgets;
   pointer-events: none;
-  overflow-y: scroll;
+  position: absolute;
+  height: 100%;
+  right: 0;
+  overflow-y: auto;
 }
 
 #widgets-container > * {
@@ -130,9 +175,20 @@ body {
   z-index: 1030 !important; /* bootstrap row has 1030 */
 }
 
+#drag {
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  width: 1.5rem;
+  height: 100%;
+  cursor: w-resize;
+  pointer-events: all;
+  margin-left: -.75rem;
+}
+
 #timeline-container {
   text-align: right;
-  
+
   height: 100%;
   width: 100%;
 
