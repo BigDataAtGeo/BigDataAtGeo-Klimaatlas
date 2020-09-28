@@ -6,7 +6,7 @@
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <div class="chart-container" style="position: relative;">
+    <div class="chart-container" style="position: relative; height:40vh" v-show="!isLoading && chartData">
       <line-chart id="line-chart"
                 v-if="!isLoading && chartData"
                 :chartData="chartData"
@@ -200,7 +200,7 @@ export default {
           display: false,
         },
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         scales: {
           xAxes: [{
             gridLines: {
