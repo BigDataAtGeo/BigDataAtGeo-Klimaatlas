@@ -27,9 +27,9 @@ export default {
       this.showWidget = !this.showWidget;
     }
   },
-  mounted() {
-    location.href = "#" + this.widgetId;
-  },
+  // mounted() {
+  //   location.href = "#" + this.widgetId;
+  // },
   props: {
     widgetName: {
       type: String,
