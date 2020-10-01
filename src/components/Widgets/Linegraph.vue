@@ -6,7 +6,7 @@
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <div class="chart-container" style="position: relative; height:40vh" v-show="!isLoading && chartData">
+    <div class="chart-container" style="position: relative; height:25rem" v-show="!isLoading && chartData">
       <line-chart id="line-chart"
                 v-if="!isLoading && chartData"
                 :chartData="chartData"

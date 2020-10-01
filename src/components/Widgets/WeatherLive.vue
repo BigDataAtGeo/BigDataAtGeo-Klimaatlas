@@ -40,7 +40,7 @@
                 <small class="text-muted">hPa</small>
             </span>
         </div>
-    </div>
+</div>
 </template>
 
 <script>
@@ -105,18 +105,15 @@
             "humidity pressure";
         column-gap: 3px;
         row-gap: 10px;
+        height: 100%;
+        width:100%;
     }
-
     .city {
         grid-area: city;
     }
 
     .weather {
         grid-area: weather;
-    }
-
-    .weather-icon {
-        text-align: center;
     }
 
     .temp-title {
@@ -141,6 +138,8 @@
 
     .crop {
         margin-top: 0;
-        width: 50%;
+        min-width: 2rem;
+        max-width: 5rem;
+
     }
 </style>
