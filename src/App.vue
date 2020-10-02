@@ -14,54 +14,62 @@
         </div>
         <div class="container">
           <div class="row">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <p class="h1 mb-2"><b-icon icon="list"></b-icon></p>
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Im Menü rechts oben können die Datengrundlage
               <b-icon icon="info-circle-fill"></b-icon> und die Hilfe <b-icon icon="question-circle-fill"></b-icon> geöffnet werden, sowie die Einstellungen <b-icon icon="gear-fill"></b-icon> zurückgesetzt werden.
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <img src="assets/map-icon.svg" width="40px" height="40px" alt="Karte">
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Die Grundlage der Anwendung bietet die Karte. Hier können Zellen zur näheren Betrachtung
               ausgewählt werden.
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <img src="assets/sensor.svg" width="40px" height="40px" alt="Bodenwasserstation">
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <img src="assets/adjust-icon.svg" width="40px" height="40px" alt="Einstellungen">
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Die Auswahl von <i>Variable</i>, <i>Szenario</i> und <i>Zeitraum</i> kann über die Auswahl am
               oberen Rand des Bildschirms eingestellt werden.
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <img src="assets/left-click.png" height="40px" alt="Links-Klick">
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Mit Linksklicks werden immer <i>einzelne</i> Zellen und Bodenwasserstationen ausgewählt.
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-1 text-center">
+            <div class="col-1 text-center my-auto">
               <img src="assets/right-click.png" height="40px" alt="Rechts-Klick">
             </div>
-            <div class="col-11">
+            <div class="col-11 my-auto">
               Mit Rechtsklicks werden Zellen oder Bodenwasserstationen zur Auswahl hinzugefügt (weitere Linksklicks heben diese Auswahl auf).
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-1 text-center my-auto">
+              <img src="assets/col-resize.svg" height="40px" alt="Cursor zum Verändern der horizontalen Größe">
+            </div>
+            <div class="col-11 my-auto">
+              Die Breite der Zusatzinformationen rechts lässt sich per Drag &amp; Drop der linken Kante verstellen.
             </div>
           </div>
         </div>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" version="1.1" viewBox="6 7 19 18" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <filter id="a-3" x="-.22761" y="-.25381" width="1.4552" height="1.5076" color-interpolation-filters="sRGB">
+   <feGaussianBlur stdDeviation="1.9036014"/>
+  </filter>
+ </defs>
+ <rect x="15" y="8" width="1" height="16" fill="#151515" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="paint-order:stroke fill markers"/>
+ <rect transform="rotate(-90)" x="-28" y="4.464" width="24" height="24" fill="none" opacity=".2"/>
+ <path d="m11 19.5v-2.5357l9-2e-4v2.5357l4.5355-3.5356-4.5355-3.5355v2.5356l-9 2e-4v-2.5356l-4.5355 3.5353z" color="#000000" color-rendering="auto" fill="none" image-rendering="auto" shape-rendering="auto" solid-color="#000000" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+ <path d="m11 19.5v-2.5357l9-2e-4v2.5357l4.5355-3.5356-4.5355-3.5355v2.5356l-9 2e-4v-2.5356l-4.5355 3.5353z" color="#000000" color-rendering="auto" fill="#151515" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+ <rect x="15" y="8" width="1" height="16" fill="#151515" style="paint-order:stroke fill markers"/>
+</svg>
