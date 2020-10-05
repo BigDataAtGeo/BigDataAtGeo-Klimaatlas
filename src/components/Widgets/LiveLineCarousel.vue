@@ -11,7 +11,7 @@
         <LiveLinegraph :sensor="sensor"/>
       </slide>
     </carousel> -->
-    <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="27rem" :bullets-outside="$store.state.selectedSensors.length!=1" :key="selectedSensors.length">
+    <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="27rem" :bullets-outside="selectedSensors.length!==1" :key="selectedSensors.length">
     <vueper-slide v-for="sensor in selectedSensors" :key="sensor.id" >
       <template v-slot:content>
         <LiveLinegraph :sensor="sensor"/>
