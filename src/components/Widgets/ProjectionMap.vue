@@ -53,29 +53,8 @@ export default {
     LMarker,
     LLayerGroup,
   },
-  created: function () {
-    if (localStorage.selectedCells) {
-      var selectedCells = JSON.parse(localStorage.getItem('selectedCells'));
-      var polygons = JSON.parse(localStorage.getItem('polygons'));
-      for (var i = 0; i < selectedCells.length; i++) {
-        var updatedCell = selectedCells[i];
-        var polygon = polygons[i];
-        var cellFeature = {polygon, updatedCell};
-        this.addSelectedCell(cellFeature);
-      }
-    }
-  },
   computed: {
-    ...mapState(["scenario", "variable", "timerange", "selectionUri"]),
-    selectedCells() {
-      return this.$store.state.selectedCells;
-    },
-    polygons() {
-      return this.$store.state.polygons;
-    },
-    ids() {
-      return this.$store.state.ids;
-    },
+    ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids"]),
     isLoading: {
       get() {
         return this.loading;
@@ -129,7 +108,7 @@ export default {
           const updatedCell = Object.assign(feature, {latlng: cell.latlng});
           const cellFeature = {polygon, updatedCell};
           //the new Cell gets added to the list of selected Cells and is the new selectedCell
-          if (!(this.selectedCells.length === 5 && this.selectedCells.indexOf(updatedCell) === -1)) {
+          if (this.selectedCells.length < 5 && !this.selectedCells.find(x => x.properties.id === updatedCell.properties.id)) {
             this.addSelectedCell(cellFeature);
           }
         }.bind(this));
@@ -138,17 +117,14 @@ export default {
   },
   watch: {
     selectionUri: function () {
-      this.isLoading = true;
-      this.prepareLegend();
-      this.prepareGeoJson();
-      
+      this.loadMapData()
     },
     geojson: {
-      deep:true,
-      handler(){
+      deep: true,
+      handler() {
         this.$forceNextTick(() => {
-        this.isLoading = false; 
-      });
+          this.isLoading = false;
+        });
       }
     }
   },
@@ -190,9 +166,16 @@ export default {
         })
       }
     })
+    if (this.selectionUri)
+      this.loadMapData();
   },
   methods: {
     ...mapMutations(["setSelectedCell", "addSelectedCell", "addSelectedSensor", "removeSelectedSensor"]),
+    loadMapData() {
+      this.isLoading = true;
+      this.prepareLegend();
+      this.prepareGeoJson();
+    },
     prepareLegend() {
       const min = this.variable.min;
       const max = this.variable.max;
@@ -245,15 +228,15 @@ export default {
       }
     },
     reloadPolygons: function () {
-      var length=this.polygons.length;
-      var polygonscopy=[];
-      for(var i=0;i<length;i++){
-        polygonscopy[i]=this.polygons[i];
-        this.polygons.splice(i,1);
+      var length = this.polygons.length;
+      var polygonscopy = [];
+      for (var i = 0; i < length; i++) {
+        polygonscopy[i] = this.polygons[i];
+        this.polygons.splice(i, 1);
       }
-      length=polygonscopy.length;
-      for(var i=0;i<length;i++){
-        this.polygons[i]=polygonscopy[i];
+      length = polygonscopy.length;
+      for (var i = 0; i < length; i++) {
+        this.polygons[i] = polygonscopy[i];
       }
     },
     createSensorIcon: (color) => divIcon({

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import {polygon} from 'leaflet'
 
 Vue.use(Vuex)
 
@@ -44,7 +43,7 @@ const mutations = {
     },
     setSelectedCell(state, cellFeature) {
         //remove all multiple selected cells
-        if (state.selectedCells.length == 1 && state.selectedCells[0] == cellFeature.updatedCell) {
+        if (state.selectedCells.length === 1 && state.selectedCells[0] === cellFeature.updatedCell) {
             state.selectedCells.splice(0, 1);
             state.polygons.splice(0, 1);
             state.ids.splice(0, 1);
@@ -58,21 +57,19 @@ const mutations = {
             state.polygons.push(cellFeature.polygon);
             state.selectedCells.push(cellFeature.updatedCell);
         }
-        localStorage.polygons = JSON.stringify(state.polygons);
-        localStorage.selectedCells = JSON.stringify(state.selectedCells);
     },
     addSelectedCell(state, cellFeature) {
         //check if array already contains cell
         var cell = cellFeature.updatedCell;
         var polygon = cellFeature.polygon;
-        if (state.selectedCells.indexOf(cell) != -1) {
+        if (state.selectedCells.indexOf(cell) !== -1) {
             //if cell was already selected remove form list
             var index = state.selectedCells.indexOf(cell);
             state.ids.splice(index, 1);
             state.selectedCells.splice(index, 1);
             state.polygons.splice(index, 1);
             var cellID = cellFeature.updatedCell.properties.id;
-            while (state.colors[cellID % 10] != cellFeature.updatedCell.properties.id && cellID - 11 != cellFeature.updatedCell.properties.id) {
+            while (state.colors[cellID % 10] !== cellFeature.updatedCell.properties.id && cellID - 11 !== cellFeature.updatedCell.properties.id) {
                 cellID++;
             }
             state.colors[cellID % 10] = 0;
@@ -82,19 +79,57 @@ const mutations = {
             state.selectedCells.push(cell);
             state.polygons.push(polygon);
         }
-        localStorage.polygons = JSON.stringify(state.polygons);
-        localStorage.selectedCells = JSON.stringify(state.selectedCells);
     },
     resetCells() {
-        this.state.ids.length = 0;
-        this.state.selectedCells.length = 0;
+        this.state.ids = [];
+        this.state.selectedCells = [];
         this.state.selectedSensors = [];
-        this.state.polygons.length = 0;
+        this.state.polygons = [];
         this.state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        localStorage.clear();
-        localStorage.setItem("welcome-message", true);
+        localStorage.removeItem("bigdata@geo-store");
     }
 }
+
+/**
+ * Create new VuexStore instance
+ * Parse url for shared state or else try to load state from local storage
+ * @returns {*} VuexStore
+ */
+const createStore = () => {
+    // check url for shared state
+    let preState;
+    let uri = window.location.hash.substring(1);
+    if (uri.startsWith("state=")) {
+        preState = decodeURI(uri.substring(6))
+        window.location.href = "#";
+    } else { // try to load local storage else
+        preState = localStorage.getItem("bigdata@geo-store");
+    }
+
+    // if something exists, initialize store with previous values
+    if (preState) {
+        const parsedState = JSON.parse(preState);
+        for (const key in parsedState) {
+            if (state.hasOwnProperty(key)) {
+                state[key] = parsedState[key];
+            } else {
+                console.error("vuex state does not have property '" + key + "'");
+            }
+        }
+    }
+
+    const store = new Vuex.Store({
+        state,
+        mutations,
+        actions: {},
+        modules: {},
+    });
+    // write store changes to local storage
+    store.subscribe((mutation, state) => {
+        localStorage.setItem("bigdata@geo-store", JSON.stringify(state));
+    });
+    return store;
+};
 
 const updateSelectionUri = (state) => {
     if (!state.scenario || !state.variable || !state.timerange)
@@ -102,9 +137,4 @@ const updateSelectionUri = (state) => {
     state.selectionUri = `${state.scenario}/${state.variable.var_id}/${state.timerange}`;
 }
 
-export default new Vuex.Store({
-    state,
-    mutations,
-    actions: {},
-    modules: {},
-})
+export default createStore();

@@ -1,6 +1,6 @@
 <template>
-  <div v-if="$store.state.variable!=null">
-    <h5>{{ this.variable.var }} bei Szenario {{ this.scenario }}</h5>
+  <div v-if="variable!=null">
+    <h5>{{ variable.var }} bei Szenario {{ scenario }}</h5>
     <div style="text-align: center" v-if="isLoading&&!noCell">
       <div class="spinner-border text-primary loader" role="status">
         <span class="sr-only">Loading...</span>
@@ -8,11 +8,10 @@
     </div>
     <div class="chart-container" style="position: relative; height:25rem" v-show="!isLoading && chartData">
       <line-chart id="line-chart"
-                v-if="!isLoading && chartData"
-                :chartData="chartData"
-                :options="chartOptions"/>
+                  v-if="!isLoading && chartData"
+                  :chartData="chartData"
+                  :options="chartOptions"/>
     </div>
-    
   </div>
 </template>
 
@@ -66,12 +65,15 @@ export default {
       }
     },
     selectedCells: {
-      deep:true,
-      handler(val){
+      deep: true,
+      handler(val) {
         this.loadChartdata(val);
       }
     }
-    
+  },
+  mounted() {
+    if (this.selectionUri)
+      this.loadChartdata(this.selectedCells);
   },
   methods: {
     uriSplitter(value) {
@@ -87,8 +89,7 @@ export default {
         var index = 0;
         this.noCell = false;
         for (var i = 0; i < this.selectedCellsOld.length; i++) {
-          if (this.selectedCells.includes(this.selectedCellsOld[i])) ;
-          else {
+          if (!this.selectedCells.includes(this.selectedCellsOld[i])) {
             added = false;
             index = i;
           }
@@ -101,18 +102,18 @@ export default {
                 this.isLoading = false;
               }.bind(this)).then(function (response) {
             //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) != -1) {
+            if (this.$store.state.ids.indexOf(id) !== -1) {
               var dataset = {data: response.data.data.values, fill: false,};
               this.datasets.push(dataset);
               this.setColors();
               this.labels.push(response.data.data.keys);
               this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length == this.selectedCells.length) {
+              if (this.datasets.length === this.selectedCells.length) {
                 this.isLoading = false;
               }
             }
           }.bind(this));
-        } else if (this.selectedCells.length == 1) {
+        } else if (this.selectedCells.length === 1) {
           this.datasets.splice(0, this.datasets.length);
           this.datasets.splice(0, this.datasets.length);
 
@@ -122,13 +123,13 @@ export default {
                 this.isLoading = false;
               }.bind(this)).then(function (response) {
             //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) != -1) {
+            if (this.$store.state.ids.indexOf(id) !== -1) {
               var dataset = {data: response.data.data.values, fill: false,};
               this.datasets.push(dataset);
               this.setColors();
               this.labels.push(response.data.data.keys);
               this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length == this.selectedCells.length) {
+              if (this.datasets.length === this.selectedCells.length) {
                 this.isLoading = false;
               }
             }
@@ -138,7 +139,7 @@ export default {
           this.labels.splice(index, 1);
           this.setColors();
           this.drawTimeline(this.labels[0]);
-          if (this.datasets.length == this.selectedCells.length) {
+          if (this.datasets.length === this.selectedCells.length) {
             this.isLoading = false;
           }
         }
@@ -151,7 +152,7 @@ export default {
       }
     },
     addCompleteChartdata(allCells) {
-      if (allCells.length != 0) {
+      if (allCells.length !== 0) {
         this.isLoading = true;
         this.noCell = false;
         for (var i = 0; i < allCells.length; i++) {
@@ -162,13 +163,13 @@ export default {
                 this.isLoading = false;
               }.bind(this)).then(function (response) {
             //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) != -1) {
+            if (this.$store.state.ids.indexOf(id) !== -1) {
               var dataset = {data: response.data.data.values, fill: false,};
               this.datasets.push(dataset);
               this.setColors();
               this.labels.push(response.data.data.keys);
               this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length == this.selectedCells.length) {
+              if (this.datasets.length === this.selectedCells.length) {
                 this.isLoading = false;
               }
             }
@@ -227,9 +228,9 @@ export default {
               suggestedMin: this.variable.min,
               suggestedMax: this.variable.max,
               fontSize: 16,
-              callback: (value, index, values)=>{
-                        return value + ' '; //+ this.variable.unit;
-                    }
+              callback: (value, index, values) => {
+                return value + ' '; //+ this.variable.unit;
+              }
             }
           }]
         },
@@ -237,7 +238,7 @@ export default {
           callbacks: {
             label: (tooltipItem) => {
               const value = (Math.round(tooltipItem.yLabel * 100) / 100).toLocaleString("de-DE");
-              return value+' '+ this.variable.unit;
+              return value + ' ' + this.variable.unit;
             }
           }
         }
@@ -257,5 +258,5 @@ export default {
 #line-chart {
   width: 100%;
   height: 100%;
-  }
+}
 </style>

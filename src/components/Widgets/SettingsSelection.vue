@@ -1,5 +1,5 @@
 <template>
-  <form class="form-inline settings-container" v-if="$store.state.variable!=null">
+  <form class="form-inline settings-container" v-if="variable!=null">
     <div class="form-row">
       <div class="col-auto element">
         <a href="https://bigdata-at-geo.eu/">
@@ -9,9 +9,12 @@
       <div class="col-auto form-group element">
         <label for="select-variable" class="h6">Variable:</label>
         <select id="select-variable" class="custom-select" @change="setVariable"
-                :disabled="index.variables === null" :value="$store.state.variable.var_id">
-          <option v-for="variable in index.variables" :value="variable.var_id" :key="variable.var_id">{{
-              variable.var
+                :disabled="index.variables === null">
+          <option v-for="varOption in index.variables"
+                  :value="varOption.var_id"
+                  :key="varOption.var_id"
+                  :selected="variable && variable.var_id === varOption.var_id">{{
+              varOption.var
             }}
           </option>
         </select>
@@ -19,8 +22,11 @@
       <div class="col-auto form-group element">
         <label for="select-scenario" class="h6">Szenario:</label>
         <select id="select-scenario" class="custom-select" @change="setScenario"
-                :disabled="index.scenarios === null" :value="$store.state.scenario">
-          <option v-for="scenario in index.scenarios" :key="scenario">{{ scenario }}</option>
+                :disabled="index.scenarios === null" :value="scenario">
+          <option v-for="scenarioOption in index.scenarios"
+                  :key="scenarioOption"
+                  :selected="scenario && scenario === scenarioOption"
+          >{{ scenarioOption }}</option>
         </select>
       </div>
       <div class="col-auto form-group element">
@@ -59,6 +65,11 @@
             Datenschutz
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item   v-on:click="shareConfiguration">
+            <b-icon icon="reply-fill"></b-icon>
+            Einstellungen teilen
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item variant="danger" v-on:click="resetSettings">
             <b-icon icon="gear"></b-icon>
             Einstellungen und ausgewählte Zellen zurücksetzen
@@ -72,13 +83,18 @@
       <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
         <Datengrundlage/>
       </b-modal>
+      <b-modal id="share-configuration" :title="'Konfiguration teilen'" size="s" :hide-footer="true" centered>
+        <input type="text" class="form-control" placeholder="Config-URL" :value="shareConfig">
+        <div class="alert alert-success text-center" role="alert">
+          Im Clipboard gespeichert
+        </div>
+      </b-modal>
     </div>
   </form>
 </template>
 
 <script>
 import {mapState} from 'vuex';
-import {mapMutations} from 'vuex'
 import axios from 'axios';
 import {colorGenerate} from '../mixins/colorGenerate';
 import Datengrundlage from "./Datengrundlage";
@@ -96,45 +112,43 @@ export default {
         "timeranges": null,
       },
       "timerangeValue": null,
+      shareConfig: "",
     }
-  },
-  created: function () {
-    this.timerangeValue = this.valueStart();
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange"]),
 
     minRange: function () {
+      if (this.index.timeranges === null)
+        return 0;
       var value = this.index.timeranges[0].toString();
       return value.slice(0, 4);
     },
     maxRange: function () {
+      if (this.index.timeranges === null)
+        return 0;
       var value = this.index.timeranges[this.index.timeranges.length - 1];
       return value.slice(-4);
     },
     variableName: function () {
-      return this.$store.state.variable.var;
+      return this.variable.var;
     },
     selectedCells() {
-      return this.$store.state.selectedCells;
+      return this.selectedCells;
     },
   },
   methods: { // https://vuex.vuejs.org/guide/forms.html
     // ...mapMutations(["setVariable"])
     setScenario(e) {
       this.$store.commit("setScenario", e.target.value)
-      localStorage.scenario = e.target.value;
     },
     setVariable(e) {
       const variable = this.index.variables.find(variable => variable.var_id === e.target.value);
       this.$store.commit("setVariable", variable);
-      localStorage.setItem('variables', JSON.stringify(variable));
     },
     setTimerange(value) {
-      const timerange = this.index.timeranges[value];
-      this.selectedTimerange = timerange;
-      this.$store.commit("setTimerange", timerange)
-      localStorage.timerange = timerange;
+      this.selectedTimerange = this.index.timeranges[value];
+      this.$store.commit("setTimerange", this.selectedTimerange)
     },
     liveSlider(value) {
       this.timerangeValue = value;
@@ -142,53 +156,51 @@ export default {
       this.selectedTimerange = timerange;
     },
     valueStart() {
-      if (localStorage.timerange) {
-        var x = localStorage.timerange.substring(0, 4);
-        var x = x - 1970;
-        return x;
+      if (this.timerange) {
+        let index = parseInt(this.timerange.substring(0, 4));
+        index -= 1970;
+        return index;
       }
-      var year = new Date().getYear()
-      var year = year - 70;
-      return year;
+      return new Date().getYear() - 70;
+    },
+    shareConfiguration() {
+      this.shareConfig = location.href + "#state=" + encodeURI(JSON.stringify(this.$store.state));
+      navigator.clipboard.writeText(this.shareConfig);
+      this.$bvModal.show("share-configuration");
     },
     resetSettings: function () {
       const choice = confirm("Alle Einstellungen und ausgewählte Zellen werden zurückgesetzt. Sind Sie wirklich sicher, dass Sie die Plattform zurücksetzen wollen?");
       if (choice) {
         //resetting all the settings and celected cells
-        var year = new Date().getYear()
-        var year = year - 70;
+        const year = new Date().getYear() - 70;
         this.$store.commit("resetCells");
         this.$store.commit("setScenario", this.index.scenarios[0]);
         this.$store.commit("setVariable", this.index.variables[0]);
         this.selectedTimerange = this.index.timeranges[year];
-        this.timerangeValue = this.valueStart();
+        this.timerangeValue = year;
         this.$store.commit("setTimerange", this.index.timeranges[year]);
       }
     }
-
   },
   mounted() {
     axios.get(process.env.VUE_APP_BDATA_API + "/index")
         .then((response) => {
           //setting timerange to actual year
-          var year = new Date().getYear()
-          var year = year - 70;
+          var year = (new Date()).getYear() - 70;
           this.index = response.data;
-          if (localStorage.scenario) {
-            this.$store.commit("setScenario", localStorage.scenario);
-          } else this.$store.commit("setScenario", this.index.scenarios[0]);
-          if (localStorage.variables) {
-            this.$store.commit("setVariable", JSON.parse(localStorage.getItem('variables')));
-          } else this.$store.commit("setVariable", this.index.variables[0]);
-          if (localStorage.timerange) {
-            this.$store.commit("setTimerange", localStorage.timerange);
-            this.selectedTimerange = localStorage.timerange;
-          } else {
+          if (!this.scenario)
+            this.$store.commit("setScenario", this.index.scenarios[0]);
+          if (!this.variable)
+            this.$store.commit("setVariable", this.index.variables[0]);
+          if (!this.timerange) {
             this.selectedTimerange = this.index.timeranges[year];
             this.$store.commit("setTimerange", this.index.timeranges[year]);
+          } else {
+            this.selectedTimerange = this.timerange;
           }
         })
         .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
+    this.timerangeValue = this.valueStart();
   },
   filters: {
     round: function (value) {
