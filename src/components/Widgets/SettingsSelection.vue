@@ -65,14 +65,14 @@
             Datenschutz
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item   v-on:click="shareConfiguration">
+            <b-icon icon="reply-fill"></b-icon>
+            Einstellungen teilen
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item variant="danger" v-on:click="resetSettings">
             <b-icon icon="gear"></b-icon>
             Einstellungen und ausgewählte Zellen zurücksetzen
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item   v-on:click="shareConfiguration">
-            <b-icon icon="clipboard"></b-icon>
-            Konfiguration teilen
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item href="https://ec.europa.eu">
@@ -164,7 +164,7 @@ export default {
       return new Date().getYear() - 70;
     },
     shareConfiguration() {
-      this.shareConfig = location.href + "?state=" + encodeURI(JSON.stringify(this.$store.state));
+      this.shareConfig = location.href + "#state=" + encodeURI(JSON.stringify(this.$store.state));
       navigator.clipboard.writeText(this.shareConfig);
       this.$bvModal.show("share-configuration");
     },

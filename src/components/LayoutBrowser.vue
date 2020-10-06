@@ -165,7 +165,7 @@ body {
   grid-area: widgets;
   pointer-events: none;
   position: absolute;
-  height: 100%;
+  height: inherit;
   right: 0;
   overflow-y: auto;
 }
@@ -186,12 +186,12 @@ body {
   margin-left: -.75rem;
 }
 
-#timeline-container {
-  text-align: right;
+/*#timeline-container {*/
+/*  text-align: right;*/
 
-  height: 100%;
-  width: 100%;
+/*  height: 100%;*/
+/*  width: 100%;*/
 
-  grid-area: timeline;
-}
+/*  grid-area: timeline;*/
+/*}*/
 </style>

@@ -97,17 +97,16 @@ const mutations = {
  */
 const createStore = () => {
     // check url for shared state
-    let uri = window.location.search.substring(1);
-    let params = new URLSearchParams(uri);
-    let preState = params.get("state");
-    if (preState)
-        preState = decodeURI(preState);
-
-    // try to load local storage if not already defined by url
-    if (!preState)
+    let preState;
+    let uri = window.location.hash.substring(1);
+    if (uri.startsWith("state=")) {
+        preState = decodeURI(uri.substring(6))
+        window.location.href = "#";
+    } else { // try to load local storage else
         preState = localStorage.getItem("bigdata@geo-store");
+    }
 
-    // initialize store with previous values
+    // if something exists, initialize store with previous values
     if (preState) {
         const parsedState = JSON.parse(preState);
         for (const key in parsedState) {
