@@ -93,7 +93,10 @@ export default {
           this.setSelectedCell(cellFeature);
         }.bind(this));
         const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
-        layer.bindTooltip("<div>" + value + ' ' + this.variable.unit + "</div>", {
+        const latitude = feature.geometry.coordinates[0][2][0].toLocaleString("de-DE") + "E";
+        const longitude = feature.geometry.coordinates[0][2][1].toLocaleString("de-DE") + "N";
+        const postfix = this.variable.unit + " (" + longitude + " " + latitude + ")";
+        layer.bindTooltip("<div>" + value + ' ' + postfix + "</div>", {
           permanent: false,
           sticky: true
         });
