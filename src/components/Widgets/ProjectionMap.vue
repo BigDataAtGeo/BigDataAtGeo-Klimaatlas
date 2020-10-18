@@ -158,11 +158,21 @@ export default {
         if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
           continue
         const geoData = sensorData.recentData.geo;
+        const channels = [];
+        for (let channel of Object.keys(sensorData.recentData)) {
+          let unit = "";
+          if (sensorData.recentData[channel].hasOwnProperty("unit") && sensorData.recentData[channel].unit.val)
+            unit = sensorData.recentData[channel].unit.val;
+          channels.push({
+            name: channel,
+            unit: unit
+          })
+        }
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
           color: this.generateSensorColor(id++, 0),
-          channels: Object.keys(sensorData.recentData),
+          channels: channels,
         })
       }
     })
