@@ -10,7 +10,7 @@
       </div>
 
       <div id="widgets-container" ref="widgets" v-bind:style="widgetsContainerStyle">
-        <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter">
+        <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (openweathermap.org)">
           <WeatherCarousel/>
         </WidgetShell>
 
