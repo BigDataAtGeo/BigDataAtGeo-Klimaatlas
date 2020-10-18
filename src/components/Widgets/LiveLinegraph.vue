@@ -6,7 +6,7 @@
           <button class="btn remove-sensor-button"
                   v-on:click="removeSelectedSensor(sensor)"
                   :style="{backgroundColor: sensor.color, color: 'white'}">
-            {{ sensor.id }} <span class="h5">&times;</span>
+            {{ sensorNames.hasOwnProperty(sensor.id) ? sensorNames[sensor.id] : sensor.id }} <span class="h5">&times;</span>
           </button>
         </div>
         <div class="flex-grow-1">
@@ -57,6 +57,12 @@ export default {
       endTime: null,
       aggregation: false,
       selectedChannel: null,
+      sensorNames: {
+        "00206B4B": "Obbach",
+        "000017E0": "Schwanberg",
+        "000017DD": "Bürgstadt",
+        "000017DE": "Giebelstadt",
+      },
       sensorVariables: {
         "00206B4B": {},
         "000017E0": {},
