@@ -4,7 +4,7 @@
             <h4>
                 <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>
                 {{weather.name}}
-                <small class="text-muted">({{weather.coord.lon.toFixed(2)}} / {{weather.coord.lat.toFixed(2)}})</small>
+                <small class="text-muted">({{weather.coord.lat.toLocaleString("de-DE")}}N {{weather.coord.lon.toLocaleString("de-DE")}}O)</small>
             </h4>
         </div>
         <!-- <div class="coordinates">
