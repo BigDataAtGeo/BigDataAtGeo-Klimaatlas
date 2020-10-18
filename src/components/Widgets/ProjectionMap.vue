@@ -19,9 +19,11 @@
               v-on:contextmenu="addSelectedSensor({sensor: sensor, replace: false})">
     </l-marker>
     <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
-      <div>
-        <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
-        <div v-for="bar of this.legend.bars">
+      <div class="container">
+        <div class="row">
+          <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
+        </div>
+        <div class="row" v-for="bar of this.legend.bars">
           <i :style="bar.style"/>
           <span>{{ bar.value }}</span>
         </div>
