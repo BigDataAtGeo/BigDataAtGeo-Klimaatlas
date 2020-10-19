@@ -8,7 +8,7 @@
       <div id="selection-container">
         <SettingsSelection/>
       </div>
-
+      
       <div id="widgets-container" ref="widgets" v-bind:style="widgetsContainerStyle">
         <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter">
           <WeatherCarousel/>
@@ -139,7 +139,7 @@ body {
   height: 100%;
   z-index: 1030;
   pointer-events: none;
-
+  
   display: grid;
   grid-template-areas:
     "selection selection"
@@ -167,7 +167,7 @@ body {
   position: absolute;
   height: inherit;
   right: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 #widgets-container > * {
