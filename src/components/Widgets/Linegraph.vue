@@ -246,6 +246,7 @@ export default {
           zoom: {
             zoom: {
               enabled: true,
+              sensitivity: 0.2,
               mode: 'x',
             },
             pan: {

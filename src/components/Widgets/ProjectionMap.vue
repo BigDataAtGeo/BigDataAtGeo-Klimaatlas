@@ -1,5 +1,5 @@
 <template>
-  <l-map id="leaflet" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom"
+  <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom"
          :center="mapOptions.center">
     <l-tile-layer :url="url" :attribution="attribution"/>
     <l-layer-group layerType="overlay">
@@ -76,7 +76,7 @@ export default {
           color: this.legendColorMap(feature.properties.value),
           weight: 1,
           opacity: 0.15,
-          fillOpacity: 0.35,
+          fillOpacity: 0.45,
         };
       };
     },
@@ -113,7 +113,7 @@ export default {
           const updatedCell = Object.assign(feature, {latlng: cell.latlng});
           const cellFeature = {polygon, updatedCell};
           //the new Cell gets added to the list of selected Cells and is the new selectedCell
-          if (this.selectedCells.length < 5 && !this.selectedCells.find(x => x.properties.id === updatedCell.properties.id)) {
+          if (this.selectedCells.length < 5 || this.selectedCells.find(x => x.properties.id === updatedCell.properties.id)) {
             this.addSelectedCell(cellFeature);
           }
         }.bind(this));
@@ -183,13 +183,18 @@ export default {
     })
     if (this.selectionUri)
       this.loadMapData();
-  },
+    },
   methods: {
     ...mapMutations(["setSelectedCell", "addSelectedCell", "addSelectedSensor", "removeSelectedSensor"]),
     loadMapData() {
       this.isLoading = true;
       this.prepareLegend();
       this.prepareGeoJson();
+    },
+    onReadyMap(mapObject){
+      //Moving Zoom to bottom left
+      const mapComponent = this.$refs.map.mapObject
+      mapComponent.zoomControl.setPosition('bottomleft');
     },
     prepareLegend() {
       const min = this.variable.min;
@@ -204,7 +209,6 @@ export default {
         interpolator = d3.interpolateViridis;
       }
       this.legendColorMap = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
-
       this.legend = {bars: []};
       const stepWidth = (Math.ceil(max) - Math.floor(min)) / 10;
       for (let i = 0; i <= 10; i++) {

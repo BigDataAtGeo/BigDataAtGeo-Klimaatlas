@@ -64,7 +64,7 @@ const mutations = {
         var polygon = cellFeature.polygon;
         if (state.selectedCells.indexOf(cell) !== -1) {
             //if cell was already selected remove form list
-            this.removeSelectedCell(cell);
+            this.commit("removeSelectedCell",cellFeature.updatedCell)
         } else {
             //selectedCell gets added
             state.ids.push(cellFeature.updatedCell.properties.id)
