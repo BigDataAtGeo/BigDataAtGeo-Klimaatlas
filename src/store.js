@@ -64,21 +64,24 @@ const mutations = {
         var polygon = cellFeature.polygon;
         if (state.selectedCells.indexOf(cell) !== -1) {
             //if cell was already selected remove form list
-            var index = state.selectedCells.indexOf(cell);
-            state.ids.splice(index, 1);
-            state.selectedCells.splice(index, 1);
-            state.polygons.splice(index, 1);
-            var cellID = cellFeature.updatedCell.properties.id;
-            while (state.colors[cellID % 10] !== cellFeature.updatedCell.properties.id && cellID - 11 !== cellFeature.updatedCell.properties.id) {
-                cellID++;
-            }
-            state.colors[cellID % 10] = 0;
+            this.removeSelectedCell(cell);
         } else {
             //selectedCell gets added
             state.ids.push(cellFeature.updatedCell.properties.id)
             state.selectedCells.push(cell);
             state.polygons.push(polygon);
         }
+    },
+    removeSelectedCell(state, cell) {
+        var index = state.selectedCells.indexOf(cell);
+        state.ids.splice(index, 1);
+        state.selectedCells.splice(index, 1);
+        state.polygons.splice(index, 1);
+        var cellID = cell.properties.id;
+        while (state.colors[cellID % 10] !== cell.properties.id && cellID - 11 !== cell.properties.id) {
+            cellID++;
+        }
+        state.colors[cellID % 10] = 0;
     },
     resetCells() {
         this.state.ids = [];

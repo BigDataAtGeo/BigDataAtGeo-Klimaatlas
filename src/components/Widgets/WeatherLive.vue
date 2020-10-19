@@ -4,7 +4,8 @@
             <h4>
                 <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>
                 {{weather.name}}
-                <small class="text-muted">({{weather.coord.lon.toFixed(2)}} / {{weather.coord.lat.toFixed(2)}})</small>
+                <small class="text-muted">({{weather.coord.lat.toLocaleString("de-DE")}}N {{weather.coord.lon.toLocaleString("de-DE")}}O)</small>
+                <b-icon icon="x" class="cursor-pointer" @click="removeSelectedCell"></b-icon>
             </h4>
         </div>
         <!-- <div class="coordinates">
@@ -80,6 +81,12 @@
             setWeather(response) {
                 this.weather = response;
             },
+            removeSelectedCell() {
+                if (this.selectedCells.length < this.cellIndex)
+                  return
+                const selectedCell = this.selectedCells[this.CellIndex];
+                this.$store.commit("removeSelectedCell", selectedCell);
+            },
             loadWeather() {
                 if (this.CellIndex>=0) {
                     axios.get('https://api.openweathermap.org/data/2.5/weather?lat=' + this.selectedCells[this.CellIndex].latlng.lat + '&lon=' +
@@ -108,6 +115,11 @@
         height: 100%;
         width:100%;
     }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
     .city {
         grid-area: city;
     }

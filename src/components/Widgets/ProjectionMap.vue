@@ -19,9 +19,11 @@
               v-on:contextmenu="addSelectedSensor({sensor: sensor, replace: false})">
     </l-marker>
     <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
-      <div>
-        <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
-        <div v-for="bar of this.legend.bars">
+      <div class="container">
+        <div class="row">
+          <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
+        </div>
+        <div class="row" v-for="bar of this.legend.bars">
           <i :style="bar.style"/>
           <span>{{ bar.value }}</span>
         </div>
@@ -93,7 +95,10 @@ export default {
           this.setSelectedCell(cellFeature);
         }.bind(this));
         const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
-        layer.bindTooltip("<div>" + value + ' ' + this.variable.unit + "</div>", {
+        const latitude = feature.geometry.coordinates[0][2][0].toLocaleString("de-DE") + "O";
+        const longitude = feature.geometry.coordinates[0][2][1].toLocaleString("de-DE") + "N";
+        const postfix = this.variable.unit + " (" + longitude + " " + latitude + ")";
+        layer.bindTooltip("<div>" + value + ' ' + postfix + "</div>", {
           permanent: false,
           sticky: true
         });
@@ -158,11 +163,21 @@ export default {
         if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
           continue
         const geoData = sensorData.recentData.geo;
+        const channels = [];
+        for (let channel of Object.keys(sensorData.recentData)) {
+          let unit = "";
+          if (sensorData.recentData[channel].hasOwnProperty("unit") && sensorData.recentData[channel].unit.val)
+            unit = sensorData.recentData[channel].unit.val;
+          channels.push({
+            name: channel,
+            unit: unit
+          })
+        }
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
           color: this.generateSensorColor(id++, 0),
-          channels: Object.keys(sensorData.recentData),
+          channels: channels,
         })
       }
     })

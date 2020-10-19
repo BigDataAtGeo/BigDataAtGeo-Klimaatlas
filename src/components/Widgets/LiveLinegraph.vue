@@ -6,14 +6,14 @@
           <button class="btn remove-sensor-button"
                   v-on:click="removeSelectedSensor(sensor)"
                   :style="{backgroundColor: sensor.color, color: 'white'}">
-            {{ sensor.id }} <span class="h5">&times;</span>
+            {{ sensorNames.hasOwnProperty(sensor.id) ? sensorNames[sensor.id] : sensor.id }} <span class="h5">&times;</span>
           </button>
         </div>
         <div class="flex-grow-1">
           <select class="form-control form-control-sm" id="variable-select" v-model="selectedChannel">
             <option disabled selected value="">Variable auswählen</option>
             <option v-for="(channel,index) of sensor.channels" :key="index" v-bind:value="channel">{{
-                channel
+                channel.name
               }}
             </option>
           </select>
@@ -56,7 +56,13 @@ export default {
       startTime: null,
       endTime: null,
       aggregation: false,
-      selectedChannel: "",
+      selectedChannel: null,
+      sensorNames: {
+        "00206B4B": "Obbach",
+        "000017E0": "Schwanberg",
+        "000017DD": "Bürgstadt",
+        "000017DE": "Giebelstadt",
+      },
       sensorVariables: {
         "00206B4B": {},
         "000017E0": {},
@@ -85,8 +91,8 @@ export default {
   methods: {
     ...mapMutations(["removeSelectedSensor"]),
     setLine() {
-      if (!this.lineTimes.hasOwnProperty(this.selectedChannel)) {
-        this.lineTimes[this.selectedChannel] = {
+      if (!this.lineTimes.hasOwnProperty(this.selectedChannel.name)) {
+        this.lineTimes[this.selectedChannel.name] = {
           startTime: new Date(Date.now() - this.defaultTimespan * 60 * 1000),
           endTime: Date.now(),
         };
@@ -94,9 +100,9 @@ export default {
       this.line = {
         "feedId": "fieldclimate",
         "sourceId": this.sensor.id,
-        "channel": this.selectedChannel,
+        "channel": this.selectedChannel.name,
         "component": "value",
-        "id": "fieldclimate:" + this.sensor.id + ":" + this.selectedChannel + ":value",
+        "id": "fieldclimate:" + this.sensor.id + ":" + this.selectedChannel.name + ":value",
         "color": this.sensor.color
       };
     },
@@ -105,22 +111,22 @@ export default {
           this.line.feedId,
           this.line.sourceId,
           this.line.channel,
-          this.lineTimes[this.selectedChannel].startTime,
-          this.lineTimes[this.selectedChannel].endTime,
+          this.lineTimes[this.selectedChannel.name].startTime,
+          this.lineTimes[this.selectedChannel.name].endTime,
           !this.aggregation)
           .then(data => {
-            this.lineData[this.selectedChannel] = this.parseLineData(data.data.data, this.line.id)
+            this.lineData[this.selectedChannel.name] = this.parseLineData(data.data.data, this.line.id)
           }).then(() => this.drawGraph());
     },
     drawGraph() {
       this.chartData = {
-        datasets: [this.lineData[this.selectedChannel]],
+        datasets: [this.lineData[this.selectedChannel.name]],
       };
       this.chartOptions = {
         title: {
           display: true,
           // fontSize: 20,
-          text: this.selectedChannel,
+          text: this.selectedChannel.name,
         },
         legend: {
           display: false,
@@ -156,7 +162,8 @@ export default {
               lineWidth: 2,
             },
             scaleLabel: {
-              display: true,
+              display: this.selectedChannel.unit !== "",
+              labelString: this.selectedChannel.unit ? "In " + this.selectedChannel.unit : "",
               // fontSize: 20,
             },
             // ticks: {
@@ -186,9 +193,9 @@ export default {
     chartDragComplete(chart) {
       const startTime = new Date(chart.chart.scales["x-axis-0"].min);
       const endTime = new Date(chart.chart.scales["x-axis-0"].max);
-      if (startTime < this.lineTimes[this.selectedChannel].startTime || endTime > this.lineTimes[this.selectedChannel].endTime) {
-        this.lineTimes[this.selectedChannel].startTime = startTime;
-        this.lineTimes[this.selectedChannel].endTime = endTime;
+      if (startTime < this.lineTimes[this.selectedChannel.name].startTime || endTime > this.lineTimes[this.selectedChannel.name].endTime) {
+        this.lineTimes[this.selectedChannel.name].startTime = startTime;
+        this.lineTimes[this.selectedChannel.name].endTime = endTime;
         this.loadLineDate(startTime, endTime);
       }
     },

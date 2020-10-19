@@ -19,7 +19,7 @@
 import {mapState} from "vuex";
 import axios from 'axios';
 import LineChart from "./LineChart";
-import * as d3 from "d3";
+import 'chartjs-plugin-zoom';
 import {colorGenerate} from '../mixins/colorGenerate';
 
 export default {
@@ -239,6 +239,18 @@ export default {
             label: (tooltipItem) => {
               const value = (Math.round(tooltipItem.yLabel * 100) / 100).toLocaleString("de-DE");
               return value + ' ' + this.variable.unit;
+            }
+          }
+        },
+        plugins: {
+          zoom: {
+            zoom: {
+              enabled: true,
+              mode: 'x',
+            },
+            pan: {
+              enabled: true,
+              mode: 'x',
             }
           }
         }
