@@ -61,7 +61,7 @@ export default {
         "00206B4B": "Obbach",
         "000017E0": "Schwanberg",
         "000017DD": "Bürgstadt",
-        "000017DE": "Giebelstadt",
+        "000017DE": "Herchsheim",
       },
       sensorVariables: {
         "00206B4B": {},

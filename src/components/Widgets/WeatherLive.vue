@@ -4,7 +4,7 @@
             <h4>
                 <b-icon icon="square-fill" :style="{color: generateColor(selectedCells[CellIndex].properties.id,0)}"></b-icon>
                 {{weather.name}}
-                <small class="text-muted">({{weather.coord.lat.toLocaleString("de-DE")}}N {{weather.coord.lon.toLocaleString("de-DE")}}O)</small>
+                <small class="text-muted">({{weather.coord.lat.toLocaleString("de-DE")}}&deg;N {{weather.coord.lon.toLocaleString("de-DE")}}&deg;O)</small>
                 <b-icon icon="x" class="cursor-pointer" @click="removeSelectedCell"></b-icon>
             </h4>
         </div>
