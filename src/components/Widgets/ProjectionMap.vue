@@ -140,6 +140,7 @@ export default {
       legendColorMap: null,
       loading: true,
       sensors: [],
+      liveSensorTimeThreshold: 1000 * 60 * 60 * 24 * 30, // ms * s * m * h * D
       sensorIcon: icon({
         iconUrl: "assets/sensor.svg",
         iconSize: [25, 25],
@@ -162,6 +163,18 @@ export default {
       for (const sensorData of result.data) {
         if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
           continue
+
+        let isLive = false; // only show sensors that sent data within the timeperiod of 'this.liveSensorTimeThreshold'
+        const timeDelta = Date.now() - this.liveSensorTimeThreshold;
+        for (const channel of Object.values(sensorData.recentData)) {
+          if (!channel.hasOwnProperty("value") || !channel.value.hasOwnProperty("lastUpdated"))
+            continue
+          if (channel.value.lastUpdated >= timeDelta)
+            isLive = true;
+        }
+        if (!isLive)
+          continue;
+
         const geoData = sensorData.recentData.geo;
         const channels = [];
         for (let channel of Object.keys(sensorData.recentData)) {
