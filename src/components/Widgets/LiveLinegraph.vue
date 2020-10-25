@@ -1,19 +1,20 @@
 <template>
   <div class="container">
-    <div v-if="sensorVariables.hasOwnProperty(sensor.id)">
+    <div v-if="sensorNames.hasOwnProperty(sensor.id)">
       <div class="form-group d-flex flex-row align-items-center">
         <div class="flex">
           <button class="btn remove-sensor-button"
                   v-on:click="removeSelectedSensor(sensor)"
                   :style="{backgroundColor: sensor.color, color: 'white'}">
-            {{ sensorNames.hasOwnProperty(sensor.id) ? sensorNames[sensor.id] : sensor.id }} <span class="h5">&times;</span>
+            {{ sensorNames.hasOwnProperty(sensor.id) ? sensorNames[sensor.id] : sensor.id }} <span
+              class="h5">&times;</span>
           </button>
         </div>
         <div class="flex-grow-1">
           <select class="form-control form-control-sm" id="variable-select" v-model="selectedChannel">
             <option disabled selected value="">Variable auswählen</option>
-            <option v-for="(channel,index) of sensor.channels" :key="index" v-bind:value="channel">{{
-                channel.name
+            <option v-for="channel of relevantChannels()" :key="channel.id" v-bind:value="channel">{{
+                channel.translation
               }}
             </option>
           </select>
@@ -64,10 +65,14 @@ export default {
         "000017DE": "Herchsheim",
       },
       sensorVariables: {
-        "00206B4B": {},
-        "000017E0": {},
-        "000017DD": {},
-        "000017DE": {},
+        "5TE El permittivity": "Permittivität",
+        "5TE Soil temperature": "Bodentemperatur",
+        "Dew Point": "Taupunkt",
+        "HC Air temperature": "Lufttemperatur",
+        "Precipitation": "Niederschlag",
+        "Solar radiation": "Solarstrahlung",
+        "Wind speed max": "Maximale Windgeschwindigkeit",
+        "Wind speed": "Windgeschwindigkeit"
       }
     }
   },
@@ -227,6 +232,24 @@ export default {
       // result.sort((a, b) => a.date.getTime() - b.date.getTime());
 
       return result;
+    },
+    /**
+     * Filter all available channels of the current sensor to only return relevant ones definied by *this.sensorVariables*
+     * @returns [{name, translation, index} for each relevant channel]
+     */
+    relevantChannels(){
+      const relevantChannels = []
+      let index = 0;
+      for (let channel of this.sensor.channels) {
+        if (this.sensorVariables.hasOwnProperty(channel.name)) {
+          relevantChannels.push({
+            name: channel.name,
+            translation: this.sensorVariables[channel.name],
+            id: index++
+          })
+        }
+      }
+      return relevantChannels;
     }
   }
 }
