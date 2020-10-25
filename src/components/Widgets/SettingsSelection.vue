@@ -39,7 +39,7 @@
       </div>
       <div class="col-auto form-group element">
         <label for="selected-timerange" class="h6">Aktuell:</label>
-        <span id="selected-timerange">{{ selectedTimerange.replace("-", "&#8211;") }}</span>
+        <span id="selected-timerange">{{ selectedTimerange ? selectedTimerange.replace("-", "&#8211;") : "" }}</span>
       </div>
       <div class="col-auto form-group element">
         <b-dropdown right variant="outline-secondary" class="m-md-2">
