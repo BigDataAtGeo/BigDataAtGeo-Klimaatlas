@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <div v-if="sensorNames.hasOwnProperty(sensor.id)">
-      <div class="form-group d-flex flex-row align-items-center">
+    <div v-if="sensorNames.hasOwnProperty(sensor.id)" id="display-sensor-container">
+      <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
         <div class="flex">
           <button class="btn remove-sensor-button"
                   v-on:click="removeSelectedSensor(sensor)"
@@ -24,6 +24,22 @@
                   v-if="chartData"
                   :chartData="chartData"
                   :options="chartOptions"/>
+      <div id="choose-date-container" v-if="chartData">
+        <div class="input-group input-group-md mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Von:</span>
+          </div>
+          <input type="date" class="form-control"
+                 :value="getLineTimeAsString('startTime')"
+                 @input="selectTimeFromInput($event, 'startTime')">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Bis:</span>
+          </div>
+          <input type="date" class="form-control"
+                 :value="getLineTimeAsString('endTime')"
+                 @input="selectTimeFromInput($event, 'endTime')">
+        </div>
+      </div>
     </div>
     <div v-else>
       <h3>Unbekannte Sensor-ID '{{ sensor.id }}'</h3>
@@ -53,9 +69,7 @@ export default {
       lineTimes: {},
       lineData: {},
       line: null,
-      defaultTimespan: 60 * 24 * 7,
-      startTime: null,
-      endTime: null,
+      defaultTimespanInMS: 1000 * 60 * 60 * 24 * 7,
       aggregation: false,
       selectedChannel: null,
       sensorNames: {
@@ -97,9 +111,12 @@ export default {
     ...mapMutations(["removeSelectedSensor"]),
     setLine() {
       if (!this.lineTimes.hasOwnProperty(this.selectedChannel.name)) {
+        // let endTime = Date.now();
+        // if (this.selectedChannel.lastUpdated)
+        //   endTime = this.selectedChannel.lastUpdated;
         this.lineTimes[this.selectedChannel.name] = {
-          startTime: new Date(Date.now() - this.defaultTimespan * 60 * 1000),
-          endTime: Date.now(),
+          startTime: new Date(Date.now() - this.defaultTimespanInMS),
+          endTime: new Date(),
         };
       }
       this.line = {
@@ -159,6 +176,8 @@ export default {
             },
             ticks: {
               source: "auto",
+              min: new Date(this.lineTimes[this.selectedChannel.name].startTime),
+              max: new Date(this.lineTimes[this.selectedChannel.name].endTime),
               // fontSize: 16,
             }
           }],
@@ -193,6 +212,38 @@ export default {
             }
           }
         }
+      }
+    },
+    /**
+     * If a selectedChannel or and its start/end time exists, return a valid HTML date input value, else null
+     * @param timeKey should be 'startTime' or 'endTime'
+     */
+    getLineTimeAsString(timeKey) {
+      return this.selectedChannel
+          && this.lineTimes.hasOwnProperty(this.selectedChannel.name)
+          && this.lineTimes[this.selectedChannel.name][timeKey].toISOString().split('T')[0];
+    },
+    /**
+     * Process the date input event and update the graph appropriate to the selected time range
+     * @param event HTML input change event
+     * @param timeKey should be 'startTime' or 'endTime'
+     */
+    selectTimeFromInput(event, timeKey) {
+      const selectedTime = event.target.valueAsDate;
+      // exit if the selected time specifies an invalid time range
+      if (selectedTime === null ||
+          timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.name].endTime ||
+          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.name].startTime) {
+        return;
+      }
+      // simply redraw graph if a smaller time range is selected
+      if (timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.name].startTime ||
+          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.name].endTime) {
+        this.lineTimes[this.selectedChannel.name][timeKey] = selectedTime;
+        this.drawGraph();
+      } else { // else load additional data, then redraw
+        this.lineTimes[this.selectedChannel.name][timeKey] = selectedTime;
+        this.loadLineDate(this.lineTimes[this.selectedChannel.name].startTime, this.lineTimes[this.selectedChannel.name].endTime);
       }
     },
     chartDragComplete(chart) {
@@ -237,16 +288,13 @@ export default {
      * Filter all available channels of the current sensor to only return relevant ones definied by *this.sensorVariables*
      * @returns [{name, translation, index} for each relevant channel]
      */
-    relevantChannels(){
+    relevantChannels() {
       const relevantChannels = []
       let index = 0;
       for (let channel of this.sensor.channels) {
         if (this.sensorVariables.hasOwnProperty(channel.name)) {
-          relevantChannels.push({
-            name: channel.name,
-            translation: this.sensorVariables[channel.name],
-            id: index++
-          })
+          channel.translation = this.sensorVariables[channel.name];
+          relevantChannels.push(channel);
         }
       }
       return relevantChannels;
@@ -262,6 +310,28 @@ export default {
   max-width: none;
   /*max-height: 100%;*/
   padding: 0;
+}
+
+#display-sensor-container {
+  height: 27rem;
+  display: grid;
+  grid-template-rows: 1fr 20rem 1fr;
+  grid-template-areas:
+      "select-variable"
+      "graph"
+      "select-date";
+}
+
+#choose-variable-container {
+  grid-area: select-variable;
+}
+
+#line-chart {
+  grid-area: graph;
+}
+
+#choose-date-container {
+  grid-area: select-date;
 }
 
 .remove-sensor-button {
