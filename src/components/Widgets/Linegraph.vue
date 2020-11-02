@@ -229,7 +229,9 @@ export default {
               suggestedMax: this.variable.max,
               fontSize: 16,
               callback: (value, index, values) => {
-                return value + ' '; //+ this.variable.unit;
+                if (Math.floor(value) === value) {
+                  return value + ' ';
+                }
               }
             }
           }]

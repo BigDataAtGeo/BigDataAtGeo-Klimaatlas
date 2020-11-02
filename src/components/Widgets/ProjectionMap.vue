@@ -23,14 +23,16 @@
         <div class="row">
           <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
         </div>
-        <div class="row" v-for="bar of this.legend.bars">
-          <i :style="bar.style"/>
-          <span>{{ bar.value }}</span>
+        <div class="row" >
+          <div id="legend1" style="display: inline-block"></div>
         </div>
       </div>
     </l-control>
   </l-map>
 </template>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
 <script>
 import {mapState, mapMutations, mapGetters} from "vuex";
@@ -123,6 +125,7 @@ export default {
   watch: {
     selectionUri: function () {
       this.loadMapData()
+      this.prepareLegend();
     },
     geojson: {
       deep: true,
@@ -196,17 +199,18 @@ export default {
     })
     if (this.selectionUri)
       this.loadMapData();
+      this.prepareLegend();
     },
   methods: {
     ...mapMutations(["setSelectedCell", "addSelectedCell", "addSelectedSensor", "removeSelectedSensor"]),
     loadMapData() {
       this.isLoading = true;
-      this.prepareLegend();
       this.prepareGeoJson();
     },
     onReadyMap(mapObject){
       //Moving Zoom to bottom left
       const mapComponent = this.$refs.map.mapObject
+      this.prepareLegend();
       mapComponent.zoomControl.setPosition('bottomleft');
     },
     prepareLegend() {
@@ -233,6 +237,70 @@ export default {
           },
         });
       }
+      
+      
+      var legendheight = 200,
+      legendwidth = 80,
+      margin = {top: 10, right:50, bottom: 10, left: 2};
+      var colorscale = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
+      var selector_id= "#legend1";
+      //remoove old legend
+      d3.select("#svgLegend").remove();
+      //new legend
+      var canvas = d3.select(selector_id)
+        .style("height", legendheight + "px")
+        .style("width", legendwidth + "px")
+        .style("position", "relative")
+        .append("canvas")
+        .attr("height", legendheight - margin.top - margin.bottom)
+        .attr("width", 1)
+        .style("height", (legendheight - margin.top - margin.bottom) + "px")
+        .style("width", (legendwidth - margin.left - margin.right) + "px")
+        .style("border", "1px solid #000")
+        .style("position", "absolute")
+        .style("top", (margin.top) + "px")
+        .style("left", (margin.left) + "px")
+        .node();
+        
+      var ctx = canvas.getContext("2d");
+
+      var legendscale = d3.scaleLinear()
+          .range([1, legendheight - margin.top - margin.bottom])
+          .domain(colorscale.domain());
+
+      var image = ctx.createImageData(1, legendheight);
+        d3.range(legendheight).forEach(function(i) {
+        var c = d3.rgb(colorscale(legendscale.invert(i)));
+        image.data[4*i] = c.r;
+        image.data[4*i + 1] = c.g;
+        image.data[4*i + 2] = c.b;
+        image.data[4*i + 3] = 255;
+      });
+      ctx.putImageData(image, 0, 0);
+
+      var legendaxis = d3.axisRight()
+        .scale(legendscale)
+        .tickSize(7)
+        .ticks(8);
+  	  
+      var svg = d3.select(selector_id)
+        .append("svg")
+        .attr("height", (legendheight) + "px")
+        .attr("width", (legendwidth) + "px")
+        .attr("id", "svgLegend")
+        .style("position", "absolute")
+        .style("left", "0px")
+        .style("top", "0px")
+
+      svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
+        .call(legendaxis);
+
+      //tick label size
+      svg.select(".axis")
+        .style("font-size", "0.9rem")
     },
     prepareGeoJson() {
       if (!this.geojson) {
