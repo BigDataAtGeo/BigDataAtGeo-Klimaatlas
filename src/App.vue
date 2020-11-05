@@ -33,19 +33,27 @@
           </div>
           <div class="row mt-3">
             <div class="col-1 text-center my-auto">
-              <img src="assets/sensor.svg" width="40px" height="40px" alt="Bodenwasserstation">
-            </div>
-            <div class="col-11 my-auto">
-              Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
-            </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col-1 text-center my-auto">
               <img src="assets/adjust-icon.svg" width="40px" height="40px" alt="Einstellungen">
             </div>
             <div class="col-11 my-auto">
               Die Auswahl von <i>Variable</i>, <i>Szenario</i> und <i>Zeitraum</i> kann über die Auswahl am
               oberen Rand des Bildschirms eingestellt werden.
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-1 text-center my-auto">
+              <b-icon icon="search" width="35px" height="35px"></b-icon>
+            </div>
+            <div class="col-11 my-auto">
+              Über das Lupensymbol kann nach Orten, Adressen oder Koordianten gesucht werden. Koordinaten sollten im englischen Format angegeben werden, z. B. "49.8 9.94".
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-1 text-center my-auto">
+              <img src="assets/sensor.svg" width="40px" height="40px" alt="Bodenwasserstation">
+            </div>
+            <div class="col-11 my-auto">
+              Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
             </div>
           </div>
           <div class="row mt-3">
