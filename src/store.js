@@ -13,6 +13,7 @@ const state = {
     selectedSensors: [],
     polygons: [],
     colors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    viewBoundingBox: null,
 }
 
 const mutations = {
@@ -27,6 +28,9 @@ const mutations = {
     setTimerange(state, timerange) {
         state.timerange = timerange;
         updateSelectionUri(state)
+    },
+    setViewBoundingBox(state, viewBoundBox) {
+        state.viewBoundingBox = viewBoundBox;
     },
     addSelectedSensor(state, data) {
         if (data.replace) {

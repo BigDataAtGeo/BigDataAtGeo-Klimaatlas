@@ -1,5 +1,6 @@
 <template>
-  <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: isLoading }" :zoom="mapOptions.zoom"
+  <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: isLoading }"
+         :zoom="mapOptions.zoom"
          :center="mapOptions.center">
     <l-tile-layer :url="url" :attribution="attribution"/>
     <l-layer-group layerType="overlay">
@@ -23,7 +24,7 @@
         <div class="row">
           <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
         </div>
-        <div class="row" >
+        <div class="row">
           <div id="legend1" style="display: inline-block"></div>
         </div>
       </div>
@@ -58,7 +59,7 @@ export default {
     LLayerGroup,
   },
   computed: {
-    ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids"]),
+    ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids", "viewBoundingBox"]),
     isLoading: {
       get() {
         return this.loading;
@@ -126,6 +127,9 @@ export default {
     selectionUri: function () {
       this.loadMapData()
       this.prepareLegend();
+    },
+    viewBoundingBox: function () {
+      this.$refs.map.fitBounds(this.viewBoundingBox);
     },
     geojson: {
       deep: true,
@@ -197,17 +201,18 @@ export default {
         })
       }
     })
-    if (this.selectionUri)
+    if (this.selectionUri) {
       this.loadMapData();
       this.prepareLegend();
-    },
+    }
+  },
   methods: {
     ...mapMutations(["setSelectedCell", "addSelectedCell", "addSelectedSensor", "removeSelectedSensor"]),
     loadMapData() {
       this.isLoading = true;
       this.prepareGeoJson();
     },
-    onReadyMap(mapObject){
+    onReadyMap(mapObject) {
       //Moving Zoom to bottom left
       const mapComponent = this.$refs.map.mapObject
       this.prepareLegend();
@@ -237,31 +242,31 @@ export default {
           },
         });
       }
-      
-      
+
+
       var legendheight = 200,
-      legendwidth = 80,
-      margin = {top: 10, right:50, bottom: 10, left: 2};
+          legendwidth = 80,
+          margin = {top: 10, right: 50, bottom: 10, left: 2};
       var colorscale = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
-      var selector_id= "#legend1";
+      var selector_id = "#legend1";
       //remoove old legend
       d3.select("#svgLegend").remove();
       //new legend
       var canvas = d3.select(selector_id)
-        .style("height", legendheight + "px")
-        .style("width", legendwidth + "px")
-        .style("position", "relative")
-        .append("canvas")
-        .attr("height", legendheight - margin.top - margin.bottom)
-        .attr("width", 1)
-        .style("height", (legendheight - margin.top - margin.bottom) + "px")
-        .style("width", (legendwidth - margin.left - margin.right) + "px")
-        .style("border", "1px solid #000")
-        .style("position", "absolute")
-        .style("top", (margin.top) + "px")
-        .style("left", (margin.left) + "px")
-        .node();
-        
+          .style("height", legendheight + "px")
+          .style("width", legendwidth + "px")
+          .style("position", "relative")
+          .append("canvas")
+          .attr("height", legendheight - margin.top - margin.bottom)
+          .attr("width", 1)
+          .style("height", (legendheight - margin.top - margin.bottom) + "px")
+          .style("width", (legendwidth - margin.left - margin.right) + "px")
+          .style("border", "1px solid #000")
+          .style("position", "absolute")
+          .style("top", (margin.top) + "px")
+          .style("left", (margin.left) + "px")
+          .node();
+
       var ctx = canvas.getContext("2d");
 
       var legendscale = d3.scaleLinear()
@@ -269,38 +274,38 @@ export default {
           .domain(colorscale.domain());
 
       var image = ctx.createImageData(1, legendheight);
-        d3.range(legendheight).forEach(function(i) {
+      d3.range(legendheight).forEach(function (i) {
         var c = d3.rgb(colorscale(legendscale.invert(i)));
-        image.data[4*i] = c.r;
-        image.data[4*i + 1] = c.g;
-        image.data[4*i + 2] = c.b;
-        image.data[4*i + 3] = 255;
+        image.data[4 * i] = c.r;
+        image.data[4 * i + 1] = c.g;
+        image.data[4 * i + 2] = c.b;
+        image.data[4 * i + 3] = 255;
       });
       ctx.putImageData(image, 0, 0);
 
       var legendaxis = d3.axisRight()
-        .scale(legendscale)
-        .tickSize(7)
-        .ticks(8);
-  	  
+          .scale(legendscale)
+          .tickSize(7)
+          .ticks(8);
+
       var svg = d3.select(selector_id)
-        .append("svg")
-        .attr("height", (legendheight) + "px")
-        .attr("width", (legendwidth) + "px")
-        .attr("id", "svgLegend")
-        .style("position", "absolute")
-        .style("left", "0px")
-        .style("top", "0px")
+          .append("svg")
+          .attr("height", (legendheight) + "px")
+          .attr("width", (legendwidth) + "px")
+          .attr("id", "svgLegend")
+          .style("position", "absolute")
+          .style("left", "0px")
+          .style("top", "0px")
 
       svg
-        .append("g")
-        .attr("class", "axis")
-        .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
-        .call(legendaxis);
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
+          .call(legendaxis);
 
       //tick label size
       svg.select(".axis")
-        .style("font-size", "0.9rem")
+          .style("font-size", "0.9rem")
     },
     prepareGeoJson() {
       if (!this.geojson) {

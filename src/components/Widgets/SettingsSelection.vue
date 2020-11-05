@@ -26,7 +26,8 @@
           <option v-for="scenarioOption in index.scenarios"
                   :key="scenarioOption"
                   :selected="scenario && scenario === scenarioOption"
-          >{{ scenarioOption }}</option>
+          >{{ scenarioOption }}
+          </option>
         </select>
       </div>
       <div class="col-auto form-group element">
@@ -42,6 +43,7 @@
         <span id="selected-timerange">{{ selectedTimerange ? selectedTimerange.replace("-", "&#8211;") : "" }}</span>
       </div>
       <div class="col-auto form-group element">
+        <b-icon icon="search" class="mr-2 cursor-pointer size-rem-1-25" v-b-modal.search-location></b-icon>
         <b-dropdown right variant="outline-secondary" class="m-md-2">
           <template v-slot:button-content>
             <!-- <b-icon icon="list"></b-icon> -->
@@ -65,7 +67,7 @@
             Datenschutz
           </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item   v-on:click="shareConfiguration">
+          <b-dropdown-item v-on:click="shareConfiguration">
             <b-icon icon="reply-fill"></b-icon>
             Einstellungen teilen
           </b-dropdown-item>
@@ -89,12 +91,35 @@
           Im Clipboard gespeichert
         </div>
       </b-modal>
+      <b-modal id="search-location" :title="'Ort suchen'" size="s" :hide-footer="true">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Adresse, Koordinaten, ..."
+                 @input="searchLocationTimeout ? null : searchLocation()" v-model="searchLocationInput">
+          <div class="input-group-append">
+            <button class="btn alert-secondary" type="button">
+              <b-icon icon="search" class="cursor-pointer size-rem-1-25" v-b-modal.search-location></b-icon>
+            </button>
+          </div>
+        </div>
+        <div v-if="searchLocationError" class="alert alert-danger" role="alert">
+          Aufgrund eines Fehlers konnten keine Orte gefunden werden.
+        </div>
+        <div v-else>
+          <div class="list-group">
+            <button v-for="searchResult of searchLocationResults" type="button"
+                    class="list-group-item list-group-item-action"
+                    @click="selectSearchLocationResult(searchResult)">
+              {{ searchResult.display_name }}
+            </button>
+          </div>
+        </div>
+      </b-modal>
     </div>
   </form>
 </template>
 
 <script>
-import {mapState} from 'vuex';
+import {mapState, mapMutations} from 'vuex';
 import axios from 'axios';
 import {colorGenerate} from '../mixins/colorGenerate';
 import Datengrundlage from "./Datengrundlage";
@@ -113,11 +138,14 @@ export default {
       },
       "timerangeValue": null,
       shareConfig: "",
+      searchLocationInput: null,
+      searchLocationResults: [],
+      searchLocationError: false,
+      searchLocationTimeout: false,
     }
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange"]),
-
     minRange: function () {
       if (this.index.timeranges === null)
         return 0;
@@ -138,7 +166,7 @@ export default {
     },
   },
   methods: { // https://vuex.vuejs.org/guide/forms.html
-    // ...mapMutations(["setVariable"])
+    ...mapMutations(["setViewBoundingBox"]),
     setScenario(e) {
       this.$store.commit("setScenario", e.target.value)
     },
@@ -180,7 +208,55 @@ export default {
         this.timerangeValue = year;
         this.$store.commit("setTimerange", this.index.timeranges[year]);
       }
-    }
+    },
+    /**
+     * Search for geolocations with Openstreetmap
+     * Also sets *searchTimeout* to respect the usage limits of the api, during which this method should not be called again
+     * If the value of *searchLocationInput* changed after the timeout, this method calls itself again
+     */
+    searchLocation() {
+      const currentInput = this.searchLocationInput;
+      // clear results for empty input strings
+      if (!currentInput) {
+        this.searchLocationResults = [];
+        return;
+      }
+
+      // disable vue input event handler to limit api searches and hide error message
+      this.searchLocationTimeout = true;
+      this.searchLocationError = false;
+
+      // set *viewbox* to prefer results in this area and restrict to *countrycodes*
+      axios.get("https://nominatim.openstreetmap.org/search?q=" + currentInput + "&format=json&countrycodes=de&viewbox=8.8339,49.463,10.9364,50.5529")
+          .catch(error => {
+            console.error(error);
+            this.showSearchLocationError = true;
+          }).then(result => {
+        this.searchLocationResults = result.data;
+      });
+
+      // Set this timeout to disable the vue input event handler due to api restrictions
+      setTimeout(() => {
+        this.searchLocationTimeout = false;
+        if (this.searchLocationInput !== currentInput) {
+          this.searchLocation();
+        }
+      }, 1200);
+    },
+    /**
+     * Parse the boundingbox of an OSM-Object to leaflet format and save it in the vuex store
+     * Also close the search location input modal
+     * @param searchResult Openstreatmap Object
+     */
+    selectSearchLocationResult(searchResult) {
+      const coords = searchResult.boundingbox;
+      const boundingBox = [
+          [parseFloat(coords[0]), parseFloat(coords[2])],
+          [parseFloat(coords[1]), parseFloat(coords[3])],
+      ];
+      this.$bvModal.hide("search-location");
+      this.setViewBoundingBox(boundingBox);
+    },
   },
   mounted() {
     axios.get(process.env.VUE_APP_BDATA_API + "/index")
@@ -230,6 +306,15 @@ export default {
 
 #selected-timerange {
   width: 6em;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.size-rem-1-25 {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .form-group {
