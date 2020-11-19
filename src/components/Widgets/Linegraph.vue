@@ -1,14 +1,14 @@
 <template>
   <div v-if="variable!=null">
     <h5>{{ variable.var }} bei Szenario {{ scenario }}</h5>
-    <div style="text-align: center" v-if="isLoading&&!noCell">
+    <div style="text-align: center" v-if="isLoading">
       <div class="spinner-border text-primary loader" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <div class="chart-container" style="position: relative; height:25rem" v-show="!isLoading && chartData">
+    <div class="chart-container" style="position: relative; height:25rem" v-show="!isLoading">
       <line-chart id="line-chart"
-                  v-if="!isLoading && chartData"
+                  v-if="chartData"
                   :chartData="chartData"
                   :options="chartOptions"/>
     </div>
@@ -31,11 +31,8 @@ export default {
       chartData: null,
       chartOptions: null,
       loading: false,
-      datasets: [],
       labels: [],
-      selectedCellsOld: [],
-      noCell: true,
-      oldUri: "",
+      datasets: []
     };
   },
   computed: {
@@ -48,148 +45,58 @@ export default {
         this.loading = value;
       }
     },
-    ids() {
-      return this.$store.state.ids;
-    },
-
   },
   watch: {
-    selectionUri(val) {
-      if (this.uriSplitter(this.oldUri) !== this.uriSplitter(this.selectionUri)) {
-        this.chartData = null;
-        this.chartOptions = null;
-        this.datasets = [];
-        this.labels = [];
-        this.addCompleteChartdata(this.selectedCells);
-        this.oldUri = this.selectionUri;
-      }
+    selectionUri(oldValue, newValue) {
+      this.datasets = [];
+      this.loadChartData();
     },
-    selectedCells: {
-      deep: true,
-      handler(val) {
-        this.loadChartdata(val);
-      }
+    selectedCells(oldValue, newValue) {
+      this.loadChartData()
     }
   },
   mounted() {
-    if (this.selectionUri)
-      this.loadChartdata(this.selectedCells);
+    if (this.selectedCells.length > 0 && this.selectionUri)
+      this.loadChartData();
   },
   methods: {
-    uriSplitter(value) {
-      var uriSplit = value.split('/');
-      if (uriSplit.length < 2) return " ";
-      return uriSplit[0] + uriSplit[1];
-    },
-    loadChartdata(val) {
-      if (val.length > 0) {
-        this.isLoading = true;
-        var id = val[val.length - 1].properties.id;
-        var added = true;
-        var index = 0;
-        this.noCell = false;
-        for (var i = 0; i < this.selectedCellsOld.length; i++) {
-          if (!this.selectedCells.includes(this.selectedCellsOld[i])) {
-            added = false;
-            index = i;
-          }
-        }
-        if (added) {
-          //   BDATG_ORIGIN + '/all_times/' + id + '/' + this.scenario + '/' + this.variable)
-          axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
-              .catch(function (error) {
-                console.error('fetch data error: failed to load JSON from server', error)
-                this.isLoading = false;
-              }.bind(this)).then(function (response) {
-            //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) !== -1) {
-              var dataset = {data: response.data.data.values, fill: false,};
-              this.datasets.push(dataset);
-              this.setColors();
-              this.labels.push(response.data.data.keys);
-              this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length === this.selectedCells.length) {
-                this.isLoading = false;
-              }
-            }
-          }.bind(this));
-        } else if (this.selectedCells.length === 1) {
-          this.datasets.splice(0, this.datasets.length);
-          this.datasets.splice(0, this.datasets.length);
+    /**
+     * First remove datasets of cells which are no longer in *selectedCells*
+     * Then load new datasets for newly selected cells
+     */
+    loadChartData() {
+      this.isLoading = true;
+      // remove datasets of old cells
+      this.datasets = this.datasets.filter(dataset => this.selectedCells.find(cell => cell.id === dataset.id))
 
-          axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
+      // load potential new datasets
+      const promises = [];
+      for (const cell of this.selectedCells) {
+        if (!this.datasets.find(dataset => dataset.id === cell.id)) {
+          promises.push(axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${cell.id}/${this.scenario}/${this.variable.var_id}`)
               .catch(function (error) {
                 console.error('fetch data error: failed to load JSON from server', error)
-                this.isLoading = false;
-              }.bind(this)).then(function (response) {
-            //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) !== -1) {
-              var dataset = {data: response.data.data.values, fill: false,};
-              this.datasets.push(dataset);
-              this.setColors();
-              this.labels.push(response.data.data.keys);
-              this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length === this.selectedCells.length) {
-                this.isLoading = false;
-              }
-            }
-          }.bind(this));
-        } else {
-          this.datasets.splice(index, 1);
-          this.labels.splice(index, 1);
-          this.setColors();
-          this.drawTimeline(this.labels[0]);
-          if (this.datasets.length === this.selectedCells.length) {
-            this.isLoading = false;
-          }
+              }).then((response) => {
+                if (this.labels.length === 0)
+                  this.labels = response.data.data.keys;
+                return {
+                  data: response.data.data.values,
+                  borderColor: cell.color,
+                  fill: false,
+                  id: cell.id,
+                };
+              }));
         }
-        this.selectedCellsOld = Array.from(this.selectedCells);
-      } else {
-        this.datasets = [];
-        this.selectedCellsOld = [];
-        this.isLoading = true;
-        this.noCell = true;
       }
-    },
-    addCompleteChartdata(allCells) {
-      if (allCells.length !== 0) {
-        this.isLoading = true;
-        this.noCell = false;
-        for (var i = 0; i < allCells.length; i++) {
-          var id = allCells[i].properties.id;
-          axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${id}/${this.scenario}/${this.variable.var_id}`)
-              .catch(function (error) {
-                console.error('fetch data error: failed to load JSON from server', error)
-                this.isLoading = false;
-              }.bind(this)).then(function (response) {
-            //check if cell didnt get removed while waiting for api response
-            if (this.$store.state.ids.indexOf(id) !== -1) {
-              var dataset = {data: response.data.data.values, fill: false,};
-              this.datasets.push(dataset);
-              this.setColors();
-              this.labels.push(response.data.data.keys);
-              this.drawTimeline(response.data.data.keys);
-              if (this.datasets.length === this.selectedCells.length) {
-                this.isLoading = false;
-              }
-            }
-          }.bind(this));
+      Promise.all(promises).then(datasets => {
+        for (const dataset of datasets) {
+          this.datasets.push(dataset);
         }
-        this.selectedCellsOld = Array.from(this.selectedCells);
-      } else {
-        this.noCell = true;
-      }
+        this.drawTimeline();
+        this.isLoading = false;
+      });
     },
-    setColors() {
-      for (var i = 0; i < this.datasets.length; i++) {
-        this.datasets[i].borderColor = this.generateColor(this.ids[i], 0);
-      }
-    },
-    drawTimeline(data) {
-      this.chartData = {
-        labels: data,
-        datasets: Array.from(this.datasets),
-      };
+    drawTimeline() {
       this.chartOptions = {
         title: {
           display: true,
@@ -257,6 +164,10 @@ export default {
             }
           }
         }
+      }
+      this.chartData = {
+        labels: this.labels,
+        datasets: this.datasets,
       }
     }
   }

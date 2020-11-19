@@ -8,7 +8,7 @@
       <div id="selection-container">
         <SettingsSelection/>
       </div>
-      
+
       <div id="widgets-container" ref="widgets" v-bind:style="widgetsContainerStyle">
         <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (openweathermap.org)">
           <WeatherCarousel/>
@@ -18,7 +18,7 @@
           <VariableInfo :variable="variable"></VariableInfo>
         </WidgetShell>
 
-        <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0">
+        <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0 && selectionUri">
           <Linegraph/>
         </WidgetShell>
 
@@ -62,7 +62,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["selectedCells", "selectedSensors", "variable"]),
+    ...mapState(["selectedCells", "selectedSensors", "variable", "selectionUri"]),
     gridColumns() {
       if (this.windowWidth > 1280) return '1fr minmax(20rem,25vw)'
       else return '1fr minmax(20rem,40vw)'
@@ -139,7 +139,7 @@ body {
   height: 100%;
   z-index: 1030;
   pointer-events: none;
-  
+
   display: grid;
   grid-template-areas:
     "selection selection"

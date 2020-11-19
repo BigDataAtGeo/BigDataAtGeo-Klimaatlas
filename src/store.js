@@ -8,11 +8,8 @@ const state = {
     variable: null,
     timerange: null,
     selectionUri: null,
-    ids: [],
     selectedCells: [],
     selectedSensors: [],
-    polygons: [],
-    colors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     viewBoundingBox: null,
 }
 
@@ -32,67 +29,35 @@ const mutations = {
     setViewBoundingBox(state, viewBoundBox) {
         state.viewBoundingBox = viewBoundBox;
     },
-    addSelectedSensor(state, data) {
-        if (data.replace) {
-            state.selectedSensors = [data.sensor]
-        } else {
-            for (let x of state.selectedSensors)
-                if (x.id === data.sensor.id)
-                    return;
-            state.selectedSensors.push(data.sensor);
-        }
+    setSelectedSensor(state, sensor) {
+        state.selectedSensors = [sensor]
+    },
+    addSelectedSensor(state, sensor) {
+        // check if sensor is already added
+        for (let x of state.selectedSensors)
+            if (x.id === data.sensor.id)
+                return;
+        state.selectedSensors.push(sensor);
     },
     removeSelectedSensor(state, sensor) {
         state.selectedSensors = state.selectedSensors.filter(x => x.id !== sensor.id);
     },
-    setSelectedCell(state, cellFeature) {
-        //remove all multiple selected cells
-        if (state.selectedCells.length === 1 && state.selectedCells[0] === cellFeature.updatedCell) {
-            state.selectedCells.splice(0, 1);
-            state.polygons.splice(0, 1);
-            state.ids.splice(0, 1);
-            state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        } else {
-            state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            state.polygons.length = 0;
-            state.selectedCells.length = 0;
-            state.ids.length = 0;
-            state.ids.push(cellFeature.updatedCell.properties.id);
-            state.polygons.push(cellFeature.polygon);
-            state.selectedCells.push(cellFeature.updatedCell);
-        }
+    setSelectedCell(state, cell) {
+        state.selectedCells = [cell];
     },
-    addSelectedCell(state, cellFeature) {
-        //check if array already contains cell
-        var cell = cellFeature.updatedCell;
-        var polygon = cellFeature.polygon;
-        if (state.selectedCells.indexOf(cell) !== -1) {
-            //if cell was already selected remove form list
-            this.commit("removeSelectedCell",cellFeature.updatedCell)
-        } else {
-            //selectedCell gets added
-            state.ids.push(cellFeature.updatedCell.properties.id)
-            state.selectedCells.push(cell);
-            state.polygons.push(polygon);
-        }
+    addSelectedCell(state, cell) {
+        // check if cell is already added
+        for (let x of state.selectedCells)
+            if (x.id === cell.id)
+                return;
+        state.selectedCells.push(cell)
     },
     removeSelectedCell(state, cell) {
-        var index = state.selectedCells.indexOf(cell);
-        state.ids.splice(index, 1);
-        state.selectedCells.splice(index, 1);
-        state.polygons.splice(index, 1);
-        var cellID = cell.properties.id;
-        while (state.colors[cellID % 10] !== cell.properties.id && cellID - 11 !== cell.properties.id) {
-            cellID++;
-        }
-        state.colors[cellID % 10] = 0;
+        state.selectedCells = state.selectedCells.filter(x => x.id !== cell.id)
     },
     resetCells() {
-        this.state.ids = [];
         this.state.selectedCells = [];
         this.state.selectedSensors = [];
-        this.state.polygons = [];
-        this.state.colors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         localStorage.removeItem("bigdata@geo-store");
     }
 }
@@ -139,8 +104,10 @@ const createStore = () => {
 };
 
 const updateSelectionUri = (state) => {
-    if (!state.scenario || !state.variable || !state.timerange)
+    if (!state.scenario || !state.variable || !state.timerange) {
+        state.selectionUri = null;
         return;
+    }
     state.selectionUri = `${state.scenario}/${state.variable.var_id}/${state.timerange}`;
 }
 

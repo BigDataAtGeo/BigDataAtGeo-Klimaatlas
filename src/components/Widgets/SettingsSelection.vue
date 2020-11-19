@@ -232,8 +232,9 @@ export default {
             console.error(error);
             this.showSearchLocationError = true;
           }).then(result => {
-        this.searchLocationResults = result.data;
-      });
+            this.searchLocationResults = result.data;
+          }
+      )
 
       // Set this timeout to disable the vue input event handler due to api restrictions
       setTimeout(() => {
@@ -251,8 +252,8 @@ export default {
     selectSearchLocationResult(searchResult) {
       const coords = searchResult.boundingbox;
       const boundingBox = [
-          [parseFloat(coords[0]), parseFloat(coords[2])],
-          [parseFloat(coords[1]), parseFloat(coords[3])],
+        [parseFloat(coords[0]), parseFloat(coords[2])],
+        [parseFloat(coords[1]), parseFloat(coords[3])],
       ];
       this.$bvModal.hide("search-location");
       this.setViewBoundingBox(boundingBox);

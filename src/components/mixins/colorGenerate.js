@@ -1,28 +1,17 @@
-import * as d3 from "d3";
-export const colorGenerate= {
-    methods:{
-        generateColor(id,counter){
-            if(counter>5) return d3.interpolateTurbo(0);
-            if(counter==0&&this.$store.state.colors.indexOf(id)!=-1){
-                return d3.interpolateTurbo((this.$store.state.colors.indexOf(id)%5)/4)
-            }
-            if(this.$store.state.colors[id%5]==id-counter){
-                return d3.interpolateTurbo((id%5)/4);
-            }else if(this.$store.state.colors[id%5]==0){
-                this.$store.state.colors[id%5]=id-counter;
-                return d3.interpolateTurbo((id%5)/4);
-            }else{
-                return this.generateColor(++id,++counter);
-            }
-        },
-        generateSensorColor(id,counter){
-            if(counter>5) return d3.interpolateTurbo(0);           
-            if(this.$store.state.colors[(id%5)+5]==0){
-                this.$store.state.colors[(id%5)+5]=id-counter;
-                return d3.interpolateTurbo((id%5)/4);
-            }else{
-                return this.generateColor(++id,++counter);
-            }
+
+export const colorGenerate = {
+    data() {
+        return {
+            count: 0,
+            colors: ["#23171B", "#26BCE1", "#95FB51", "#FF821D", "#900C00"],
         }
+    },
+    methods: {
+        generateColor() {
+            return this.colors[this.count++ % this.colors.length];
+        },
+        amountColors() {
+            return this.colors.length;
+        },
     }
 }

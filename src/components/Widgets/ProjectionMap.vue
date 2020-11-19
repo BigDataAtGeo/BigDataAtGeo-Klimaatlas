@@ -1,12 +1,13 @@
 <template>
-  <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: isLoading }"
+  <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: loading }"
          :zoom="mapOptions.zoom"
          :center="mapOptions.center">
     <l-tile-layer :url="url" :attribution="attribution"/>
-    <l-layer-group layerType="overlay">
+    <l-layer-group layerType="overlay" :key="this.redraws">
       <div v-if="geojson">
-        <l-polygon v-for="(polygon,index) of this.polygons" :key="index" :lat-lngs="polygon"
-                   :color="generateColor(ids[index], 0)"
+        <l-polygon v-for="cell of this.selectedCells" :key="cell.id"
+                   :lat-lngs="cell.polygon"
+                   :color="cell.color"
                    :interactive="false" :bubblingMouseEvents="false"
                    :fill="false" :options="geoJsonOptions"></l-polygon>
       </div>
@@ -16,8 +17,8 @@
 
     <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="createSensorIcon(sensor.color)"
               :key="sensor.id"
-              v-on:click="addSelectedSensor({sensor: sensor, replace: true})"
-              v-on:contextmenu="addSelectedSensor({sensor: sensor, replace: false})">
+              v-on:click="setSelectedSensor(sensor)"
+              v-on:contextmenu="addSelectedSensor(sensor)">
     </l-marker>
     <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
       <div class="container">
@@ -31,9 +32,6 @@
     </l-control>
   </l-map>
 </template>
-
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
 <script>
 import {mapState, mapMutations, mapGetters} from "vuex";
@@ -60,21 +58,13 @@ export default {
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids", "viewBoundingBox"]),
-    isLoading: {
-      get() {
-        return this.loading;
-      },
-      set(value) {
-        this.loading = value;
-      }
-    },
     geoJsonOptions() {
       return {
         onEachFeature: this.onEachFeatureFunction
       };
     },
     geoJsonStyle() {
-      return (feature) => {
+      return feature => {
         return {
           color: this.legendColorMap(feature.properties.value),
           weight: 1,
@@ -85,18 +75,7 @@ export default {
     },
     onEachFeatureFunction() {
       return (feature, layer) => {
-        layer.on('click', function (cell) {
-          var polygon = [];
-          for (var i = 0; i < feature.geometry.coordinates[0].length - 1; i++) {
-            var coordinates = [];
-            coordinates.push(feature.geometry.coordinates[0][i][1]);
-            coordinates.push(feature.geometry.coordinates[0][i][0]);
-            polygon.push(coordinates);
-          }
-          const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-          const cellFeature = {polygon, updatedCell};
-          this.setSelectedCell(cellFeature);
-        }.bind(this));
+        // create tooltip
         const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
         const latitude = feature.geometry.coordinates[0][2][0].toLocaleString("de-DE") + "&deg;O";
         const longitude = feature.geometry.coordinates[0][2][1].toLocaleString("de-DE") + "&deg;N";
@@ -105,23 +84,28 @@ export default {
           permanent: false,
           sticky: true
         });
-        layer.on('contextmenu', function (cell) {
-          var polygon = [];
-          for (var i = 0; i < feature.geometry.coordinates[0].length - 1; i++) {
-            var coordinates = [];
-            coordinates.push(feature.geometry.coordinates[0][i][1]);
-            coordinates.push(feature.geometry.coordinates[0][i][0]);
-            polygon.push(coordinates);
+
+        // set all selectedCells to this cell alone
+        layer.on('click', cell => {
+          // cell.geoemtry = feature.geometry
+          const cellObject = this.createCellObject(cell, feature);
+          this.setSelectedCell(cellObject);
+        });
+
+        // add this cell to the selection
+        layer.on('contextmenu', cell => {
+          const cellObject = this.createCellObject(cell, feature);
+          if (!this.selectedCells.find(x => x.id === feature.properties.id)) {
+            if (this.selectedCells.length >= 5)
+              return;
+            this.addSelectedCell(cellObject)
+          } else {
+            console.log("remove me");
+            this.removeSelectedCell(cellObject)
           }
-          const updatedCell = Object.assign(feature, {latlng: cell.latlng});
-          const cellFeature = {polygon, updatedCell};
-          //the new Cell gets added to the list of selected Cells and is the new selectedCell
-          if (this.selectedCells.length < 5 || this.selectedCells.find(x => x.properties.id === updatedCell.properties.id)) {
-            this.addSelectedCell(cellFeature);
-          }
-        }.bind(this));
+        });
       };
-    }
+    },
   },
   watch: {
     selectionUri: function () {
@@ -135,7 +119,8 @@ export default {
       deep: true,
       handler() {
         this.$forceNextTick(() => {
-          this.isLoading = false;
+          this.loading = false;
+          this.redraws++;
         });
       }
     }
@@ -161,7 +146,8 @@ export default {
         rasterSizeInMeters: 1000,
       },
       url: 'https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      redraws: 0 // used to redraw selected cells on the map
     }
   },
   mounted() {
@@ -193,10 +179,13 @@ export default {
             unit: unit
           })
         }
+        let color = this.generateColor();
+        while (this.sensors.find(sensor => sensor.color === color) && this.sensor.length < this.amountColors())
+          color = this.generateColor();
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
-          color: this.generateSensorColor(id++, 0),
+          color: this.generateColor(),
           channels: channels,
         })
       }
@@ -207,9 +196,9 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["setSelectedCell", "addSelectedCell", "addSelectedSensor", "removeSelectedSensor"]),
+    ...mapMutations(["setSelectedCell", "addSelectedCell", "setSelectedSensor", "addSelectedSensor", "removeSelectedCell", "removeSelectedSensor"]),
     loadMapData() {
-      this.isLoading = true;
+      this.loading = true;
       this.prepareGeoJson();
     },
     onReadyMap(mapObject) {
@@ -317,9 +306,9 @@ export default {
         }.bind(this));
       } else {
         axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/values/${this.selectionUri}`)
-            .catch(function (error) {
+            .catch(error => {
               console.error('fetch data error: failed to load JSON from server', error)
-            }).then(function (response) {
+            }).then(response => {
           for (let feature of this.geojson.features) {
             const id = feature.properties.id
             if (id in response.data) {
@@ -327,24 +316,32 @@ export default {
             } else {
               this.geojson = null;
               this.prepareGeoJson();
+              return;
             }
           }
-        }.bind(this));
+        });
       }
     },
-    reloadPolygons: function () {
-      var length = this.polygons.length;
-      var polygonscopy = [];
-      for (var i = 0; i < length; i++) {
-        polygonscopy[i] = this.polygons[i];
-        this.polygons.splice(i, 1);
+    createCellObject: function(cell, feature) {
+      const coordinates = []
+      // the geoJson has lng-lat coords, leaflet expects lat-lng -> change for further use
+      for (const coordinate of feature.geometry.coordinates[0]) {
+          coordinates.push([coordinate[1], coordinate[0]])
       }
-      length = polygonscopy.length;
-      for (var i = 0; i < length; i++) {
-        this.polygons[i] = polygonscopy[i];
+
+      let color = this.generateColor();
+      while (this.selectedCells.find(cell => cell.color === color) && this.selectedCells.length < this.amountColors()) {
+        color = this.generateColor();
+      }
+      return {
+        id: feature.properties.id,
+        value: feature.properties.value,
+        polygon: coordinates,
+        latlng: cell.latlng,
+        color: color,
       }
     },
-    createSensorIcon: (color) => divIcon({
+    createSensorIcon: color => divIcon({
       className: "sensor-svg",
       iconSize: [40, 40],
       iconAnchor: [20, 20],
