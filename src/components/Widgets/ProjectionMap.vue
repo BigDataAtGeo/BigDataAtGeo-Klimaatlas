@@ -87,7 +87,6 @@ export default {
 
         // set all selectedCells to this cell alone
         layer.on('click', cell => {
-          // cell.geoemtry = feature.geometry
           const cellObject = this.createCellObject(cell, feature);
           this.setSelectedCell(cellObject);
         });
@@ -95,12 +94,12 @@ export default {
         // add this cell to the selection
         layer.on('contextmenu', cell => {
           const cellObject = this.createCellObject(cell, feature);
+          // check if cell is already added, if so, remove it instead
           if (!this.selectedCells.find(x => x.id === feature.properties.id)) {
             if (this.selectedCells.length >= 5)
               return;
             this.addSelectedCell(cellObject)
           } else {
-            console.log("remove me");
             this.removeSelectedCell(cellObject)
           }
         });
@@ -179,13 +178,16 @@ export default {
             unit: unit
           })
         }
+
         let color = this.generateColor();
+        // try to find another color if this is already taken
         while (this.sensors.find(sensor => sensor.color === color) && this.sensor.length < this.amountColors())
           color = this.generateColor();
+
         this.sensors.push({
           latlng: [geoData.lat.val, geoData.lon.val],
           id: sensorData.sourceId,
-          color: this.generateColor(),
+          color: color,
           channels: channels,
         })
       }
@@ -322,17 +324,18 @@ export default {
         });
       }
     },
-    createCellObject: function(cell, feature) {
+    createCellObject: function (cell, feature) {
       const coordinates = []
       // the geoJson has lng-lat coords, leaflet expects lat-lng -> change for further use
       for (const coordinate of feature.geometry.coordinates[0]) {
-          coordinates.push([coordinate[1], coordinate[0]])
+        coordinates.push([coordinate[1], coordinate[0]])
       }
 
       let color = this.generateColor();
-      while (this.selectedCells.find(cell => cell.color === color) && this.selectedCells.length < this.amountColors()) {
+      // try to find another color if this is already taken
+      while (this.selectedCells.find(cell => cell.color === color) && this.selectedCells.length < this.amountColors())
         color = this.generateColor();
-      }
+
       return {
         id: feature.properties.id,
         value: feature.properties.value,
