@@ -47,15 +47,18 @@ export default {
     },
   },
   watch: {
+    //Chartdata gets updateted when SelectionURI changes i.e. when "Variable" is changed
     selectionUri(oldValue, newValue) {
       this.datasets = [];
       this.loadChartData();
     },
+    //Chartdata gets updated if a cell gets removed or added
     selectedCells(oldValue, newValue) {
       this.loadChartData()
     }
   },
   mounted() {
+    //when created and a Cell was safed in the localstorage ChartData gets updated
     if (this.selectedCells.length > 0 && this.selectionUri)
       this.loadChartData();
   },
@@ -136,6 +139,7 @@ export default {
               suggestedMax: this.variable.max,
               fontSize: 16,
               callback: (value, index, values) => {
+                //ticks get rounded to enable smooth y-axis zoom
                 if (Math.floor(value) === value) {
                   return value + ' ';
                 }

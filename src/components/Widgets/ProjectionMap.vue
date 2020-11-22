@@ -20,7 +20,7 @@
               v-on:click="setSelectedSensor(sensor)"
               v-on:contextmenu="addSelectedSensor(sensor)">
     </l-marker>
-    <l-control v-if="legend" :position="'bottomleft'" class="custom-control-watermark">
+    <l-control :position="'bottomleft'" class="custom-control-watermark">
       <div class="container">
         <div class="row">
           <span v-if="this.variable.unit">In {{ this.variable.unit }}:</span>
@@ -128,7 +128,6 @@ export default {
   data() {
     return {
       geojson: null,
-      legend: null,
       legendColorMap: null,
       loading: true,
       sensors: [],
@@ -192,7 +191,6 @@ export default {
     })
     if (this.selectionUri) {
       this.loadMapData();
-      this.prepareLegend();
     }
   },
   methods: {
@@ -211,6 +209,7 @@ export default {
       const min = this.variable.min;
       const max = this.variable.max;
 
+      //get interpolator of the variable and create legend for json coloring
       const interpolatorName = "interpolate" + this.variable.colormap;
       let interpolator;
       if (d3.hasOwnProperty(interpolatorName)) {
@@ -220,27 +219,15 @@ export default {
         interpolator = d3.interpolateViridis;
       }
       this.legendColorMap = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
-      this.legend = {bars: []};
-      const stepWidth = (Math.ceil(max) - Math.floor(min)) / 10;
-      for (let i = 0; i <= 10; i++) {
-        const value = Math.floor(min) + i * stepWidth;
-        this.legend.bars.push({
-          value: Math.round(value * 10) / 10, // round to one decimal
-          style: {
-            backgroundColor: this.legendColorMap(value)
-          },
-        });
-      }
-
-
+      
+      //remoove old legend
+      d3.select("#svgLegend").remove();
+      //create new d3 legend
       var legendheight = 200,
           legendwidth = 80,
           margin = {top: 10, right: 50, bottom: 10, left: 2};
       var colorscale = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
       var selector_id = "#legend1";
-      //remoove old legend
-      d3.select("#svgLegend").remove();
-      //new legend
       var canvas = d3.select(selector_id)
           .style("height", legendheight + "px")
           .style("width", legendwidth + "px")
@@ -286,13 +273,12 @@ export default {
           .style("left", "0px")
           .style("top", "0px")
 
-      svg
-          .append("g")
-          .attr("class", "axis")
-          .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
-          .call(legendaxis);
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
+        .call(legendaxis);
 
-      //tick label size
+      //tick label size for legend
       svg.select(".axis")
           .style("font-size", "0.9rem")
     },

@@ -174,15 +174,18 @@ export default {
       const variable = this.index.variables.find(variable => variable.var_id === e.target.value);
       this.$store.commit("setVariable", variable);
     },
+    //called when Timerange-Slider is released
     setTimerange(value) {
       this.selectedTimerange = this.index.timeranges[value];
       this.$store.commit("setTimerange", this.selectedTimerange)
     },
+    //used for updating displayed timerange while using the timerange slider
     liveSlider(value) {
       this.timerangeValue = value;
       const timerange = this.index.timeranges[value];
       this.selectedTimerange = timerange;
     },
+    //sets the starting value of the timerange slider to the right point 
     valueStart() {
       if (this.timerange) {
         let index = parseInt(this.timerange.substring(0, 4));
