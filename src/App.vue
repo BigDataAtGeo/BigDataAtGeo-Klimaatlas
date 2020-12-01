@@ -9,7 +9,7 @@
           <img class="mb-3 offset-md-1" src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="60px">
         </div>
         <div class="text-center">
-          <h1>Willkommen auf dem BigData@Geo Webportal</h1>
+          <h1>Unterfränkischer Klimaatlas des BigData@Geo-Projekts</h1>
           <h4>Zusammenfassung der Steuerung</h4>
         </div>
         <div class="container">
@@ -102,7 +102,7 @@ import LayoutBrowser from "./components/LayoutBrowser";
 export default {
   name: 'App',
   created() {
-    document.title = "BigData@Geo — Webportal";
+    document.title = "BigData@Geo — Unterfränkischer Klimaatlas";
   },
   mounted() {
     if (!localStorage.getItem("welcome-message"))
