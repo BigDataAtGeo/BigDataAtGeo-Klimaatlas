@@ -149,48 +149,331 @@ export default {
     }
   },
   mounted() {
-    EvaAPI.fetchAllSources().then(result => {
-      let id = 0;
-      for (const sensorData of result.data) {
-        if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
-          continue
 
-        let isLive = false; // only show sensors that sent data within the timeperiod of 'this.liveSensorTimeThreshold'
-        const timeDelta = Date.now() - this.liveSensorTimeThreshold;
-        for (const channel of Object.values(sensorData.recentData)) {
-          if (!channel.hasOwnProperty("value") || !channel.value.hasOwnProperty("lastUpdated"))
-            continue
-          if (channel.value.lastUpdated >= timeDelta)
-            isLive = true;
+    this.sensors = [
+        {
+            "latlng": [
+                49.710098,
+                9.298116
+            ],
+            "id": "000017DD",
+            "color": "#23171B",
+            "channels": [
+                // {
+                //     "name": "Dew Point",
+                //     "unit": "\u00b0C"
+                // },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                {
+                    "name": "5TE El permittivity",
+                    "unit": ""
+                },
+                // {
+                //     "name": "HC Air temperature",
+                //     "unit": "\u00b0C"
+                // },
+                // {
+                //     "name": "Wind speed",
+                //     "unit": "m/s"
+                // },
+                // {
+                //     "name": "Wind speed max",
+                //     "unit": "m/s"
+                // },
+                // {
+                //     "name": "Solar radiation",
+                //     "unit": "W/m2"
+                // },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+
+            ]
+        },
+        {
+            "latlng": [
+                50.072599,
+                10.08659
+            ],
+            "id": "00206B4B",
+            "color": "#26BCE1",
+            "channels": [
+                {
+                    "name": "Dew Point",
+                    "unit": "\u00b0C"
+                },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                {
+                    "name": "5TE El permittivity",
+                    "unit": ""
+                },
+                {
+                    "name": "HC Air temperature",
+                    "unit": "\u00b0C"
+                },
+                {
+                    "name": "Wind speed",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Wind speed max",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Solar radiation",
+                    "unit": "W/m2"
+                },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+            ]
+        },
+        {
+            "latlng": [
+                49.729868,
+                10.488919
+            ],
+            "id": "00205EA1",
+            "color": "#95FB51",
+            "channels": [
+                {
+                    "name": "Dew Point",
+                    "unit": "\u00b0C"
+                },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                {
+                    "name": "5TE El permittivity",
+                    "unit": ""
+                },
+                {
+                    "name": "HC Air temperature",
+                    "unit": "\u00b0C"
+                },
+                {
+                    "name": "Wind speed",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Wind speed max",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Solar radiation",
+                    "unit": "W/m2"
+                },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+            ]
+        },
+        {
+            "latlng": [
+                50.070655,
+                10.432036
+            ],
+            "id": "00208200",
+            "color": "#FF821D",
+            "channels": [
+                {
+                    "name": "Dew Point",
+                    "unit": "\u00b0C"
+                },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                {
+                    "name": "5TE El permittivity",
+                    "unit": ""
+                },
+                {
+                    "name": "HC Air temperature",
+                    "unit": "\u00b0C"
+                },
+                {
+                    "name": "Wind speed",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Wind speed max",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Solar radiation",
+                    "unit": "W/m2"
+                },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+            ]
+        },
+        {
+            "latlng": [
+                50.500568,
+                10.203313
+            ],
+            "id": "00208227",
+            "color": "#900C00",
+            "channels": [
+                {
+                    "name": "Dew Point",
+                    "unit": "\u00b0C"
+                },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                {
+                    "name": "5TE El permittivity",
+                    "unit": ""
+                },
+                {
+                    "name": "HC Air temperature",
+                    "unit": "\u00b0C"
+                },
+                {
+                    "name": "Wind speed",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Wind speed max",
+                    "unit": "m/s"
+                },
+                {
+                    "name": "Solar radiation",
+                    "unit": "W/m2"
+                },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+            ]
+        },
+        {
+        // Herchsheim
+            "latlng": [
+                49.7327,
+                10.2765
+            ],
+            "id": "000017E0",
+            "color": "#23171B",
+            "channels": [
+                // {
+                //     "name": "Dew Point",
+                //     "unit": "\u00b0C"
+                // },
+                // {
+                //     "name": "5TE Soil temperature",
+                //     "unit": "\u00b0C"
+                // },
+                // {
+                //     "name": "5TE El permittivity",
+                //     "unit": ""
+                // },
+                // {
+                //     "name": "HC Air temperature",
+                //     "unit": "\u00b0C"
+                // },
+                // {
+                //     "name": "Wind speed",
+                //     "unit": "m/s"
+                // },
+                // {
+                //     "name": "Wind speed max",
+                //     "unit": "m/s"
+                // },
+                // {
+                //     "name": "Solar radiation",
+                //     "unit": "W/m2"
+                // },
+                // {
+                //     "name": "5TE Water content",
+                //     "unit": "%"
+                // },
+                {
+                    "name": "Precipitation",
+                    "unit": "mm"
+                }
+
+            ]
         }
-        if (!isLive)
-          continue;
+    ]
 
-        const geoData = sensorData.recentData.geo;
-        const channels = [];
-        for (let channel of Object.keys(sensorData.recentData)) {
-          let unit = "";
-          if (sensorData.recentData[channel].hasOwnProperty("unit") && sensorData.recentData[channel].unit.val)
-            unit = sensorData.recentData[channel].unit.val;
-          channels.push({
-            name: channel,
-            unit: unit
-          })
-        }
+    // EvaAPI.fetchAllSources().then(result => {
+    //   let id = 0;
+    //   for (const sensorData of result.data) {
+    //     if (!sensorData.hasOwnProperty("recentData") || !sensorData.recentData.hasOwnProperty("geo"))
+    //       continue
 
-        let color = this.generateColor();
-        // try to find another color if this is already taken
-        while (this.sensors.find(sensor => sensor.color === color) && this.sensor.length < this.amountColors())
-          color = this.generateColor();
+    //     let isLive = false; // only show sensors that sent data within the timeperiod of 'this.liveSensorTimeThreshold'
+    //     const timeDelta = Date.now() - this.liveSensorTimeThreshold;
+    //     for (const channel of Object.values(sensorData.recentData)) {
+    //       if (!channel.hasOwnProperty("value") || !channel.value.hasOwnProperty("lastUpdated"))
+    //         continue
+    //       if (channel.value.lastUpdated >= timeDelta)
+    //         isLive = true;
+    //     }
+    //     if (!isLive)
+    //       continue;
 
-        this.sensors.push({
-          latlng: [geoData.lat.val, geoData.lon.val],
-          id: sensorData.sourceId,
-          color: color,
-          channels: channels,
-        })
-      }
-    })
+    //     const geoData = sensorData.recentData.geo;
+    //     const channels = [];
+    //     for (let channel of Object.keys(sensorData.recentData)) {
+    //       let unit = "";
+    //       if (sensorData.recentData[channel].hasOwnProperty("unit") && sensorData.recentData[channel].unit.val)
+    //         unit = sensorData.recentData[channel].unit.val;
+    //       channels.push({
+    //         name: channel,
+    //         unit: unit
+    //       })
+    //     }
+
+    //     let color = this.generateColor();
+    //     // try to find another color if this is already taken
+    //     while (this.sensors.find(sensor => sensor.color === color) && this.sensor.length < this.amountColors())
+    //       color = this.generateColor();
+
+    //     this.sensors.push({
+    //       latlng: [geoData.lat.val, geoData.lon.val],
+    //       id: sensorData.sourceId,
+    //       color: color,
+    //       channels: channels,
+    //     })
+    //   }
+    // })
     if (this.selectionUri) {
       this.loadMapData();
     }

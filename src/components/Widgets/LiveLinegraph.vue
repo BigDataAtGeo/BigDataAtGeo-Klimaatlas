@@ -74,13 +74,16 @@ export default {
       selectedChannel: null,
       sensorNames: {
         "00206B4B": "Obbach",
-        "000017E0": "Schwanberg",
         "000017DD": "Bürgstadt",
-        "000017DE": "Herchsheim",
+        "000017E0": "Herchsheim",
+        "00208227": "Willmars",
+        "00208200": "Uniwald",
+        "00205EA1": "Oberrimbach",
       },
       sensorVariables: {
         "5TE El permittivity": "Permittivität",
         "5TE Soil temperature": "Bodentemperatur",
+        "5TE Water content": "Volumetrischer Wassergehalt",
         "Dew Point": "Taupunkt",
         "HC Air temperature": "Lufttemperatur",
         "Precipitation": "Niederschlag",
@@ -148,7 +151,7 @@ export default {
         title: {
           display: true,
           // fontSize: 20,
-          text: this.selectedChannel.name,
+          text: this.sensorVariables[this.selectedChannel.name],
         },
         legend: {
           display: false,
