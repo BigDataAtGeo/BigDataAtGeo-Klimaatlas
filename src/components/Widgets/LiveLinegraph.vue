@@ -1,21 +1,20 @@
 <template>
   <div class="container">
-    <div v-if="sensorNames.hasOwnProperty(sensor.id)" id="display-sensor-container">
+    <div id="display-sensor-container">
       <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
         <div class="flex">
           <button class="btn remove-sensor-button"
                   v-on:click="removeSelectedSensor(sensor)"
                   :style="{backgroundColor: sensor.color, color: 'white'}">
-            {{ sensorNames.hasOwnProperty(sensor.id) ? sensorNames[sensor.id] : sensor.id }} <span
+            {{ sensor.name }} <span
               class="h5">&times;</span>
           </button>
         </div>
-        <div class="flex-grow-1">
+        <div v-if="this.rawData" class="flex-grow-1">
           <select class="form-control form-control-sm" id="variable-select" v-model="selectedChannel">
             <option disabled selected value="">Variable auswählen</option>
-            <option v-for="channel of relevantChannels()" :key="channel.id" v-bind:value="channel">{{
-                channel.translation
-              }}
+            <option v-for="channel of relevantChannels()" :key="channel.id" v-bind:value="channel">
+              {{ channel.translation }}
             </option>
           </select>
         </div>
@@ -24,7 +23,12 @@
                   v-if="chartData"
                   :chartData="chartData"
                   :options="chartOptions"/>
-      <div id="choose-date-container" v-if="chartData">
+      <div v-if="!rawData" class="flex-row text-center align-self-center justify-content-center">
+        <div class="spinner-border text-primary loader" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+      <div id="choose-date-container" v-if="rawData">
         <div class="input-group input-group-md mb-3">
           <div class="input-group-prepend">
             <span class="input-group-text">Von:</span>
@@ -41,21 +45,21 @@
         </div>
       </div>
     </div>
-    <div v-else>
-      <h3>Unbekannte Sensor-ID '{{ sensor.id }}'</h3>
-    </div>
   </div>
 </template>
+
 
 <script>
 import {mapMutations, mapState} from "vuex";
 import {EvaAPI} from "@/eva/eva-api";
 import LineChart from "./LineChart";
 import 'chartjs-plugin-zoom';
+import {colorGenerate} from "@/components/mixins/colorGenerate";
 
 export default {
   name: "LiveLinegraph",
   components: {LineChart},
+  mixins: [colorGenerate],
   props: {
     sensor: {
       required: true,
@@ -68,30 +72,36 @@ export default {
       chartOptions: null,
       lineTimes: {},
       lineData: {},
+      rawData: null,
       line: null,
       defaultTimespanInMS: 1000 * 60 * 60 * 24 * 7,
       aggregation: false,
       selectedChannel: null,
-      sensorNames: {
-        "00206B4B": "Obbach",
-        "000017DD": "Bürgstadt",
-        "000017E0": "Herchsheim",
-        "00208227": "Willmars",
-        "00208200": "Uniwald",
-        "00205EA1": "Oberrimbach",
-      },
       sensorVariables: {
         "5TE El permittivity": "Permittivität",
         "5TE Soil temperature": "Bodentemperatur",
-        "5TE Water content": "Volumetrischer Wassergehalt",
         "Dew Point": "Taupunkt",
         "HC Air temperature": "Lufttemperatur",
         "Precipitation": "Niederschlag",
         "Solar radiation": "Solarstrahlung",
         "Wind speed max": "Maximale Windgeschwindigkeit",
         "Wind speed": "Windgeschwindigkeit"
+      },
+      aggregationColors: {
+        "sum": "#000000",
+        "avg": "#000000",
+        "min": "#26BCE1",
+        "max": "#FF821D",
       }
     }
+  },
+  mounted() {
+    EvaAPI.fetchFieldClimateDailyData(this.sensor.id).then(rawData => {
+      this.rawData = rawData.data;
+      for (let i = 0; i < this.rawData.dates.length; i++) {
+        this.rawData.dates[i] = new Date(this.rawData.dates[i])
+      }
+    })
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange", "selectedSensors"]),
@@ -106,8 +116,9 @@ export default {
   },
   watch: {
     selectedChannel: function () {
-      this.setLine();
-      this.loadLineDate();
+      // this.setLine();
+      this.setLineData();
+      this.drawGraph();
     }
   },
   methods: {
@@ -131,30 +142,57 @@ export default {
         "color": this.sensor.color
       };
     },
-    loadLineDate() {
-      EvaAPI.fetchDataByTimespan(
-          this.line.feedId,
-          this.line.sourceId,
-          this.line.channel,
-          this.lineTimes[this.selectedChannel.name].startTime,
-          this.lineTimes[this.selectedChannel.name].endTime,
-          !this.aggregation)
-          .then(data => {
-            this.lineData[this.selectedChannel.name] = this.parseLineData(data.data.data, this.line.id)
-          }).then(() => this.drawGraph());
+    setLineData() {
+      this.lineData[this.selectedChannel.id] = [];
+      for (let aggregation of Object.keys(this.rawData.data[this.selectedChannel.id].aggr)) {
+        const color = this.aggregationColors[aggregation] || "#000000";
+        const line = {
+          label: aggregation,
+          data: [],
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 2,
+          pointRadius: 1,
+          pointHitRadius: 5,
+          fill: false,
+        };
+
+        let startTime, endTime;
+        // Extract relevant data and timestamp
+        for (let i = 0; i < this.rawData.dates.length; i++) {
+          const value = this.rawData.data[this.selectedChannel.id].aggr[aggregation][i];
+          // set start time to the first non-null index
+          if (!startTime && value)
+            startTime = this.rawData.dates[i];
+          // set end time iteratively to the last non-null index
+          if (value)
+            endTime = this.rawData.dates[i];
+          // push x (which is t for time) and y value
+          line.data.push({
+            t: this.rawData.dates[i],
+            y: this.rawData.data[this.selectedChannel.id].aggr[aggregation][i]
+          })
+        }
+        this.lineTimes[this.selectedChannel.id] = {
+          startTime: startTime,
+          endTime: endTime,
+        }
+        this.lineData[this.selectedChannel.id].push(line);
+      }
     },
+
     drawGraph() {
       this.chartData = {
-        datasets: [this.lineData[this.selectedChannel.name]],
+        datasets: this.lineData[this.selectedChannel.id],
       };
       this.chartOptions = {
         title: {
           display: true,
           // fontSize: 20,
-          text: this.sensorVariables[this.selectedChannel.name],
+          text: this.selectedChannel.translation,
         },
         legend: {
-          display: false,
+          display: true,
         },
         animation: {
           duration: 0 // general animation time
@@ -179,8 +217,8 @@ export default {
             },
             ticks: {
               source: "auto",
-              min: new Date(this.lineTimes[this.selectedChannel.name].startTime),
-              max: new Date(this.lineTimes[this.selectedChannel.name].endTime),
+              min: this.lineTimes[this.selectedChannel.id].startTime,
+              max: this.lineTimes[this.selectedChannel.id].endTime,
               // fontSize: 16,
             }
           }],
@@ -222,9 +260,11 @@ export default {
      * @param timeKey should be 'startTime' or 'endTime'
      */
     getLineTimeAsString(timeKey) {
-      return this.selectedChannel
-          && this.lineTimes.hasOwnProperty(this.selectedChannel.name)
-          && this.lineTimes[this.selectedChannel.name][timeKey].toISOString().split('T')[0];
+      if (!this.selectedChannel || !this.lineTimes.hasOwnProperty(this.selectedChannel.id)) {
+        const date = timeKey === "endTime" ? this.rawData.dates[this.rawData.dates.length - 1] : this.rawData.dates[0];
+        return date.toISOString().split('T')[0];
+      }
+      return this.lineTimes[this.selectedChannel.id][timeKey].toISOString().split('T')[0];
     },
     /**
      * Process the date input event and update the graph appropriate to the selected time range
@@ -235,28 +275,19 @@ export default {
       const selectedTime = event.target.valueAsDate;
       // exit if the selected time specifies an invalid time range
       if (selectedTime === null ||
-          timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.name].endTime ||
-          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.name].startTime) {
+          timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.id].endTime ||
+          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.id].startTime) {
         return;
       }
-      // simply redraw graph if a smaller time range is selected
-      if (timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.name].startTime ||
-          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.name].endTime) {
-        this.lineTimes[this.selectedChannel.name][timeKey] = selectedTime;
-        this.drawGraph();
-      } else { // else load additional data, then redraw
-        this.lineTimes[this.selectedChannel.name][timeKey] = selectedTime;
-        this.loadLineDate(this.lineTimes[this.selectedChannel.name].startTime, this.lineTimes[this.selectedChannel.name].endTime);
-      }
+
+      this.lineTimes[this.selectedChannel.id][timeKey] = selectedTime;
+      this.drawGraph();
     },
+
     chartDragComplete(chart) {
-      const startTime = new Date(chart.chart.scales["x-axis-0"].min);
-      const endTime = new Date(chart.chart.scales["x-axis-0"].max);
-      if (startTime < this.lineTimes[this.selectedChannel.name].startTime || endTime > this.lineTimes[this.selectedChannel.name].endTime) {
-        this.lineTimes[this.selectedChannel.name].startTime = startTime;
-        this.lineTimes[this.selectedChannel.name].endTime = endTime;
-        this.loadLineDate(startTime, endTime);
-      }
+      this.lineTimes[this.selectedChannel.id].startTime = new Date(chart.chart.scales["x-axis-0"].min);
+      this.lineTimes[this.selectedChannel.id].endTime = new Date(chart.chart.scales["x-axis-0"].max);
+      this.drawGraph();
     },
     parseLineData(data, lineId) {
       // Find the config that corresponds to lineId in order to know
@@ -267,7 +298,7 @@ export default {
         label: lineId,
         data: [],
         // backgroundColor: lineConfig.color,
-        borderColor: this.line.color,
+        // borderColor: this.line.color,
         borderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 5,
@@ -292,12 +323,13 @@ export default {
      * @returns [{name, translation, index} for each relevant channel]
      */
     relevantChannels() {
-      const relevantChannels = []
-      let index = 0;
-      for (let channel of this.sensor.channels) {
+      const relevantChannels = new Set();
+      for (const channelName of Object.keys(this.rawData.data)) {
+        const channel = this.rawData.data[channelName];
         if (this.sensorVariables.hasOwnProperty(channel.name)) {
-          channel.translation = this.sensorVariables[channel.name];
-          relevantChannels.push(channel);
+          channel.id = channelName;
+          channel.translation = this.sensorVariables[channel.name] + " (" + channel.ch + ")";
+          relevantChannels.add(channel);
         }
       }
       return relevantChannels;

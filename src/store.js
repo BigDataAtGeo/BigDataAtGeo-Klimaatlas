@@ -35,7 +35,7 @@ const mutations = {
     addSelectedSensor(state, sensor) {
         // check if sensor is already added
         for (let x of state.selectedSensors)
-            if (x.id === data.sensor.id)
+            if (x.id === sensor.id)
                 return;
         state.selectedSensors.push(sensor);
     },
