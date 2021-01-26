@@ -17,8 +17,9 @@
 
     <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="createSensorIcon(sensor.color)"
               :key="sensor.id"
-              v-on:click="setSelectedSensor(sensor)"
-              v-on:contextmenu="addSelectedSensor(sensor)">
+              @click="setSelectedSensor(sensor)"
+              @contextmenu="addSelectedSensor(sensor)">
+      <l-tooltip :content="sensor.name" />
     </l-marker>
     <l-control :position="'bottomleft'" class="custom-control-watermark">
       <div class="container">
@@ -35,7 +36,7 @@
 
 <script>
 import {mapState, mapMutations, mapGetters} from "vuex";
-import {LMap, LTileLayer, LRectangle, LGeoJson, LLayerGroup, LPopup, LControl, LPolygon, LMarker} from "vue2-leaflet";
+import {LMap, LTileLayer, LRectangle, LGeoJson, LLayerGroup, LPopup, LControl, LPolygon, LMarker, LTooltip} from "vue2-leaflet";
 import {icon, divIcon} from 'leaflet';
 import {EvaAPI} from "../../eva/eva-api";
 import axios from 'axios';
@@ -55,6 +56,7 @@ export default {
     LPolygon,
     LMarker,
     LLayerGroup,
+    LTooltip,
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids", "viewBoundingBox"]),
