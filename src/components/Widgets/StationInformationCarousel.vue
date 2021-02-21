@@ -1,21 +1,10 @@
 <template>
   <div>
-    <!--<carousel :perPage="1" :autoplay="false"
-              :mouse-drag="false"
-              :pagination-padding="5"
-              :pagination-position="'top'"
-              :adjustable-height="true"
-              :navigate-to="[navigateTo, true]"
-              paginationColor="#A9A9A9">
-      <slide class="full-width" v-for="sensor in selectedSensors" :key="sensor.id">
-        <LiveLinegraph :sensor="sensor"/>
-      </slide>
-    </carousel> -->
-    <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="30rem"
+    <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="3.5rem"
                    :bullets-outside="selectedSensors.length!==1" :key="selectedSensors.length">
       <vueper-slide v-for="sensor in selectedSensors" :key="sensor.id">
         <template v-slot:content>
-          <LiveLinegraph :sensor="sensor"/>
+          <InformationText :headline="'Test'" :text="'Test'"/>
         </template>
       </vueper-slide>
       <template v-slot:bullet="{ active, slideIndex, index }">
@@ -23,24 +12,23 @@
       </template>
     </vueper-slides>
   </div>
-
 </template>
 
 <script>
-import LiveLinegraph from "@/components/Widgets/LiveLinegraph";
 import {mapState} from "vuex";
 import {VueperSlides, VueperSlide} from 'vueperslides'
 import 'vueperslides/dist/vueperslides.css'
+import InformationText from "@/components/Widgets/InformationText";
 
 export default {
-  components: {LiveLinegraph, VueperSlides, VueperSlide},
+  components: {InformationText, VueperSlides, VueperSlide},
   data() {
     return {
       navigateTo: null,
     }
   },
   computed: {
-    ...mapState(["selectedSensors"])
+    ...mapState(["selectedSensors"]),
   },
   watch: {
     selectedSensors: function () {

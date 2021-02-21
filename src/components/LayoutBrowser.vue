@@ -14,9 +14,13 @@
           <WeatherCarousel/>
         </WidgetShell>
 
-        <WidgetShell widgetName="Variablenbeschreibung">
-          <VariableInfo :variable="variable"></VariableInfo>
+        <WidgetShell v-if="this.variable" widgetName="Variablenbeschreibung">
+          <InformationText :headline="variable.var" :text="variable.description"></InformationText>
         </WidgetShell>
+
+<!--        <WidgetShell v-if="this.selectedSensors.length > 0" widgetName="Bodenfeuchtemessstationen">-->
+<!--          <StationInformationCarousel/>-->
+<!--        </WidgetShell>-->
 
         <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0 && selectionUri">
           <Linegraph/>
@@ -38,20 +42,22 @@ import Linegraph from "./Widgets/Linegraph";
 import ProjectionMap from "./Widgets/ProjectionMap";
 import WidgetShell from "./Widgets/WidgetShell";
 import WeatherCarousel from "./Widgets/WeatherCarousel";
-import VariableInfo from "./Widgets/VariableInfo";
+import InformationText from "./Widgets/InformationText";
 import LiveLineCarousel from "@/components/Widgets/LiveLineCarousel";
 import {mapState} from "vuex";
+import StationInformationCarousel from "@/components/Widgets/StationInformationCarousel";
 
 export default {
   name: "LayoutBrowser",
   components: {
+    StationInformationCarousel,
     SettingsSelection,
     Linegraph,
     ProjectionMap,
     WidgetShell,
     WeatherCarousel,
     LiveLineCarousel,
-    VariableInfo
+    InformationText
   },
   data() {
     return {
@@ -171,19 +177,20 @@ body {
 }
 
 #widgets-container > * {
+  position: relative;
   pointer-events: all;
   z-index: 1030 !important; /* bootstrap row has 1030 */
 }
 
 #drag {
   background-color: transparent;
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 1.5rem;
   height: 100%;
   cursor: w-resize;
   pointer-events: all;
-  margin-left: -.75rem;
+  /*margin-left: -.75rem;*/
 }
 
 /*#timeline-container {*/

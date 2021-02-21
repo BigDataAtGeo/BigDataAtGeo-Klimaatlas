@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div>Text zur Station</div>
     <div id="display-sensor-container">
       <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
         <div class="flex">
@@ -10,38 +11,45 @@
               class="h5">&times;</span>
           </button>
         </div>
-        <div v-if="this.rawData" class="flex-grow-1">
-          <select class="form-control form-control-sm" id="variable-select" v-model="selectedChannel">
-            <option disabled selected value="">Variable auswählen</option>
-            <option v-for="channel of relevantChannels()" :key="channel.id" v-bind:value="channel">
+        <b-dropdown v-if="this.parsedData" text="Variablen Wählen"
+                    class="flex-grow-1 m-md-2 liveline-dropdown z-order-front">
+          <b-dropdown-item v-for="channel of Object.values(parsedData)" :key="channel.translation"
+                           class="d-flex align-items-center">
+            <label @click.stop="" class="d-flex align-self-center">
+              <input type="checkbox" :value="channel" v-model="selectedChannels"
+                     class="mr-2">
               {{ channel.translation }}
-            </option>
-          </select>
-        </div>
+            </label>
+          </b-dropdown-item>
+        </b-dropdown>
       </div>
       <line-chart id="line-chart"
                   v-if="chartData"
                   :chartData="chartData"
                   :options="chartOptions"/>
-      <div v-if="!rawData" class="flex-row text-center align-self-center justify-content-center">
+      <div v-if="!parsedData" class="flex-row text-center align-self-center justify-content-center">
         <div class="spinner-border text-primary loader" role="status">
           <span class="sr-only">Loading...</span>
         </div>
       </div>
-      <div id="choose-date-container" v-if="rawData">
+      <div id="choose-date-container" v-if="parsedData">
         <div class="input-group input-group-md mb-3">
           <div class="input-group-prepend">
             <span class="input-group-text">Von:</span>
           </div>
           <input type="date" class="form-control"
-                 :value="getLineTimeAsString('startTime')"
-                 @input="selectTimeFromInput($event, 'startTime')">
+                 :value="getLineTimeAsString('start')"
+                 @input="selectTimeFromInput($event, 'start')">
+<!--          <input type="date" class="form-control"-->
+<!--                 @input="selectTimeFromInput($event, 'start')">-->
           <div class="input-group-prepend">
             <span class="input-group-text">Bis:</span>
           </div>
           <input type="date" class="form-control"
-                 :value="getLineTimeAsString('endTime')"
-                 @input="selectTimeFromInput($event, 'endTime')">
+                 :value="getLineTimeAsString('end')"
+                 @input="selectTimeFromInput($event, 'end')">
+<!--          <input type="date" class="form-control"-->
+<!--                 @input="selectTimeFromInput($event, 'end')">-->
         </div>
       </div>
     </div>
@@ -70,13 +78,14 @@ export default {
     return {
       chartData: null,
       chartOptions: null,
-      lineTimes: {},
       lineData: {},
-      rawData: null,
+      selectedTime: {start: null, end: null},
+      parsedData: null,
+      rawDates: null,
       line: null,
       defaultTimespanInMS: 1000 * 60 * 60 * 24 * 7,
       aggregation: false,
-      selectedChannel: null,
+      selectedChannels: [],
       sensorVariables: {
         "5TE El permittivity": "Permittivität",
         "5TE Soil temperature": "Bodentemperatur",
@@ -84,23 +93,32 @@ export default {
         "HC Air temperature": "Lufttemperatur",
         "Precipitation": "Niederschlag",
         "Solar radiation": "Solarstrahlung",
-        "Wind speed max": "Maximale Windgeschwindigkeit",
-        "Wind speed": "Windgeschwindigkeit"
+        // "Wind speed max": "Maximale Windgeschwindigkeit",
+        "Wind speed": "Windgeschwindigkeit",
+        "PI54a (VWC)": "PI54a VWC",
+        "5TE Water content": "5TE Wassergehalt"
       },
-      aggregationColors: {
-        "sum": "#000000",
-        "avg": "#000000",
-        "min": "#26BCE1",
-        "max": "#FF821D",
-      }
+      sensorColors: {
+        "5TE El permittivity": [255, 165, 50],
+        "5TE Soil temperature": [255, 150, 150],
+        "Dew Point": [75, 75, 255],
+        "HC Air temperature": [50, 50, 50],
+        "Precipitation": [0, 0, 255],
+        "Solar radiation": [255, 200, 0],
+        "Wind speed": [150, 150, 150],
+        "PI54a (VWC)": [255, 0, 0],
+        "5TE Water content": [0, 0, 100]
+      },
+      defaultChannels: new Set(["PI54a (VWC)", "Precipitation", "5TE Soil temperature"]),
+      // default is line graph
+      barCharts: new Set(["Precipitation"])
     }
   },
   mounted() {
     EvaAPI.fetchFieldClimateDailyData(this.sensor.id).then(rawData => {
-      this.rawData = rawData.data;
-      for (let i = 0; i < this.rawData.dates.length; i++) {
-        this.rawData.dates[i] = new Date(this.rawData.dates[i])
-      }
+      this.rawDates = rawData.data.dates;
+      this.parsedData = this.parseData(rawData.data)
+      this.setDefaultChannels();
     })
   },
   computed: {
@@ -115,89 +133,112 @@ export default {
     },
   },
   watch: {
-    selectedChannel: function () {
-      // this.setLine();
+    selectedChannels: function () {
       this.setLineData();
       this.drawGraph();
     }
   },
   methods: {
     ...mapMutations(["removeSelectedSensor"]),
-    setLine() {
-      if (!this.lineTimes.hasOwnProperty(this.selectedChannel.name)) {
-        // let endTime = Date.now();
-        // if (this.selectedChannel.lastUpdated)
-        //   endTime = this.selectedChannel.lastUpdated;
-        this.lineTimes[this.selectedChannel.name] = {
-          startTime: new Date(Date.now() - this.defaultTimespanInMS),
-          endTime: new Date(),
-        };
-      }
-      this.line = {
-        "feedId": "fieldclimate",
-        "sourceId": this.sensor.id,
-        "channel": this.selectedChannel.name,
-        "component": "value",
-        "id": "fieldclimate:" + this.sensor.id + ":" + this.selectedChannel.name + ":value",
-        "color": this.sensor.color
-      };
-    },
     setLineData() {
-      this.lineData[this.selectedChannel.id] = [];
-      for (let aggregation of Object.keys(this.rawData.data[this.selectedChannel.id].aggr)) {
-        const color = this.aggregationColors[aggregation] || "#000000";
-        const line = {
-          label: aggregation,
-          data: [],
-          backgroundColor: color,
-          borderColor: color,
-          borderWidth: 2,
-          pointRadius: 1,
-          pointHitRadius: 5,
-          fill: false,
-        };
+      this.lineData = [];
 
-        let startTime, endTime;
-        // Extract relevant data and timestamp
-        for (let i = 0; i < this.rawData.dates.length; i++) {
-          const value = this.rawData.data[this.selectedChannel.id].aggr[aggregation][i];
-          // set start time to the first non-null index
-          if (!startTime && value)
-            startTime = this.rawData.dates[i];
-          // set end time iteratively to the last non-null index
-          if (value)
-            endTime = this.rawData.dates[i];
-          // push x (which is t for time) and y value
-          line.data.push({
-            t: this.rawData.dates[i],
-            y: this.rawData.data[this.selectedChannel.id].aggr[aggregation][i]
-          })
+      this.selectedTime.start = Date.now();
+      this.selectedTime.end = 0;
+
+      for (const selectedChannel of this.selectedChannels) {
+        const aggregations = Object.keys(selectedChannel.aggr);
+        const minIndex = aggregations.findIndex(x => x === "min");
+        const maxIndex = aggregations.findIndex(x => x === "max");
+        const color = this.sensorColors.hasOwnProperty(selectedChannel.name) ? this.sensorColors[selectedChannel.name] : [0, 0, 0];
+        for (let aggregation of aggregations) {
+          // const color = this.aggregationColors[aggregation] || "#000000";
+
+          const label = selectedChannel.translation + " (" + aggregation + ")"
+          let rgba;
+          if (aggregation !== "min" && aggregation !== "max")
+            rgba = "rgba(" + color[0] + "," + color[1] + "," + color[2] + "," + 1 + ")";
+          else
+            rgba = "rgba(" + color[0] + "," + color[1] + "," + color[2] + "," + .4 + ")"
+
+          const line = {
+            label: label,
+            data: selectedChannel.aggr[aggregation],
+            channel: selectedChannel,
+            backgroundColor: rgba,
+            borderColor: rgba,
+            borderWidth: 1,
+            pointRadius: 1,
+            pointHitRadius: 5,
+            fill: false,
+            type: "scatter",
+          };
+
+          if (this.barCharts.has(selectedChannel.name))
+            line.type = "bar";
+
+          if (aggregation === "min" || aggregation === "max")
+            line.pointRadius = 0;
+          // if (minIndex > 0 && maxIndex > 0 && aggregation === "max")
+          //   line.fill = minIndex;
+
+          const startTime = selectedChannel.aggr[aggregation][0].t;
+          const endTime = selectedChannel.aggr[aggregation][selectedChannel.aggr[aggregation].length - 1].t;
+
+          this.selectedTime.start = Math.min(this.selectedTime.start, startTime);
+          this.selectedTime.end = Math.max(this.selectedTime.end, endTime.Ticks);
+
+          this.lineData.push(line);
         }
-        this.lineTimes[this.selectedChannel.id] = {
-          startTime: startTime,
-          endTime: endTime,
-        }
-        this.lineData[this.selectedChannel.id].push(line);
       }
     },
 
     drawGraph() {
       this.chartData = {
-        datasets: this.lineData[this.selectedChannel.id],
+        datasets: this.lineData,
       };
+      const yAxes = [];
+      const existingAxes = {};
+      for (const line of this.lineData) {
+        if (existingAxes.hasOwnProperty(line.channel.name)) {
+          line.yAxisID = existingAxes[line.channel.name];
+          continue
+        }
+        existingAxes[line.channel.name] = yAxes.length;
+        line.yAxisID = existingAxes[line.channel.name];
+        yAxes.push({
+          id: existingAxes[line.channel.name],
+          gridLines: {
+            display: existingAxes.size === 1,
+            lineWidth: 1
+          },
+          position: yAxes.length === 2 ? "left" : "right",
+          scaleLabel: {
+            display: true,
+            fontColor: line.backgroundColor,
+            labelString: this.sensorVariables[line.channel.name] + (line.channel.unit ? " in " + line.channel.unit : ""),
+          },
+          ticks: {
+            fontColor: line.backgroundColor,
+            padding: -5,
+          }
+        })
+      }
+
       this.chartOptions = {
         title: {
           display: true,
           // fontSize: 20,
-          text: this.selectedChannel.translation,
+          text: this.selectedChannels.length === 1 ? this.selectedChannels[0].translation : "Mehrere Variablen",
         },
         legend: {
-          display: true,
+          display: false,
         },
         animation: {
           duration: 0 // general animation time
         },
         hover: {
+          mode: "nearest",
           animationDuration: 0 // duration of animations when hovering an item
         },
         responsiveAnimationDuration: 0,
@@ -217,24 +258,12 @@ export default {
             },
             ticks: {
               source: "auto",
-              min: this.lineTimes[this.selectedChannel.id].startTime,
-              max: this.lineTimes[this.selectedChannel.id].endTime,
+              min: this.selectedTime.start,
+              max: this.selectedTime.end,
               // fontSize: 16,
             }
           }],
-          yAxes: [{
-            gridLines: {
-              lineWidth: 2,
-            },
-            scaleLabel: {
-              display: this.selectedChannel.unit !== "",
-              labelString: this.selectedChannel.unit ? "In " + this.selectedChannel.unit : "",
-              // fontSize: 20,
-            },
-            // ticks: {
-            //     fontSize: 16,
-            // }
-          }]
+          yAxes: yAxes
         },
         plugins: {
           zoom: {
@@ -260,11 +289,11 @@ export default {
      * @param timeKey should be 'startTime' or 'endTime'
      */
     getLineTimeAsString(timeKey) {
-      if (!this.selectedChannel || !this.lineTimes.hasOwnProperty(this.selectedChannel.id)) {
-        const date = timeKey === "endTime" ? this.rawData.dates[this.rawData.dates.length - 1] : this.rawData.dates[0];
-        return date.toISOString().split('T')[0];
+      if (this.selectedChannels.length === 0 || !this.selectedTime.start || !this.selectedTime.end) {
+        const date = timeKey === "end" ? this.rawDates[this.rawDates.length - 1] : this.rawDates[0];
+        return new Date(date).toISOString().split('T')[0];
       }
-      return this.lineTimes[this.selectedChannel.id][timeKey].toISOString().split('T')[0];
+      return new Date(this.selectedTime[timeKey]).toISOString().split('T')[0];
     },
     /**
      * Process the date input event and update the graph appropriate to the selected time range
@@ -275,64 +304,81 @@ export default {
       const selectedTime = event.target.valueAsDate;
       // exit if the selected time specifies an invalid time range
       if (selectedTime === null ||
-          timeKey === "startTime" && selectedTime >= this.lineTimes[this.selectedChannel.id].endTime ||
-          timeKey === "endTime" && selectedTime <= this.lineTimes[this.selectedChannel.id].startTime) {
+          timeKey === "start" && selectedTime >= this.selectedTime.end ||
+          timeKey === "end" && selectedTime <= this.selectedTime.start) {
         return;
       }
 
-      this.lineTimes[this.selectedChannel.id][timeKey] = selectedTime;
+      this.selectedTime[timeKey] = selectedTime.getTime();
       this.drawGraph();
     },
 
     chartDragComplete(chart) {
-      this.lineTimes[this.selectedChannel.id].startTime = new Date(chart.chart.scales["x-axis-0"].min);
-      this.lineTimes[this.selectedChannel.id].endTime = new Date(chart.chart.scales["x-axis-0"].max);
+      this.selectedTime.start = new Date(chart.chart.scales["x-axis-0"].min);
+      this.selectedTime.end = new Date(chart.chart.scales["x-axis-0"].max);
       this.drawGraph();
     },
-    parseLineData(data, lineId) {
-      // Find the config that corresponds to lineId in order to know
-      // which channel/component we are looking for in the data
-      // var lineConfig = this.lines.find(line => line.id === lineId);
 
-      const result = {
-        label: lineId,
-        data: [],
-        // backgroundColor: lineConfig.color,
-        // borderColor: this.line.color,
-        borderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 5,
-      };
-
-      // Extract relevant data and timestamp
-      for (let element of data) {
-        result.data.push({
-          t: new Date(element.timestamp),
-          // convert to number with '+'
-          y: +element.channels[this.line.channel][this.line.component]
-        })
-      }
-
-      //sort results by time
-      // result.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-      return result;
-    },
     /**
-     * Filter all available channels of the current sensor to only return relevant ones definied by *this.sensorVariables*
-     * @returns [{name, translation, index} for each relevant channel]
      */
-    relevantChannels() {
-      const relevantChannels = new Set();
-      for (const channelName of Object.keys(this.rawData.data)) {
-        const channel = this.rawData.data[channelName];
-        if (this.sensorVariables.hasOwnProperty(channel.name)) {
-          channel.id = channelName;
-          channel.translation = this.sensorVariables[channel.name] + " (" + channel.ch + ")";
-          relevantChannels.add(channel);
+    parseData(rawData) {
+      const parsedData = {}
+      // for each sensor
+      for (const channel of Object.values(rawData.data)) {
+        // if we dont care about the sensor, skip it
+        if (!this.sensorVariables.hasOwnProperty(channel.name))
+          continue
+        // translate english to german name
+        const translation = this.translateChannel(channel);
+        // to group the data, we check if some date for the sensor already exists
+        if (!parsedData.hasOwnProperty(translation)) {
+          parsedData[translation] = {
+            aggr: {},
+            unit: channel.unit,
+            name: channel.name,
+            customName: channel.name_custom,
+            translation: translation
+          }
+        }
+        // for each aggregation append new data
+        for (const aggregation of Object.keys(channel.aggr)) {
+          if (!parsedData[translation].aggr.hasOwnProperty(aggregation))
+            parsedData[translation].aggr[aggregation] = [];
+          for (let i = 0; i < channel.aggr[aggregation].length; i++) {
+            if (channel.aggr[aggregation][i]) {
+              parsedData[translation].aggr[aggregation].push({
+                t: new Date(rawData.dates[i]).getTime(),
+                y: channel.aggr[aggregation][i]
+              });
+            }
+          }
         }
       }
-      return relevantChannels;
+      // sort all data points by time
+      for (const channel of Object.values(parsedData)) {
+        for (const aggregation of Object.keys(channel.aggr))
+          channel.aggr[aggregation] = channel.aggr[aggregation].sort(
+              (a, b) => (a.t > b.t) ? 1 : ((b.t > a.t) ? -1 : 0)
+          )
+      }
+
+      return parsedData;
+    },
+
+    translateChannel(channel) {
+      let description = this.sensorVariables[channel.name];
+      if (channel.name_custom)
+        description += " " + channel.name_custom;
+      return description;
+    },
+
+    setDefaultChannels() {
+      const selectedChannels = [];
+      for (const channel of Object.values(this.parsedData).reverse()) {
+        if (this.defaultChannels.has(channel.name))
+          selectedChannels.push(channel);
+      }
+      this.selectedChannels = selectedChannels;
     }
   }
 }
@@ -346,6 +392,21 @@ export default {
   /*max-height: 100%;*/
   padding: 0;
 }
+
+.liveline-dropdown /deep/ .dropdown-menu {
+  max-height: 15rem;
+  overflow-y: auto;
+  z-index: 10000;
+  width: 100%;
+  padding: 0;
+}
+
+.liveline-dropdown /deep/ .dropdown-item {
+  padding-left: 0.5rem;
+  height: 100%;
+  font-size: .75em;
+}
+
 
 #display-sensor-container {
   height: 27rem;
@@ -373,4 +434,5 @@ export default {
   padding: 5px;
   font-size: 15px;
 }
+
 </style>

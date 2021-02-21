@@ -1,15 +1,18 @@
 <template>
-  <div id="content" class="pb-2" v-if="$store.state.variable!=null">
-    <h5>{{ this.variable.var }} </h5>
-    <span v-html="this.variable.description"></span>
+  <div id="content" class="pb-2">
+    <h5>{{ this.headline }} </h5>
+    <span v-html="this.text"></span>
   </div>
 </template>
 
 <script>
 export default {
-  name: "variableInfo",
+  name: "InformationText",
   props: {
-    variable: {
+    headline: {
+      required: true
+    },
+    text: {
       required: true
     }
   }
