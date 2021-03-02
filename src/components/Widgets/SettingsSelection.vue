@@ -185,7 +185,7 @@ export default {
       const timerange = this.index.timeranges[value];
       this.selectedTimerange = timerange;
     },
-    //sets the starting value of the timerange slider to the right point 
+    //sets the starting value of the timerange slider to the right point
     valueStart() {
       if (this.timerange) {
         let index = parseInt(this.timerange.substring(0, 4));
@@ -292,11 +292,52 @@ export default {
 
 <style scoped>
 .settings-container {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 1);
   border-radius: 0 0 8px 8px;
   box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
   padding: 5px 10px;
-  display: inline-block;
+  /*display: inline-block;*/
+  /*left: 0;*/
+  /*right: 0;*/
+  /*left: 0;*/
+  /*right: 0;*/
+}
+
+.settings-container .form-row {
+  flex-direction: row;
+}
+
+@media only screen and (max-width: 768px) {
+  .settings-container .form-row > div:nth-child(1) {
+    order: 0;
+  }
+
+  .settings-container .form-row > div:nth-child(2) {
+    order: 2;
+    flex: 1 0 100%;
+    margin-bottom: 10px;
+  }
+
+  .settings-container .form-row > div:nth-child(3) {
+    order: 3;
+    flex: 1 0 100%;
+    margin-bottom: 10px;
+  }
+
+  .settings-container .form-row > div:nth-child(4) {
+    order: 4;
+    flex: 1 0 100%;
+    margin-bottom: 10px;
+  }
+
+  .settings-container .form-row > div:nth-child(5) {
+    order: 5;
+    flex: 1 0 100%;
+  }
+
+  .settings-container .form-row > div:nth-child(6) {
+    order: 1;
+  }
 }
 
 .element {
@@ -306,6 +347,7 @@ export default {
 #select-timerange {
   width: auto;
   min-width: 200px;
+  flex-grow: 1;
 }
 
 #selected-timerange {
@@ -324,10 +366,12 @@ export default {
 .form-group {
   display: flex;
   align-items: center;
+  margin-bottom: 0;
 }
 
 label {
   padding: 0px 5px;
+  margin-bottom: 0;
 }
 
 a {

@@ -49,26 +49,30 @@ export default {
 
 .container-bg {
   box-sizing: border-box;
-
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 8px 0 0 8px;
-  border-left: 8px #6c757d solid;
+  background-color: white;
   box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
-
-  margin-bottom: 10px;
 }
 
-.container-bg::before {
-  content: "\2847";
-  position: absolute;
-  top: -12px;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  left: -9px;
-  font-size: 24px;
-  color: white;
+@media only screen and (min-width: 768px) {
+  .container-bg {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px 0 0 8px;
+    border-left: 8px #6c757d solid;
+    margin-bottom: 10px;
+  }
+
+  .container-bg::before {
+    content: "\2847";
+    position: absolute;
+    top: -12px;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: -9px;
+    font-size: 24px;
+    color: white;
+  }
 }
 
 #widgetContent {

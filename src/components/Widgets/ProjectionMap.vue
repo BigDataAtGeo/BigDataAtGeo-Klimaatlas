@@ -19,7 +19,7 @@
               :key="sensor.id"
               @click="setSelectedSensor(sensor)"
               @contextmenu="addSelectedSensor(sensor)">
-      <l-tooltip :content="sensor.name" />
+      <l-tooltip :content="sensor.name"/>
     </l-marker>
     <l-control :position="'bottomleft'" class="custom-control-watermark">
       <div class="container">
@@ -36,7 +36,18 @@
 
 <script>
 import {mapState, mapMutations, mapGetters} from "vuex";
-import {LMap, LTileLayer, LRectangle, LGeoJson, LLayerGroup, LPopup, LControl, LPolygon, LMarker, LTooltip} from "vue2-leaflet";
+import {
+  LMap,
+  LTileLayer,
+  LRectangle,
+  LGeoJson,
+  LLayerGroup,
+  LPopup,
+  LControl,
+  LPolygon,
+  LMarker,
+  LTooltip
+} from "vue2-leaflet";
 import {icon, divIcon} from 'leaflet';
 import {EvaAPI} from "../../eva/eva-api";
 import axios from 'axios';
@@ -255,9 +266,9 @@ export default {
           .style("top", "0px")
 
       svg.append("g")
-        .attr("class", "axis")
-        .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
-        .call(legendaxis);
+          .attr("class", "axis")
+          .attr("transform", "translate(" + (legendwidth - margin.left - margin.right + 3) + "," + (margin.top) + ")")
+          .call(legendaxis);
 
       //tick label size for legend
       svg.select(".axis")
@@ -331,6 +342,11 @@ export default {
 </script>
 
 <style scoped>
+#leaflet {
+  height: 100%;
+  width: 100%;
+}
+
 .leaflet-control {
   padding: 6px 8px;
   font: 14px/16px Arial, Helvetica, sans-serif;

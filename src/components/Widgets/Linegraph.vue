@@ -179,14 +179,14 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-}
+/*.container {*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  padding: 0;*/
+/*}*/
 
-#line-chart {
-  width: 100%;
-  height: 100%;
-}
+/*#line-chart {*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*}*/
 </style>
