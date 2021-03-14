@@ -4,10 +4,12 @@
       <b-icon icon="caret-down-fill"></b-icon>
       {{ widgetName }}
     </div>
+
     <div @click="hideWidget" v-else class="container-header text-secondary">
       <b-icon icon="caret-right-fill"></b-icon>
       {{ widgetName }}
     </div>
+
     <div v-show="showWidget" id="widgetContent">
       <slot></slot>
     </div>
@@ -16,6 +18,10 @@
 
 <script>
 export default {
+  /**
+   * This widget wraps other widgets to hide their content on click
+   */
+
   data: function () {
     return {
       showWidget: true,
@@ -27,9 +33,7 @@ export default {
       this.showWidget = !this.showWidget;
     }
   },
-  // mounted() {
-  //   location.href = "#" + this.widgetId;
-  // },
+
   props: {
     widgetName: {
       type: String,
@@ -82,4 +86,5 @@ export default {
   margin: 0;
   padding: 0px 20px 20px 20px;
 }
+
 </style>

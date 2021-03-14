@@ -8,6 +8,12 @@ import "bootstrap-vue/dist/bootstrap-vue.css"
 import VueForceNextTick from 'vue-force-next-tick'
 import VueCarousel from 'vue-carousel';
 
+
+/**
+ * This is the entry point for the Vue framework, this file should not change much
+ * Only relevant, to register new modules, e. g. BootstrapVue
+ */
+
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(VueForceNextTick)

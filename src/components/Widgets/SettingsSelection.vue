@@ -1,11 +1,14 @@
 <template>
   <form class="form-inline settings-container" v-if="variable!=null">
     <div class="form-row">
+      <!-- Logo -->
       <div class="col-auto element">
         <a href="https://bigdata-at-geo.eu/">
           <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="60px">
         </a>
       </div>
+
+      <!-- Variable Input -->
       <div class="col-auto form-group element">
         <label for="select-variable" class="h6">Variable:</label>
         <select id="select-variable" class="custom-select" @change="setVariable"
@@ -19,6 +22,8 @@
           </option>
         </select>
       </div>
+
+      <!-- Scenario Input -->
       <div class="col-auto form-group element">
         <label for="select-scenario" class="h6">Szenario:</label>
         <select id="select-scenario" class="custom-select" @change="setScenario"
@@ -30,6 +35,8 @@
           </option>
         </select>
       </div>
+
+      <!-- Timerange Input -->
       <div class="col-auto form-group element">
         <label for="select-timerange" class="h6">Zeitspanne:</label>
         <label class="small">{{ minRange }}</label>
@@ -38,10 +45,14 @@
                       :disabled="index.variables === null"></b-form-input>
         <label class="small">{{ maxRange }}</label>
       </div>
+
+      <!-- Currently selected Timerange -->
       <div class="col-auto form-group element">
         <label for="selected-timerange" class="h6">Aktuell:</label>
         <span id="selected-timerange">{{ selectedTimerange ? selectedTimerange.replace("-", "&#8211;") : "" }}</span>
       </div>
+
+      <!-- Menu Dropdown -->
       <div class="col-auto form-group element">
         <b-icon icon="search" class="mr-2 cursor-pointer size-rem-1-25" v-b-modal.search-location></b-icon>
         <b-dropdown right variant="outline-secondary" class="m-md-2">
@@ -82,15 +93,21 @@
           </b-dropdown-item>
         </b-dropdown>
       </div>
+
+      <!-- Datengrundlage Modal -->
       <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
         <Datengrundlage/>
       </b-modal>
+
+      <!-- Share State Modal -->
       <b-modal id="share-configuration" :title="'Konfiguration teilen'" size="s" :hide-footer="true" centered>
         <input type="text" class="form-control" placeholder="Config-URL" :value="shareConfig">
         <div class="alert alert-success text-center" role="alert">
           Im Clipboard gespeichert
         </div>
       </b-modal>
+
+      <!-- Search for Location Modal -->
       <b-modal id="search-location" :title="'Ort suchen'" size="s" :hide-footer="true">
         <div class="input-group mb-3">
           <input type="text" class="form-control" placeholder="Adresse, Koordinaten, ..."
@@ -119,6 +136,11 @@
 </template>
 
 <script>
+/**
+ * This widget is used for most of the used input, e. g. to selected variable, scenario, or timerange
+ * also actions like resetting the state, searching for locations on the map...
+ */
+
 import {mapState, mapMutations} from 'vuex';
 import axios from 'axios';
 import {colorGenerate} from '../mixins/colorGenerate';
@@ -130,13 +152,13 @@ export default {
   components: {Datengrundlage},
   data() {
     return {
-      "selectedTimerange": null,
-      "index": {
-        "scenarios": null,
-        "variables": null,
-        "timeranges": null,
+      selectedTimerange: null,
+      index: {
+        scenarios: null,
+        variables: null,
+        timeranges: null,
       },
-      "timerangeValue": null,
+      timerangeValue: null,
       shareConfig: "",
       searchLocationInput: null,
       searchLocationResults: [],
@@ -146,45 +168,51 @@ export default {
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange"]),
+
+    /**
+     * Get the beginning of the oldest available time range as string, i. e. start of the data
+     */
     minRange: function () {
       if (this.index.timeranges === null)
         return 0;
       var value = this.index.timeranges[0].toString();
       return value.slice(0, 4);
     },
+
+    /**
+     * Get the end of the highest available time range as string, i. e. end of the data
+     */
     maxRange: function () {
       if (this.index.timeranges === null)
         return 0;
       var value = this.index.timeranges[this.index.timeranges.length - 1];
       return value.slice(-4);
     },
-    variableName: function () {
-      return this.variable.var;
-    },
-    selectedCells() {
-      return this.selectedCells;
-    },
   },
-  methods: { // https://vuex.vuejs.org/guide/forms.html
+
+  methods: {
     ...mapMutations(["setViewBoundingBox"]),
     setScenario(e) {
       this.$store.commit("setScenario", e.target.value)
     },
+
     setVariable(e) {
       const variable = this.index.variables.find(variable => variable.var_id === e.target.value);
       this.$store.commit("setVariable", variable);
     },
-    //called when Timerange-Slider is released
+
+    // called when Timerange-Slider is released
     setTimerange(value) {
       this.selectedTimerange = this.index.timeranges[value];
       this.$store.commit("setTimerange", this.selectedTimerange)
     },
+
     //used for updating displayed timerange while using the timerange slider
     liveSlider(value) {
       this.timerangeValue = value;
-      const timerange = this.index.timeranges[value];
-      this.selectedTimerange = timerange;
+      this.selectedTimerange = this.index.timeranges[value];
     },
+
     //sets the starting value of the timerange slider to the right point
     valueStart() {
       if (this.timerange) {
@@ -194,17 +222,25 @@ export default {
       }
       return new Date().getYear() - 70;
     },
+
+    /**
+     * Serialize the current vuex store state to a string and show it the modal
+     */
     shareConfiguration() {
       this.shareConfig = location.href + "#state=" + encodeURI(JSON.stringify(this.$store.state));
       navigator.clipboard.writeText(this.shareConfig);
       this.$bvModal.show("share-configuration");
     },
+
+    /**
+     * First confirm this action, then reset all settings
+     */
     resetSettings: function () {
       const choice = confirm("Alle Einstellungen und ausgewählte Zellen werden zurückgesetzt. Sind Sie wirklich sicher, dass Sie die Plattform zurücksetzen wollen?");
       if (choice) {
         //resetting all the settings and celected cells
         const year = new Date().getYear() - 70;
-        this.$store.commit("resetCells");
+        this.$store.commit("clearSelection");
         this.$store.commit("setScenario", this.index.scenarios[0]);
         this.$store.commit("setVariable", this.index.variables[0]);
         this.selectedTimerange = this.index.timeranges[year];
@@ -212,10 +248,11 @@ export default {
         this.$store.commit("setTimerange", this.index.timeranges[year]);
       }
     },
+
     /**
      * Search for geolocations with Openstreetmap
-     * Also sets *searchTimeout* to respect the usage limits of the api, during which this method should not be called again
-     * If the value of *searchLocationInput* changed after the timeout, this method calls itself again
+     * Also sets searchTimeout to respect the usage limits of the api, during which this method should not be called again
+     * If the value of searchLocationInput changed after the timeout, this method calls itself again
      */
     searchLocation() {
       const currentInput = this.searchLocationInput;
@@ -247,6 +284,7 @@ export default {
         }
       }, 1200);
     },
+
     /**
      * Parse the boundingbox of an OSM-Object to leaflet format and save it in the vuex store
      * Also close the search location input modal
@@ -262,6 +300,11 @@ export default {
       this.setViewBoundingBox(boundingBox);
     },
   },
+
+  /**
+   * Load available settings from remote,
+   * Then, if there is nothing currently selected, set some default settings
+   */
   mounted() {
     axios.get(process.env.VUE_APP_BDATA_API + "/index")
         .then((response) => {
@@ -282,6 +325,7 @@ export default {
         .catch((error) => console.error("fetch data error: failed to load JSON from server", error));
     this.timerangeValue = this.valueStart();
   },
+
   filters: {
     round: function (value) {
       return value.toFixed(2);
@@ -296,11 +340,6 @@ export default {
   border-radius: 0 0 8px 8px;
   box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
   padding: 5px 10px;
-  /*display: inline-block;*/
-  /*left: 0;*/
-  /*right: 0;*/
-  /*left: 0;*/
-  /*right: 0;*/
 }
 
 .settings-container .form-row {

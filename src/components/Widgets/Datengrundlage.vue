@@ -1,3 +1,4 @@
+<!-- This is a simple static template to display the "Datengrundlage" content -->
 <template>
   <div>
     <h5>Das Unterfrankenensemble</h5>

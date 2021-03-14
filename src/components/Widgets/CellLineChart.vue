@@ -23,7 +23,11 @@ import 'chartjs-plugin-zoom';
 import {colorGenerate} from '../mixins/colorGenerate';
 
 export default {
-  name: "Linegraph",
+  /**
+   * This is used to display historical data of the currently selected variable for multiple selected cells on the map
+   */
+
+  name: "VariableLineChart",
   mixins: [colorGenerate],
   components: {LineChart},
   data() {
@@ -37,6 +41,8 @@ export default {
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange", "selectedCells", "selectionUri"]),
+
+    // isLoading is used to display the spinning wheel indicator, it must be a computed property
     isLoading: {
       get() {
         return this.loading;
@@ -47,24 +53,25 @@ export default {
     },
   },
   watch: {
-    //Chartdata gets updateted when SelectionURI changes i.e. when "Variable" is changed
+    // Chartdata gets updated when SelectionURI changes i.e. when "Variable" is changed
     selectionUri(oldValue, newValue) {
       this.datasets = [];
       this.loadChartData();
     },
+
     //Chartdata gets updated if a cell gets removed or added
     selectedCells(oldValue, newValue) {
       this.loadChartData()
     }
   },
   mounted() {
-    //when created and a Cell was safed in the localstorage ChartData gets updated
+    //when created and a Cell was saved in the localstorage ChartData gets updated
     if (this.selectedCells.length > 0 && this.selectionUri)
       this.loadChartData();
   },
   methods: {
     /**
-     * First remove datasets of cells which are no longer in *selectedCells*
+     * First remove datasets of cells which are no longer in selectedCells
      * Then load new datasets for newly selected cells
      */
     loadChartData() {
@@ -75,11 +82,13 @@ export default {
       // load potential new datasets
       const promises = [];
       for (const cell of this.selectedCells) {
+        // if we cannot find data for the cell in our local datasets, load it from remote
         if (!this.datasets.find(dataset => dataset.id === cell.id)) {
           promises.push(axios.get(`${process.env.VUE_APP_BDATA_API}/all_times/${cell.id}/${this.scenario}/${this.variable.var_id}`)
               .catch(function (error) {
                 console.error('fetch data error: failed to load JSON from server', error)
               }).then((response) => {
+                // if this is the first dataset to load, we set the chart ticks to its labels (all datasets have the same labels)
                 if (this.labels.length === 0)
                   this.labels = response.data.data.keys;
                 return {
@@ -91,6 +100,7 @@ export default {
               }));
         }
       }
+      // wait for all datasets to load / promises to resolve, then redraw the graph once
       Promise.all(promises).then(datasets => {
         for (const dataset of datasets) {
           this.datasets.push(dataset);
@@ -99,6 +109,7 @@ export default {
         this.isLoading = false;
       });
     },
+
     drawTimeline() {
       this.chartOptions = {
         title: {
@@ -177,16 +188,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/*.container {*/
-/*  width: 100%;*/
-/*  height: 100%;*/
-/*  padding: 0;*/
-/*}*/
-
-/*#line-chart {*/
-/*  width: 100%;*/
-/*  height: 100%;*/
-/*}*/
-</style>

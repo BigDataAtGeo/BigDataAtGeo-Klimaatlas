@@ -50,7 +50,7 @@
           </div>
           <div class="row mt-3">
             <div class="col-1 text-center my-auto">
-              <img src="assets/sensor.svg" width="40px" height="40px" alt="Bodenwasserstation">
+              <img src="assets/station.svg" width="40px" height="40px" alt="Bodenwasserstation">
             </div>
             <div class="col-11 my-auto">
               Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
@@ -105,6 +105,7 @@ export default {
     document.title = "BigData@Geo — Unterfränkischer Klimaatlas";
   },
   mounted() {
+    // show welcome message only the first time
     if (!localStorage.getItem("welcome-message"))
       this.$bvModal.show("modal-welcome");
   },

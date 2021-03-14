@@ -1,10 +1,5 @@
 <template>
   <div id="content">
-    <!--<carousel :perPage="1" :autoplay="false" paginationColor="#A9A9A9">
-      <slide v-for="(cell,index) in this.$store.state.selectedCells" :key="cell.properties.id" >
-        <WeatherLive :CellIndex="index" />
-      </slide>
-    </carousel>-->
     <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="17rem"
                    :bullets-outside="selectedCells.length!==1" :key="reRender">
       <vueper-slide v-for="cell in selectedCells" :key="cell.id"
@@ -30,6 +25,10 @@ import {colorGenerate} from '../mixins/colorGenerate';
 import {mapState} from 'vuex';
 
 export default {
+  /**
+   * This wraps the weather information widgets for each selected cell in a slideshow
+   */
+
   components: {WeatherLive, VueperSlides, VueperSlide},
   mixins: [colorGenerate],
   computed: {

@@ -2,7 +2,11 @@
   <l-map id="leaflet" ref="map" @ready="onReadyMap" :options="mapOptions" v-bind:class="{ blurry: loading }"
          :zoom="mapOptions.zoom"
          :center="mapOptions.center">
+
+    <!-- display the copyright, required by leaflet -->
     <l-tile-layer :url="url" :attribution="attribution"/>
+
+    <!-- this displays the selected cells, i. e. cells with a special border -->
     <l-layer-group layerType="overlay" :key="this.redraws">
       <div v-if="geojson">
         <l-polygon v-for="cell of this.selectedCells" :key="cell.id"
@@ -12,15 +16,20 @@
                    :fill="false" :options="geoJsonOptions"></l-polygon>
       </div>
     </l-layer-group>
+
+    <!-- this displays all available cells -->
     <l-geo-json v-if="geojson" :geojson="geojson" :options="geoJsonOptions"
                 :options-style="geoJsonStyle"></l-geo-json>
 
-    <l-marker v-for="sensor of this.sensors" :lat-lng="sensor.latlng" :icon="createSensorIcon(sensor.color)"
-              :key="sensor.id"
-              @click="setSelectedSensor(sensor)"
-              @contextmenu="addSelectedSensor(sensor)">
-      <l-tooltip :content="sensor.name"/>
+    <!-- this displays all available stations -->
+    <l-marker v-for="station of this.stations" :lat-lng="station.latlng" :icon="createStationIcon(station.color)"
+              :key="station.id"
+              @click="setSelectedStation(station)"
+              @contextmenu="addSelectedStation(station)">
+      <l-tooltip :content="station.name"/>
     </l-marker>
+
+    <!-- this displays the legend of the current selection (combination of variable, scenario, and timerange) -->
     <l-control :position="'bottomleft'" class="custom-control-watermark">
       <div class="container">
         <div class="row">
@@ -35,7 +44,7 @@
 </template>
 
 <script>
-import {mapState, mapMutations, mapGetters} from "vuex";
+import {mapState, mapMutations} from "vuex";
 import {
   LMap,
   LTileLayer,
@@ -49,12 +58,18 @@ import {
   LTooltip
 } from "vue2-leaflet";
 import {icon, divIcon} from 'leaflet';
-import {EvaAPI} from "../../eva/eva-api";
+import {EvaAPI} from "@/eva/eva-api";
 import axios from 'axios';
 import * as d3 from "d3";
 import {colorGenerate} from '../mixins/colorGenerate';
 
 export default {
+  /**
+   * This widget is the basis of the applications
+   * It displays the map and projected values for each cell and the current selection
+   * It also shows the "Bodenfeuchtemessstationen" / stations
+   */
+
   name: "ProjectionMap",
   mixins: [colorGenerate],
   components: {
@@ -72,11 +87,17 @@ export default {
   computed: {
     ...mapState(["scenario", "variable", "timerange", "selectionUri", "selectedCells", "polygons", "ids", "viewBoundingBox"]),
     geoJsonOptions() {
+      /**
+       * Return the function for each individual functionality of cells in the geojson
+       */
       return {
         onEachFeature: this.onEachFeatureFunction
       };
     },
     geoJsonStyle() {
+      /**
+       * Return general css for each individual cell
+       */
       return feature => {
         return {
           color: this.legendColorMap(feature.properties.value),
@@ -87,6 +108,14 @@ export default {
       };
     },
     onEachFeatureFunction() {
+      /**
+       * Feature is the data object for each cell, layer is its visual representation in leaflet
+       * This methods enables three things:
+       *  - Display a tooltip on hover with the value and the location of the cell
+       *  - On LEFT CLICK: Set all selected cells to this cell alone
+       *  - On RIGHT CLICK: If cell is already selected, remove it from selection, else ADD it to the others
+       */
+
       return (feature, layer) => {
         // create tooltip
         const value = (Math.round(feature.properties.value * 10) / 10).toLocaleString("de-DE");
@@ -120,13 +149,19 @@ export default {
     },
   },
   watch: {
+    // if the selection changes, first load new data, which triggers all redraws, then calculate the new legend from it
     selectionUri: function () {
       this.loadMapData()
       this.prepareLegend();
     },
+
+    // if we want a custom location of the map, accordingly set its view bounds
     viewBoundingBox: function () {
       this.$refs.map.fitBounds(this.viewBoundingBox);
     },
+
+    // if the geojson has changed, new data has loaded -> disable loading indicator
+    // increment redraws to trigger redraws in the map, this is used for the selected cells, so they are always in front
     geojson: {
       deep: true,
       handler() {
@@ -137,15 +172,17 @@ export default {
       }
     }
   },
+
   data() {
     return {
       geojson: null,
       legendColorMap: null,
       loading: true,
-      sensors: [],
-      liveSensorTimeThreshold: 1000 * 60 * 60 * 24 * 30, // ms * s * m * h * D
-      sensorIcon: icon({
-        iconUrl: "assets/sensor.svg",
+      stations: [],
+      // this threshold is used to display only stations whose last communication was shorter ago
+      liveStationsTimeThreshold: 1000 * 60 * 60 * 24 * 30, // ms * s * m * h * D
+      stationIcon: icon({
+        iconUrl: "assets/station.svg",
         iconSize: [25, 25],
         iconAnchor: [12.5, 12.5],
       }),
@@ -163,40 +200,45 @@ export default {
   },
   mounted() {
     EvaAPI.fetchAllSources().then(result => {
-      for (const source of result.data) {
-        if (Date.now() - new Date(source.dates.last_communication) > this.liveSensorTimeThreshold)
+      for (const station of result.data) {
+        // if the last communication of the station was longer ago than the predefined threshold, we ignore it
+        if (Date.now() - new Date(station.dates.last_communication) > this.liveStationTimeThreshold)
           continue
 
         let color = this.generateColor();
         // try to find another color if this is already taken
-        while (this.sensors.find(sensor => sensor.color === color) && this.sensors.length < this.amountColors())
+        while (this.stations.find(station => station.color === color) && this.stations.length < this.amountColors())
           color = this.generateColor();
 
-        const coordinates = source.position.geo.coordinates;
-        this.sensors.push({
+        const coordinates = station.position.geo.coordinates;
+        this.stations.push({
           latlng: [coordinates[1], coordinates[0]],
-          id: source.name.original,
-          name: source.name.custom,
+          id: station.name.original,
+          name: station.name.custom,
           color: color,
         })
       }
     })
+
     if (this.selectionUri) {
       this.loadMapData();
     }
   },
   methods: {
-    ...mapMutations(["setSelectedCell", "addSelectedCell", "setSelectedSensor", "addSelectedSensor", "removeSelectedCell", "removeSelectedSensor"]),
+    ...mapMutations(["setSelectedCell", "addSelectedCell", "setSelectedStation", "addSelectedStation", "removeSelectedCell", "removeSelectedStation"]),
+
     loadMapData() {
       this.loading = true;
       this.prepareGeoJson();
     },
+
     onReadyMap(mapObject) {
       //Moving Zoom to bottom left
       const mapComponent = this.$refs.map.mapObject
       this.prepareLegend();
       mapComponent.zoomControl.setPosition('bottomleft');
     },
+
     prepareLegend() {
       const min = this.variable.min;
       const max = this.variable.max;
@@ -274,24 +316,36 @@ export default {
       svg.select(".axis")
           .style("font-size", "0.9rem")
     },
+
     prepareGeoJson() {
+      /**
+       * Load all data for the cells from remote
+       */
+
+      // The first time we load cell data (i. e. geojson is null), we need its bounding boxes -> query all_locations/grid
       if (!this.geojson) {
         axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/grid/${this.selectionUri}`)
-            .catch(function (error) {
+            .catch(error => {
               console.error('fetch data error: failed to load JSON from server', error)
-            }).then(function (response) {
-          this.geojson = response.data;
-        }.bind(this));
+            })
+            .then(response => {
+              this.geojson = response.data;
+            });
+
+        // For performance, after that only load new values for the cells -> query all_locations/values
       } else {
         axios.get(`${process.env.VUE_APP_BDATA_API}/all_locations/values/${this.selectionUri}`)
             .catch(error => {
               console.error('fetch data error: failed to load JSON from server', error)
             }).then(response => {
           for (let feature of this.geojson.features) {
+            // update the values for each cell
             const id = feature.properties.id
             if (id in response.data) {
               feature.properties.value = response.data[id];
             } else {
+              // this case should never happend, but if the cell ids of the new values do not match the olds ones,
+              // we need to completely load the grid again
               this.geojson = null;
               this.prepareGeoJson();
               return;
@@ -300,7 +354,12 @@ export default {
         });
       }
     },
+
     createCellObject: function (cell, feature) {
+      /**
+       * Create a data object for a selected cell
+       */
+
       const coordinates = []
       // the geoJson has lng-lat coords, leaflet expects lat-lng -> change for further use
       for (const coordinate of feature.geometry.coordinates[0]) {
@@ -320,8 +379,10 @@ export default {
         color: color,
       }
     },
-    createSensorIcon: color => divIcon({
-      className: "sensor-svg",
+
+    // this is ugly, maybe there is a better solution
+    createStationIcon: color => divIcon({
+      className: "station-svg",
       iconSize: [40, 40],
       iconAnchor: [20, 20],
       html: '<svg xmlns="http://www.w3.org/2000/svg"  \n' +

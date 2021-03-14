@@ -6,6 +6,9 @@
 </template>
 
 <script>
+/**
+ * This widget is used to display a headline and associated text, i. e. variable name and its description
+ */
 export default {
   name: "InformationText",
   props: {

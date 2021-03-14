@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <div>Text zur Station</div>
-    <div id="display-sensor-container">
+    <div id="display-station-container">
       <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
         <div class="flex">
-          <button class="btn remove-sensor-button"
-                  v-on:click="removeSelectedSensor(sensor)"
-                  :style="{backgroundColor: sensor.color, color: 'white'}">
-            {{ sensor.name }} <span
+          <button class="btn remove-station-button"
+                  v-on:click="removeSelectedStation(station)"
+                  :style="{backgroundColor: station.color, color: 'white'}">
+            {{ station.name }} <span
               class="h5">&times;</span>
           </button>
         </div>
@@ -69,7 +69,7 @@ export default {
   components: {LineChart},
   mixins: [colorGenerate],
   props: {
-    sensor: {
+    station: {
       required: true,
       type: Object,
     },
@@ -115,14 +115,14 @@ export default {
     }
   },
   mounted() {
-    EvaAPI.fetchFieldClimateDailyData(this.sensor.id).then(rawData => {
+    EvaAPI.fetchFieldClimateDailyData(this.station.id).then(rawData => {
       this.rawDates = rawData.data.dates;
       this.parsedData = this.parseData(rawData.data)
       this.setDefaultChannels();
     })
   },
   computed: {
-    ...mapState(["scenario", "variable", "timerange", "selectedSensors"]),
+    ...mapState(["scenario", "variable", "timerange", "selectedStations"]),
     isLoading: {
       get() {
         return this.loading;
@@ -139,7 +139,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["removeSelectedSensor"]),
+    ...mapMutations(["removeSelectedStation"]),
     setLineData() {
       this.lineData = [];
 
@@ -323,7 +323,7 @@ export default {
      */
     parseData(rawData) {
       const parsedData = {}
-      // for each sensor
+      // for each sensor/channel
       for (const channel of Object.values(rawData.data)) {
         // if we dont care about the sensor, skip it
         if (!this.sensorVariables.hasOwnProperty(channel.name))
@@ -408,7 +408,7 @@ export default {
 }
 
 
-#display-sensor-container {
+#display-station-container {
   height: 27rem;
   display: grid;
   grid-template-rows: 1fr 20rem 1fr;
@@ -430,7 +430,7 @@ export default {
   grid-area: select-date;
 }
 
-.remove-sensor-button {
+.remove-station-button {
   padding: 5px;
   font-size: 15px;
 }

@@ -19,15 +19,11 @@
           <InformationText :headline="variable.var" :text="variable.description"></InformationText>
         </WidgetShell>
 
-<!--        <WidgetShell v-if="this.selectedSensors.length > 0" widgetName="Bodenfeuchtemessstationen">-->
-<!--          <StationInformationCarousel/>-->
-<!--        </WidgetShell>-->
-
         <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0 && selectionUri">
-          <Linegraph/>
+          <VariableLineChart/>
         </WidgetShell>
 
-        <WidgetShell widgetName="Sensordaten" v-if="selectedSensors.length!==0">
+        <WidgetShell widgetName="Sensordaten" v-if="selectedStations.length!==0">
           <LiveLineCarousel/>
         </WidgetShell>
 
@@ -39,21 +35,19 @@
 
 <script>
 import SettingsSelection from "./Widgets/SettingsSelection";
-import Linegraph from "./Widgets/Linegraph";
+import VariableLineChart from "./Widgets/CellLineChart";
 import ProjectionMap from "./Widgets/ProjectionMap";
 import WidgetShell from "./Widgets/WidgetShell";
 import WeatherCarousel from "./Widgets/WeatherCarousel";
 import InformationText from "./Widgets/InformationText";
-import LiveLineCarousel from "@/components/Widgets/LiveLineCarousel";
+import LiveLineCarousel from "@/components/Widgets/StationLineChartCarousel";
 import {mapState} from "vuex";
-import StationInformationCarousel from "@/components/Widgets/StationInformationCarousel";
 
 export default {
   name: "LayoutBrowser",
   components: {
-    StationInformationCarousel,
     SettingsSelection,
-    Linegraph,
+    VariableLineChart,
     ProjectionMap,
     WidgetShell,
     WeatherCarousel,
@@ -69,7 +63,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["selectedCells", "selectedSensors", "variable", "selectionUri"]),
+    ...mapState(["selectedCells", "selectedStations", "variable", "selectionUri"]),
   },
   mounted() {
     // reload old widgets container width from local storage

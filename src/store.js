@@ -9,39 +9,51 @@ const state = {
     timerange: null,
     selectionUri: null,
     selectedCells: [],
-    selectedSensors: [],
+    selectedStations: [],
     viewBoundingBox: null,
 }
 
 const mutations = {
+    // Most widgets only listen to selection uri,
+    // since we only care, if all three - scenario, variable, and timerange, are set
     setScenario(state, scenario) {
         state.scenario = scenario;
-        updateSelectionUri(state)
+        updateSelectionUri(state);
     },
     setVariable(state, variable) {
         state.variable = variable;
-        updateSelectionUri(state)
+        updateSelectionUri(state);
     },
     setTimerange(state, timerange) {
         state.timerange = timerange;
-        updateSelectionUri(state)
+        updateSelectionUri(state);
     },
+
+
+    // view bounding box is used to set the view of the leaflet projection map
     setViewBoundingBox(state, viewBoundBox) {
         state.viewBoundingBox = viewBoundBox;
     },
-    setSelectedSensor(state, sensor) {
-        state.selectedSensors = [sensor]
+
+    // since we want to select multiple stations,
+    // setStation selects one single station, and addStation adds a station to the selection
+    setSelectedStation(state, station) {
+        state.selectedStations = [station]
     },
-    addSelectedSensor(state, sensor) {
-        // check if sensor is already added
-        for (let x of state.selectedSensors)
-            if (x.id === sensor.id)
+    addSelectedStation(state, station) {
+        // check if station is already added
+        for (let x of state.selectedStations)
+            if (x.id === station.id)
                 return;
-        state.selectedSensors.push(sensor);
+        state.selectedStations.push(station);
     },
-    removeSelectedSensor(state, sensor) {
-        state.selectedSensors = state.selectedSensors.filter(x => x.id !== sensor.id);
+    // remove one single station from the selection
+    removeSelectedStation(state, station) {
+        state.selectedStations = state.selectedStations.filter(x => x.id !== station.id);
     },
+
+    // analogous to stations, we want to select multiple cells,
+    // setCell selects one single cell, and addCell adds cells to the selection
     setSelectedCell(state, cell) {
         state.selectedCells = [cell];
     },
@@ -52,13 +64,15 @@ const mutations = {
                 return;
         state.selectedCells.push(cell)
     },
+    // remove on single cell from the selection
     removeSelectedCell(state, cell) {
         state.selectedCells = state.selectedCells.filter(x => x.id !== cell.id)
     },
-    resetCells() {
+
+    // clear selected cells and stations from the projection map
+    clearSelection() {
         this.state.selectedCells = [];
-        this.state.selectedSensors = [];
-        localStorage.removeItem("bigdata@geo-store");
+        this.state.selectedStations = [];
     }
 }
 
@@ -68,19 +82,19 @@ const mutations = {
  * @returns {*} VuexStore
  */
 const createStore = () => {
-    // check url for shared state
-    let preState;
+    // check url for shared state, i. e. url contains ?state=...
+    let stateInitializer;
     let uri = window.location.hash.substring(1);
     if (uri.startsWith("state=")) {
-        preState = decodeURI(uri.substring(6))
+        stateInitializer = decodeURI(uri.substring(6))
         window.location.href = "#";
-    } else { // try to load local storage else
-        preState = localStorage.getItem("bigdata@geo-store");
+    } else { // try to load local storage else, it may be null
+        stateInitializer = localStorage.getItem("bigdata@geo-store");
     }
 
-    // if something exists, initialize store with previous values
-    if (preState) {
-        const parsedState = JSON.parse(preState);
+    // if something exists (i. e. not null), initialize store with previous values
+    if (stateInitializer) {
+        const parsedState = JSON.parse(stateInitializer);
         for (const key in parsedState) {
             if (state.hasOwnProperty(key)) {
                 state[key] = parsedState[key];
@@ -103,6 +117,10 @@ const createStore = () => {
     return store;
 };
 
+/**
+ * Create an URI from scenario, variable, and timerange
+ * @param state vuex store state
+ */
 const updateSelectionUri = (state) => {
     if (!state.scenario || !state.variable || !state.timerange) {
         state.selectionUri = null;
