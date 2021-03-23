@@ -216,6 +216,7 @@ export default {
           id: station.name.original,
           name: station.name.custom,
           color: color,
+          text: station.text ? station.text : ""
         })
       }
     })

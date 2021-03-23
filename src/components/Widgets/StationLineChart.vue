@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>Text zur Station</div>
+    <div v-if="station.text">{{ station.text }}</div>
     <div id="display-station-container">
       <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
         <div class="flex">
