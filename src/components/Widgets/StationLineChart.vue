@@ -290,7 +290,9 @@ export default {
      */
     getLineTimeAsString(timeKey) {
       if (this.selectedChannels.length === 0 || !this.selectedTime.start || !this.selectedTime.end) {
-        const date = timeKey === "end" ? this.rawDates[this.rawDates.length - 1] : this.rawDates[0];
+        let date = timeKey === "end" ? this.rawDates[this.rawDates.length - 1] : this.rawDates[0];
+        // Safari cannot parse date strings of the form "2018-07-05 00:00:00", we thus need to remove the time component
+        date = date.split(" ")[0];
         return new Date(date).toISOString().split('T')[0];
       }
       return new Date(this.selectedTime[timeKey]).toISOString().split('T')[0];

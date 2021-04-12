@@ -29,6 +29,8 @@
 
         <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
       </div>
+
+      <div id="empty"></div>
     </div>
   </div>
 </template>
@@ -137,7 +139,7 @@ body {
   }
 
   #layout > * {
-    pointer-events: all;
+    pointer-events: auto;
   }
 
   #selection-container {
@@ -145,7 +147,7 @@ body {
   }
 
   #projectionmap-container {
-    z-index: -1;
+    /* z-index: -1; */
     height: 360px;
     width: 100vw;
   }
@@ -156,7 +158,7 @@ body {
   }
 
   #widgets-container > * {
-    pointer-events: all;
+    pointer-events: auto;
     z-index: 1030 !important; /* bootstrap row has 1030 */
   }
 
@@ -167,7 +169,7 @@ body {
 
 @media only screen and (min-width: 768px) {
   #projectionmap-container {
-    z-index: -1;
+    /* z-index: -1; */
     position: fixed;
     top: 0;
     left: 0;
@@ -195,7 +197,7 @@ body {
   }
 
   #layout > * {
-    pointer-events: all;
+    pointer-events: auto;
   }
 
   #selection-container {
@@ -217,7 +219,7 @@ body {
 
   #widgets-container > * {
     position: relative;
-    pointer-events: all;
+    pointer-events: auto;
     z-index: 1030 !important; /* bootstrap row has 1030 */
   }
 
@@ -228,7 +230,7 @@ body {
     width: 1.5rem;
     height: 100%;
     cursor: w-resize;
-    pointer-events: all;
+    pointer-events: auto;
     /*margin-left: -.75rem;*/
   }
 }
