@@ -11,23 +11,25 @@
       </div>
 
       <div id="widgets-container" ref="widgets" v-bind:style="windowWidth > 768 ? widgetsContainerStyle : null">
-        <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (openweathermap.org)">
-          <WeatherCarousel/>
-        </WidgetShell>
+        <div id="widgets-container-inner">
+          <WidgetShell v-if="selectedCells.length!==0" widgetName="Wetter (openweathermap.org)">
+            <WeatherCarousel/>
+          </WidgetShell>
 
-        <WidgetShell v-if="this.variable" widgetName="Variablenbeschreibung">
-          <InformationText :headline="variable.var" :text="variable.description"></InformationText>
-        </WidgetShell>
+          <WidgetShell v-if="this.variable" widgetName="Variablenbeschreibung">
+            <InformationText :headline="variable.var" :text="variable.description"></InformationText>
+          </WidgetShell>
 
-        <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0 && selectionUri">
-          <VariableLineChart/>
-        </WidgetShell>
+          <WidgetShell widgetName="Timeline" v-show="selectedCells.length!==0 && selectionUri">
+            <VariableLineChart/>
+          </WidgetShell>
 
-        <WidgetShell widgetName="Sensordaten" v-if="selectedStations.length!==0">
-          <LiveLineCarousel/>
-        </WidgetShell>
+          <WidgetShell widgetName="Sensordaten" v-if="selectedStations.length!==0">
+            <LiveLineCarousel/>
+          </WidgetShell>
 
-        <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
+          <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
+        </div>
       </div>
 
       <div id="empty"></div>
@@ -157,9 +159,12 @@ body {
     pointer-events: none;
   }
 
-  #widgets-container > * {
+  #widgets-container-inner {
     pointer-events: auto;
     z-index: 1030 !important; /* bootstrap row has 1030 */
+
+    max-height: 100%;
+    overflow-y: scroll;
   }
 
   #drag {
@@ -203,7 +208,6 @@ body {
   #selection-container {
     width: auto;
     margin: 0 auto;
-    /* text-align: center; */
     grid-area: selection;
     z-index: 1040;
   }
@@ -217,10 +221,13 @@ body {
     overflow-y: scroll;
   }
 
-  #widgets-container > * {
+  #widgets-container-inner {
     position: relative;
     pointer-events: auto;
     z-index: 1030 !important; /* bootstrap row has 1030 */
+
+    max-height: 100%;
+    overflow-y: scroll;
   }
 
   #drag {
