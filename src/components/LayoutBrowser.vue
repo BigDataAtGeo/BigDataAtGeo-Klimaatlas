@@ -31,8 +31,6 @@
           <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
         </div>
       </div>
-
-      <div id="empty"></div>
     </div>
   </div>
 </template>
@@ -149,7 +147,7 @@ body {
   }
 
   #projectionmap-container {
-    /* z-index: -1; */
+    z-index: -1;
     height: 360px;
     width: 100vw;
   }
@@ -174,7 +172,7 @@ body {
 
 @media only screen and (min-width: 768px) {
   #projectionmap-container {
-    /* z-index: -1; */
+    z-index: -1;
     position: fixed;
     top: 0;
     left: 0;
