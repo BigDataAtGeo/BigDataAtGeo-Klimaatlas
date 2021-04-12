@@ -349,7 +349,7 @@ export default {
           for (let i = 0; i < channel.aggr[aggregation].length; i++) {
             if (channel.aggr[aggregation][i]) {
               parsedData[translation].aggr[aggregation].push({
-                t: new Date(rawData.dates[i]).getTime(),
+                t: new Date(rawData.dates[i].replace(" ", "T")).getTime(),
                 y: channel.aggr[aggregation][i]
               });
             }
