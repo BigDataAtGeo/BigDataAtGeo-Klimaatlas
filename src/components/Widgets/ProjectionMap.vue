@@ -71,6 +71,12 @@ export default {
    */
 
   name: "ProjectionMap",
+  props: {
+    mobile:{
+      type: Boolean,
+      default: false
+    }
+  },
   mixins: [colorGenerate],
   components: {
     LMap,
@@ -192,6 +198,7 @@ export default {
         center: [50, 9.97],
         maxBounds: [[44.75, 2.33], [54.37, 17.53]],
         rasterSizeInMeters: 1000,
+        zoomControl: this.mobile ? false : true,
       },
       url: 'https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -237,7 +244,8 @@ export default {
       //Moving Zoom to bottom left
       const mapComponent = this.$refs.map.mapObject
       this.prepareLegend();
-      mapComponent.zoomControl.setPosition('bottomleft');
+      if(!this.mobile)
+        mapComponent.zoomControl.setPosition('bottomleft');
     },
 
     prepareLegend() {
@@ -258,9 +266,18 @@ export default {
       //remoove old legend
       d3.select("#svgLegend").remove();
       //create new d3 legend
-      var legendheight = 200,
-          legendwidth = 80,
-          margin = {top: 10, right: 50, bottom: 10, left: 2};
+
+      if(this.mobile){
+        var legendheight = 150,
+        legendwidth = 60,
+        margin = {top: 8, right: 35, bottom: 8, left: 2};
+      }else{
+        var legendheight = 200,
+        legendwidth = 80,
+        margin = {top: 10, right: 50, bottom: 10, left: 2};
+      }
+
+      
       var colorscale = d3.scaleSequential().domain([min, max]).interpolator(interpolator);
       var selector_id = "#legend1";
       var canvas = d3.select(selector_id)
