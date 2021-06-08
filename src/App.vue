@@ -1,6 +1,13 @@
 <template>
   <div id="app">
-    <LayoutBrowser/>
+    <!-- <div v-if="windowWidth >= 768"> -->
+    <div v-if="windowWidth >= 768">  
+      <LayoutBrowser/>
+    </div>
+    <div v-if="windowWidth < 768">
+      <LayoutMobile/>
+    </div>
+    
     <div>
       <b-modal id="modal-welcome" size="xl" :title="'Willkommen'" :hide-footer="true" :hide-header="true"
                @hidden="closeWelcomeModal" centered>
@@ -52,31 +59,50 @@
             <div class="col-1 text-center my-auto">
               <img src="assets/station.svg" width="40px" height="40px" alt="Bodenwasserstation">
             </div>
-            <div class="col-11 my-auto">
+            <div v-if="windowWidth >= 768" class="col-11 my-auto">
               Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten per Klick näher untersucht werden können.
             </div>
+            <div v-else class="col-11 my-auto">
+              Auf der Karte werden Bodenwasserstationen angezeigt, deren Daten nach einer Berührung näher untersucht werden können.
+            </div>
           </div>
-          <div class="row mt-3">
+          <div v-if="windowWidth >= 768" class="row mt-3">
             <div class="col-1 text-center my-auto">
               <img src="assets/left-click.png" height="40px" alt="Links-Klick">
             </div>
-            <div class="col-11 my-auto">
+            <div  class="col-11 my-auto">
               Mit Linksklicks werden immer <i>einzelne</i> Zellen und Bodenwasserstationen ausgewählt.
             </div>
           </div>
-          <div class="row mt-3">
+          <div v-else class="row mt-3">
+            <div class="col-1 text-center my-auto">
+              <img src="assets/touch.png" height="40px" alt="kurzes drücken">
+            </div>
+            <div class="col-11 my-auto">
+              Durch kurzes drücken werden immer <i>einzelne</i> Zellen und Bodenwasserstationen ausgewählt.
+            </div>
+          </div>
+          <div  v-if="windowWidth >= 768" class="row mt-3">
             <div class="col-1 text-center my-auto">
               <img src="assets/right-click.png" height="40px" alt="Rechts-Klick">
             </div>
-            <div class="col-11 my-auto">
+            <div  class="col-11 my-auto">
               Mit Rechtsklicks werden Zellen oder Bodenwasserstationen zur Auswahl hinzugefügt (weitere Linksklicks heben diese Auswahl auf).
             </div>
           </div>
-          <div class="row mt-3">
+          <div v-else class="row mt-3">
+            <div class="col-1 text-center my-auto">
+              <img src="assets/touch-long.png" height="40px" alt="langes drücken">
+            </div>
+            <div class="col-11 my-auto">
+               Durch langes (mindestens 1s) drücken werden Zellen oder Bodenwasserstationen zur Auswahl hinzugefügt (weitere kurze Berührungen heben diese Auswahl auf).
+            </div>
+          </div>
+          <div  v-if="windowWidth >= 768" class="row mt-3">
             <div class="col-1 text-center my-auto">
               <img src="assets/col-resize.svg" height="40px" alt="Cursor zum Verändern der horizontalen Größe">
             </div>
-            <div class="col-11 my-auto">
+            <div  class="col-11 my-auto">
               Die Breite der Zusatzinformationen rechts lässt sich per Drag &amp; Drop der linken Kante verstellen.
             </div>
           </div>
@@ -98,9 +124,17 @@
 
 <script>
 import LayoutBrowser from "./components/LayoutBrowser";
+import LayoutMobile from "./components/LayoutMobile";
 
 export default {
   name: 'App',
+
+  data(){
+    return{
+      windowWidth: window.innerWidth,
+    }
+  },
+
   created() {
     document.title = "BigData@Geo — Unterfränkischer Klimaatlas";
   },
@@ -108,15 +142,25 @@ export default {
     // show welcome message only the first time
     if (!localStorage.getItem("welcome-message"))
       this.$bvModal.show("modal-welcome");
+
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.onResize);
+    })  
   },
+    
   methods: {
+    onResize() {
+      this.windowWidth = window.innerWidth;
+    },
+
     closeWelcomeModal() {
       localStorage.setItem("welcome-message", true);
       this.$bvModal.hide("modal-welcome");
-    }
+    },
   },
   components: {
-    LayoutBrowser
+    LayoutBrowser,
+    LayoutMobile,
   }
 }
 </script>
@@ -136,4 +180,21 @@ export default {
 .blurry {
   filter: blur(3px);
 }
+
+@media only screen and (max-width:768px) {
+  .row > div {
+    margin: 0px 1em;
+  }
+
+  #modal-welcome .container {
+  max-width: 100%;
+  margin-bottom: 35px;
+  margin-top: 35px;
+  padding-right: 5px;
+  padding-left: 5px;
+  }
+
+  
+}
+
 </style>

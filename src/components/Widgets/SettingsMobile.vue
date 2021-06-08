@@ -1,29 +1,87 @@
 <template>
-  <form class="form-inline settings-container" v-if="variable!=null">
-    <div class="form-row">
+  
+  <div>
+    <div class="form-row" id="navbar">
       <!-- Logo -->
       <div class="col-auto element">
         <a href="https://bigdata-at-geo.eu/">
-          <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="60px">
+          <img src="assets/BDAGlogo.svg" alt="BigData@Geo Logo" height="50px">
         </a>
       </div>
 
-      <!-- Variable Input -->
+    
+      <!-- Menu Dropdown -->
       <div class="col-auto form-group element">
-        <label for="select-variable" class="h6">Variable:</label>
-        <select id="select-variable" class="custom-select" @change="setVariable"
-                :disabled="index.variables === null">
-          <option v-for="varOption in index.variables"
-                  :value="varOption.var_id"
-                  :key="varOption.var_id"
-                  :selected="variable && variable.var_id === varOption.var_id">{{
-              varOption.var
-            }}
-          </option>
-        </select>
-      </div>
+       
+        
+        <b-icon icon="search" class="mr-2 cursor-pointer size-rem-1-25 center" style="width: 1.25em; height: 1.25em;" v-b-modal.search-location></b-icon>
+        <img v-if="collapsed" src="assets/sliders.svg" class="mr-2 cursor-pointer size-rem-1-25 center svg" style="width: 1.25em; height: 1.25em;" alt="Einstellungen" @click="collapseMenu()">
+        <img v-else src="assets/sliders-blue.svg" class="mr-2 cursor-pointer size-rem-1-25 center svg" style="width: 1.25em; height: 1.25em;" alt="Einstellungen" @click="collapseMenu()">
 
-      <!-- Scenario Input -->
+
+        <b-dropdown right variant="outline-secondary" class="m-md-2 dropdown">
+          <template v-slot:button-content>
+            Menü
+          </template>
+          <b-dropdown-item class="wrap" v-b-modal.modal-welcome>
+            <b-icon icon="question-circle-fill"></b-icon>
+            Willkommensbildschirm
+          </b-dropdown-item>
+          <b-dropdown-item class="wrap" v-b-modal.m3>
+            <b-icon icon="info-circle-fill"></b-icon>
+            Datengrundlage
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item class="wrap" href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
+            <b-icon icon="person-lines-fill"></b-icon>
+            Impressum
+          </b-dropdown-item>
+          <b-dropdown-item class="wrap" href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
+            <b-icon icon="shield-lock-fill"></b-icon>
+            Datenschutz
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item class="wrap" v-on:click="shareConfiguration">
+            <b-icon icon="reply-fill"></b-icon>
+            Einstellungen teilen
+          </b-dropdown-item>
+          <b-dropdown-item class="wrap" v-b-modal.modal-feedback>
+            <b-icon icon="envelope-fill"></b-icon>
+            Kontakt
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item class="wrap" variant="danger" v-on:click="resetSettings">
+            <b-icon icon="gear"></b-icon>
+            Einstellungen und ausgewählte Zellen zurücksetzen
+          </b-dropdown-item>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item class="wrap" href="https://ec.europa.eu">
+            <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="40px">
+          </b-dropdown-item>
+        </b-dropdown>
+      </div>
+    </div>
+
+      
+        <!-- Variable Input -->
+      <transition name="fade">
+        <div v-show="!collapsed" 
+           id="menu">
+          <div class="col-auto form-group element animated">
+          <label for="select-variable" class="h6">Variable:</label>
+          <select id="select-variable" class="custom-select" @change="setVariable"
+                  :disabled="index.variables === null">
+            <option v-for="varOption in index.variables"
+                    :value="varOption.var_id"
+                    :key="varOption.var_id"
+                    :selected="variable && variable.var_id === varOption.var_id">{{
+                varOption.var
+              }}
+            </option>
+          </select>
+          </div>
+
+        <!-- Scenario Input -->
       <div class="col-auto form-group element">
         <label for="select-scenario" class="h6">Szenario:</label>
         <select id="select-scenario" class="custom-select" @change="setScenario"
@@ -39,66 +97,27 @@
       <!-- Timerange Input -->
       <div class="col-auto form-group element">
         <label for="select-timerange" class="h6">Zeitspanne:</label>
-        <label class="small">{{ minRange }}</label>
+        <div id="timerange">
+          <label class="small  timerange-label">{{ minRange }} </label>
+          <label class="small  timerange-label">{{ maxRange }}</label>
+        </div>
         <b-form-input id="select-timerange" @input="liveSlider" type="range" @change="setTimerange"
                       :value="timerangeValue" min="0" :max="index.timeranges ? index.timeranges.length - 1 : 0" step="1"
                       :disabled="index.variables === null"></b-form-input>
-        <label class="small">{{ maxRange }}</label>
       </div>
 
       <!-- Currently selected Timerange -->
       <div class="col-auto form-group element">
         <label for="selected-timerange" class="h6">Aktuell:</label>
-        <span id="selected-timerange">{{ selectedTimerange ? selectedTimerange.replace("-", "&#8211;") : "" }}</span>
+        <span class="spaced" id="selected-timerange">{{ selectedTimerange ? selectedTimerange.replace("-", "&#8211;") : "" }}</span>
       </div>
 
-      <!-- Menu Dropdown -->
-      <div class="col-auto form-group element">
-        <b-icon icon="search" class="mr-2 cursor-pointer size-rem-1-25" v-b-modal.search-location></b-icon>
-        <b-dropdown right variant="outline-secondary" class="m-md-2">
-          <template v-slot:button-content>
-            <!-- <b-icon icon="list"></b-icon> -->
-            Menü
-          </template>
-          <b-dropdown-item v-b-modal.modal-welcome>
-            <b-icon icon="question-circle-fill"></b-icon>
-            Willkommensbildschirm
-          </b-dropdown-item>
-          <b-dropdown-item v-b-modal.m3>
-            <b-icon icon="info-circle-fill"></b-icon>
-            Datengrundlage
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/impressum/">
-            <b-icon icon="person-lines-fill"></b-icon>
-            Impressum
-          </b-dropdown-item>
-          <b-dropdown-item href="https://www.uni-wuerzburg.de/sonstiges/datenschutz/">
-            <b-icon icon="shield-lock-fill"></b-icon>
-            Datenschutz
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item v-on:click="shareConfiguration">
-            <b-icon icon="reply-fill"></b-icon>
-            Einstellungen teilen
-          </b-dropdown-item>
-          <b-dropdown-item v-b-modal.modal-feedback>
-            <b-icon icon="envelope-fill"></b-icon>
-            Kontakt
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item variant="danger" v-on:click="resetSettings">
-            <b-icon icon="gear"></b-icon>
-            Einstellungen und ausgewählte Zellen zurücksetzen
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item href="https://ec.europa.eu">
-            <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="40px">
-          </b-dropdown-item>
-        </b-dropdown>
-      </div>
+        </div>
+      </transition>
 
-      <!-- Datengrundlage Modal -->
+
+
+    <!-- Datengrundlage Modal -->
       <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
         <Datengrundlage/>
       </b-modal>
@@ -140,9 +159,107 @@
           </div>
         </div>
       </b-modal>
-    </div>
-  </form>
+
+  </div>
+
+  
+
 </template>
+
+
+<style scoped>
+#menu {
+  position: relative;
+  background-color:  rgb(238, 241, 247);
+  padding: 15px 10px 5px 10px;
+  z-index: 1;
+  top: -10px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
+}
+
+#navbar {
+  position: relative;
+  z-index: 10;
+  flex-direction: row;
+  border-radius: 0 0 16px 16px;
+  background-color: rgba(255, 255, 255, 1);
+  padding: 7px 10px; 
+  justify-content: space-between;
+  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
+}
+
+.element {
+  padding: 0px 10px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+
+.form-group {
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.form-group img {
+  position: relative;
+  top: 1px; 
+}
+
+.form-group.element {
+  padding: 5px 5px;
+}
+
+.center {
+  top: 0.3em; 
+  position:relative;
+}
+
+.spaced {
+  padding: 0px 10px;
+}
+
+#settings-div{
+  background-color:  rgb(238, 241, 247);
+  padding: 5px 10px;
+}
+
+.settings-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: 1em 1em;
+  }
+
+a.settings-wrapper {
+  text-decoration: none;
+  color: inherit;
+}
+
+.dropdown /deep/ a {
+  white-space: normal;
+}
+
+.dropdown /deep/ .dropdown-menu{
+  width:80vw;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+
+
+#timerange {
+  display: flex;
+  justify-content: space-between;
+}
+
+</style>
 
 <script>
 /**
@@ -157,7 +274,7 @@ import Datengrundlage from "./Datengrundlage";
 import Kontaktformular from './Kontaktformular.vue';
 
 export default {
-  name: 'SettingsSelection',
+  name: 'SettingsMobile',
   mixins: [colorGenerate],
   components: {Datengrundlage, Kontaktformular},
   data() {
@@ -175,7 +292,14 @@ export default {
       searchLocationResults: [],
       searchLocationError: false,
       searchLocationTimeout: false,
+      collapsed: true,
     }
+  },
+  created() {
+    /**  
+    * Closes the Menu on a click outside of the SettingsContainer
+    **/
+    this.$root.$on("closeMenu", () => {this.collapsed = true});
   },
   computed: {
     ...mapState(["scenario", "variable", "timerange"]),
@@ -260,6 +384,11 @@ export default {
       }
     },
 
+    collapseMenu(){
+        this.collapsed = !this.collapsed;
+    },
+
+
     /**
      * Search for geolocations with Openstreetmap
      * Also sets searchTimeout to respect the usage limits of the api, during which this method should not be called again
@@ -294,6 +423,8 @@ export default {
           this.searchLocation();
         }
       }, 1200);
+
+      
     },
 
     /**
@@ -310,6 +441,7 @@ export default {
       this.$bvModal.hide("search-location");
       this.setViewBoundingBox(boundingBox);
     },
+
   },
 
   /**
@@ -345,90 +477,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.settings-container {
-  background-color: rgba(255, 255, 255, 1);
-  border-radius: 0 0 8px 8px;
-  box-shadow: rgba(65, 69, 73, 0.3) 0px 1px 2px 0px, rgba(65, 69, 73, 0.15) 0px 3px 6px 2px;
-  padding: 5px 10px;
-}
 
-.settings-container .form-row {
-  flex-direction: row;
-}
-
-@media only screen and (max-width: 768px) {
-  .settings-container .form-row > div:nth-child(1) {
-    order: 0;
-  }
-
-  .settings-container .form-row > div:nth-child(2) {
-    order: 2;
-    flex: 1 0 100%;
-    margin-bottom: 10px;
-  }
-
-  .settings-container .form-row > div:nth-child(3) {
-    order: 3;
-    flex: 1 0 100%;
-    margin-bottom: 10px;
-  }
-
-  .settings-container .form-row > div:nth-child(4) {
-    order: 4;
-    flex: 1 0 100%;
-    margin-bottom: 10px;
-  }
-
-  .settings-container .form-row > div:nth-child(5) {
-    order: 5;
-    flex: 1 0 100%;
-  }
-
-  .settings-container .form-row > div:nth-child(6) {
-    order: 1;
-  }
-}
-
-.element {
-  padding: 0px 10px !important;
-}
-
-#select-timerange {
-  width: auto;
-  min-width: 200px;
-  flex-grow: 1;
-}
-
-#selected-timerange {
-  width: 6em;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.size-rem-1-25 {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.form-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-label {
-  padding: 0px 5px;
-  margin-bottom: 0;
-}
-
-a {
-  text-decoration: underline;
-  color: gray;
-  font-size: large;
-}
-
-
-</style>
