@@ -126,14 +126,13 @@ import axios from 'axios';
           if(this.checkFormValidity()){
             axios({
                 method: 'post',
-                url: '${process.env.VUE_APP_BDATA_API}/feedback',
+                url: process.env.VUE_APP_EVA_API + '/feedback',
                 data: {
                   email: this.email,
                   feedback: this.feedback,
                   name: this.username,
                 }
               }).then((response) => {
-                console.log(response);
                 this.success  = true;
 
               }, (error) => {

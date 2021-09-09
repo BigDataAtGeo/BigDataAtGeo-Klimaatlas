@@ -1,6 +1,7 @@
 <template>
-  <div @mouseup="resizeWidgetsEnd($event)"
-       @mousemove="isResizing ? resizeWidgets($event) : null">
+  <div @mouseup="resizeWidgetsEnd($event)" 
+       @mousemove="isResizing ? resizeWidgets($event) : null" @touchend="resizeWidgetsEnd($event)" 
+       @touchmove="isResizing ? resizeWidgetsTouch($event) : null">
     <div id="layout">
       <div id="selection-container">
         <SettingsSelection/>
@@ -24,11 +25,16 @@
             <VariableLineChart/>
           </WidgetShell>
 
-          <WidgetShell widgetName="Sensordaten" v-if="selectedStations.length!==0">
+          <WidgetShell :widgetName="this.infoWidgetName" v-if="selectedStations.length!==0">
+            <StationsInformationenCarousel></StationsInformationenCarousel>
+          </WidgetShell>
+
+          <WidgetShell :widgetName="this.dataWidgetName" v-if="selectedStations.length!==0" :hideHandler=toggle :showDefault=true>
             <LiveLineCarousel/>
           </WidgetShell>
 
-          <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
+          <div id="drag" @mousedown="resizeWidgetsStart($event)" @touchstart="resizeWidgetsStartTouch($event)" ></div>
+
         </div>
       </div>
     </div>
@@ -43,18 +49,20 @@ import WidgetShell from "./Widgets/WidgetShell";
 import WeatherCarousel from "./Widgets/WeatherCarousel";
 import InformationText from "./Widgets/InformationText";
 import LiveLineCarousel from "@/components/Widgets/StationLineChartCarousel";
-import {mapState} from "vuex";
+import {mapState, mapMutations} from "vuex";
+import StationsInformationenCarousel from "@/components/Widgets/StationsInformationenCarousel";
 
 export default {
   name: "LayoutBrowser",
   components: {
+    StationsInformationenCarousel,
     SettingsSelection,
     VariableLineChart,
     ProjectionMap,
     WidgetShell,
     WeatherCarousel,
     LiveLineCarousel,
-    InformationText
+    InformationText,
   },
   data() {
     return {
@@ -62,10 +70,36 @@ export default {
       isResizing: false,
       resizeStart: null,
       widgetsContainerStyle: {},
+      millisAtLastResize: 0,
     }
   },
   computed: {
-    ...mapState(["selectedCells", "selectedStations", "variable", "selectionUri"]),
+    ...mapState(["selectedCells", "selectedStations", "activeStation", "variable", "selectionUri", "lineChartHidden", "widgetWidth"]),
+    
+    infoWidgetName: function(){
+      let stations = this.selectedStations;
+      let active = stations[this.activeStation];
+
+      if(active == undefined && this.activeStation > 0){
+        active = stations[this.activeStation-1]
+      } else if(active == undefined){
+         return "Informationen zur Messstation"  
+      }
+
+      return "Informationen zur Messstation (" + active.name + ")";
+    },
+    dataWidgetName: function(){
+      let stations = this.selectedStations;
+      let active = stations[this.activeStation];
+
+      if(active == undefined && this.activeStation > 0){
+        active = stations[this.activeStation-1]
+      } else if(active == undefined){
+         return "Daten zur Messstation"  
+      }
+
+      return "Daten zur Messstation (" + active.name + ")";
+    }
   },
   mounted() {
     // reload old widgets container width from local storage
@@ -78,8 +112,20 @@ export default {
     })
   },
   methods: {
+    ...mapMutations(["setWidgetWidth", "setLineChartHidden"]),
+
+    toggle(state){
+      this.setLineChartHidden(state);
+    },
+
     onResize() {
       this.windowWidth = window.innerWidth;
+
+      if(this.widgetWidth > this.windowWidth){
+        let newWidth = 0.8 * this.windowWidth
+        this.setWidgetWidth(newWidth)
+        this.widgetsContainerStyle = {"width": (newWidth) + "px !important"}; // bound by vue
+      }
     },
 
     /**
@@ -93,8 +139,35 @@ export default {
     },
 
     /**
+     * Enables the widget container resizing listener by setting isResizing to true and saves the Touch start position
+     * @param event HTML mouse event (touchstart)
+     */
+    resizeWidgetsStartTouch(event) {
+      event.preventDefault(); // prevent text selection
+      this.isResizing = true; // enable resizing listener
+      this.resizeStart = event.touches[0].clientX;
+    },
+
+    /**
+     * Calculates and sets a new widget container width from the mouse's delta x
+     * @param event HTML touch event (touchmove)
+     */
+    resizeWidgetsTouch(event){
+      this.millisAtLastResize = Date.now();
+      const dx = this.resizeStart - event.changedTouches[0].clientX; // new additional width
+      const containerWidth = parseInt(getComputedStyle(this.$refs.widgets).width); // old width
+      this.widgetsContainerStyle = {"width": (containerWidth + dx) + "px !important"}; // bound by vue
+      this.resizeStart = event.changedTouches[0].clientX; // save new width for next delta
+      setTimeout(() => {
+        if( Date.now() - this.millisAtLastResize > 80){
+          this.setWidgetWidth(containerWidth + dx)
+        }
+      }, 100);
+    },
+
+    /**
      * Ends the widget container resizing listener and saves changes to local storage
-     * @param event HTML mouse event (mouseup)
+     * @param event HTML mouse / touch event (mouseup / touchend)
      */
     resizeWidgetsEnd(event) {
       this.isResizing = false; // disable resizing listener
@@ -106,10 +179,16 @@ export default {
      * @param event HTML mouse event (mousemove)
      */
     resizeWidgets(event) {
+      this.millisAtLastResize = Date.now();
       const dx = this.resizeStart - event.x; // new additional width
       const containerWidth = parseInt(getComputedStyle(this.$refs.widgets).width); // old width
       this.widgetsContainerStyle = {"width": (containerWidth + dx) + "px !important"}; // bound by vue
       this.resizeStart = event.x; // save new width for next delta
+      setTimeout(() => {
+        if( Date.now() - this.millisAtLastResize > 80){
+          this.setWidgetWidth(containerWidth + dx)
+        }
+      }, 100);
     }
   }
 }

@@ -10,7 +10,19 @@ const state = {
     selectionUri: null,
     selectedCells: [],
     selectedStations: [],
+    activeStation: null,
     viewBoundingBox: null,
+    widgetWidth: null,
+    lineChartHidden: true,
+    preset_list: {
+        '000017DD': 1,
+        '000017DE': 1,
+        '000017E0': 1,
+        '00205EA1': 1,
+        '00206B4B': 1,
+        '00208200': 1,
+        '00208227': 1,
+      }
 }
 
 const mutations = {
@@ -29,6 +41,17 @@ const mutations = {
         updateSelectionUri(state);
     },
 
+    setActiveStation(state, stationIndex){
+        state.activeStation = stationIndex;
+    },
+
+    setWidgetWidth(state, width){
+        state.widgetWidth = width;
+    },
+
+    setLineChartHidden(state, hidden){
+        state.lineChartHidden = hidden;
+    },
 
     // view bounding box is used to set the view of the leaflet projection map
     setViewBoundingBox(state, viewBoundBox) {
@@ -38,20 +61,20 @@ const mutations = {
     // since we want to select multiple stations,
     // setStation selects one single station, and addStation adds a station to the selection
     setSelectedStation(state, station) {
-        state.selectedStations = [station]
+        state.selectedStations = [station];
     },
     addSelectedStation(state, station) {
         // check if station is already added
         for (let x of state.selectedStations)
             if (x.id === station.id)
                 return;
-        state.selectedStations.push(station);
+        state.selectedStations.unshift(station);
     },
     // remove one single station from the selection
     removeSelectedStation(state, station) {
         state.selectedStations = state.selectedStations.filter(x => x.id !== station.id);
     },
-
+   
     // analogous to stations, we want to select multiple cells,
     // setCell selects one single cell, and addCell adds cells to the selection
     setSelectedCell(state, cell) {
@@ -73,7 +96,22 @@ const mutations = {
     clearSelection() {
         this.state.selectedCells = [];
         this.state.selectedStations = [];
-    }
+        this.state.preset_list = {
+            '000017DD': 1,
+            '000017DE': 1,
+            '000017E0': 1,
+            '00205EA1': 1,
+            '00206B4B': 1,
+            '00208200': 1,
+            '00208227': 1,
+          };
+        this.state.activeStation = null;
+    },
+
+    // sets the acctive preset for a station_id
+    setPreset(state, settings){
+        state.preset_list[settings.station_id] = settings.index;
+      },
 }
 
 /**
