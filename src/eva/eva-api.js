@@ -18,4 +18,10 @@ export const EvaAPI = {
                 console.error("could not get daily fieldclimate data", error);
             })
     },
+    fetchStationInformation(stationId) {
+        return axios.get(process.env.VUE_APP_EVA_API + '/information/' + stationId)
+        .catch(error => {
+            console.error("could not get station information for Station: " + stationId, error);
+        })
+    }
 }

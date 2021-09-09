@@ -15,21 +15,28 @@ export default {
     options: {
       type: Object,
       default: null
+    },
+    styles: {
+      type: Object,
+      default: null
     }
   },
   watch: {
     chartData() {
-      this.renderChart(this.chartData, this.options);
+      this.renderChart(this.chartData, this.options, this.styles);
     },
     chartOptions() {
-      this.renderChart(this.chartData, this.options);
+      this.renderChart(this.chartData, this.options, this.styles);
     },
+    style(){
+      this.renderChart(this.chartData, this.options, this.styles);
+    }
   },
   mounted() {
     // this.chartData is created in the mixin.
     // If you want to pass options please create a local options object
-    this.renderChart(this.chartData, this.options);
-  }
+    this.renderChart(this.chartData, this.options, this.styles);
+  },
 }
 </script>
 

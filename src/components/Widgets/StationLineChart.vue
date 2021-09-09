@@ -1,55 +1,61 @@
 <template>
-  <div class="container">
-    <div v-if="station.text">{{ station.text }}</div>
+  <div class="container" >
     <div id="display-station-container">
       <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
-        <div class="flex">
-          <button class="btn remove-station-button"
+        <div id="settings" class="flex">
+          <b-button class="btn remove-station-button"
                   v-on:click="removeSelectedStation(station)"
                   :style="{backgroundColor: station.color, color: 'white'}">
             {{ station.name }} <span
-              class="h5">&times;</span>
-          </button>
-        </div>
-        <b-dropdown v-if="this.parsedData" text="Variablen Wählen"
-                    class="flex-grow-1 m-md-2 liveline-dropdown z-order-front">
+              class="h5" style="font-size: 1rem">&times;</span>
+          </b-button>
+          <b-button v-b-tooltip.hover.bottom  v-for="preset of Object.keys(this.presets)" :title="getPresetDescription(preset)" :key="preset" variant="outline-primary"  class="preset-button"
+                  v-on:click="setIndex(preset)"
+                  :class="{active: preset == active_preset}">
+          Profil {{preset}}
+          </b-button>
+          
+          <b-dropdown v-if="this.parsedData" text="Variablen Wählen" id="dropdown"
+                    class="flex-grow-1 m-md-1 liveline-dropdown z-order-front">
           <b-dropdown-item v-for="channel of Object.values(parsedData)" :key="channel.translation"
                            class="d-flex align-items-center">
-            <label @click.stop="" class="d-flex align-self-center">
+            <label @click.stop="" class="d-flex align-self-center" style="white-space: normal">
               <input type="checkbox" :value="channel" v-model="selectedChannels"
                      class="mr-2">
               {{ channel.translation }}
             </label>
           </b-dropdown-item>
-        </b-dropdown>
+          </b-dropdown>
+        </div>
       </div>
+
       <line-chart id="line-chart"
-                  v-if="chartData"
-                  :chartData="chartData"
-                  :options="chartOptions"/>
+                v-if="chartData"
+                :chartData="chartData"
+                :options="chartOptions"
+                :styles="myStyles"/>
+
       <div v-if="!parsedData" class="flex-row text-center align-self-center justify-content-center">
         <div class="spinner-border text-primary loader" role="status">
           <span class="sr-only">Loading...</span>
         </div>
       </div>
       <div id="choose-date-container" v-if="parsedData">
-        <div class="input-group input-group-md mb-3">
+        <div class="date-input input-group input-group-md mb-1">
           <div class="input-group-prepend">
             <span class="input-group-text">Von:</span>
           </div>
           <input type="date" class="form-control"
                  :value="getLineTimeAsString('start')"
                  @input="selectTimeFromInput($event, 'start')">
-<!--          <input type="date" class="form-control"-->
-<!--                 @input="selectTimeFromInput($event, 'start')">-->
+        </div>
+        <div class="date-input input-group input-group-md mb-1">
           <div class="input-group-prepend">
             <span class="input-group-text">Bis:</span>
           </div>
           <input type="date" class="form-control"
                  :value="getLineTimeAsString('end')"
                  @input="selectTimeFromInput($event, 'end')">
-<!--          <input type="date" class="form-control"-->
-<!--                 @input="selectTimeFromInput($event, 'end')">-->
         </div>
       </div>
     </div>
@@ -83,7 +89,7 @@ export default {
       parsedData: null,
       rawDates: null,
       line: null,
-      defaultTimespanInMS: 1000 * 60 * 60 * 24 * 7,
+      defaultTimespanInMS: 1000 * 60 * 60 * 24 * 31,
       aggregation: false,
       selectedChannels: [],
       sensorVariables: {
@@ -95,62 +101,118 @@ export default {
         "Solar radiation": "Solarstrahlung",
         // "Wind speed max": "Maximale Windgeschwindigkeit",
         "Wind speed": "Windgeschwindigkeit",
-        "PI54a (VWC)": "PI54a VWC",
-        "5TE Water content": "5TE Wassergehalt"
+        //"PI54a (VWC)": "PI54a VWC",
+        //"5TE Water content": "5TE Wassergehalt"
+        "PI54a (VWC)": "Wassergehalt",
+        "5TE Water content": "Wassergehalt"
       },
       sensorColors: {
         "5TE El permittivity": [255, 165, 50],
         "5TE Soil temperature": [255, 150, 150],
         "Dew Point": [75, 75, 255],
-        "HC Air temperature": [50, 50, 50],
+        "HC Air temperature": [255, 0, 0],
         "Precipitation": [0, 0, 255],
         "Solar radiation": [255, 200, 0],
         "Wind speed": [150, 150, 150],
         "PI54a (VWC)": [255, 0, 0],
         "5TE Water content": [0, 0, 100]
       },
-      defaultChannels: new Set(["PI54a (VWC)", "Precipitation", "5TE Soil temperature"]),
+      presets: {
+        "1" : /\Sensor 1.[123] \(\d+|Zeile \d Sensor 1.[123]/, 
+        "2" : /\Sensor 2.[123] \(\d+|Zeile \d Sensor 2.[123]/,
+        "3" : /\Sensor 3.[123] \(\d+|Zeile \d Sensor 3.[123]/,
+      }, 
+      defaultChannels: new Set(["Precipitation", "HC Air temperature"]), //, "PI54a (VWC)"]),
       // default is line graph
-      barCharts: new Set(["Precipitation"])
+      barCharts: new Set(["Precipitation"]),
+      lineCharts: new Set(["HC Air temperature", "5TE Soil temperature"]),
+      preset_descriptions: {
+        1 : "",
+        2 : "",
+        3 : "",
+      },
     }
   },
   mounted() {
-    EvaAPI.fetchFieldClimateDailyData(this.station.id).then(rawData => {
+    /* Set the number of presets for Stations Herchsheim and Bürgstadt to 2 */
+    if(this.station.id == '000017E0' | this.station.id == '000017DD'){
+      this.presets = {
+        "1" : /\Sensor 1.[123] \(\d+|Zeile \d Sensor 1.[123]/, 
+        "2" : /\Sensor 2.[123] \(\d+|Zeile \d Sensor 2.[123]/
+        }
+    }
+
+    /* Only load the Data if the Widget is not hidden */
+    if(!this.lineChartHidden && this.parsedData == null){
+      EvaAPI.fetchFieldClimateDailyData(this.station.id).then(rawData => {
       this.rawDates = rawData.data.dates;
       this.parsedData = this.parseData(rawData.data)
-      this.setDefaultChannels();
-    })
+      this.selectedChannels = this.getPresetChannels(this.active_preset);
+      }) 
+    }
+
   },
   computed: {
-    ...mapState(["scenario", "variable", "timerange", "selectedStations"]),
+    ...mapState(["scenario", "variable", "timerange", "selectedStations", "widgetWidth", "lineChartHidden", "preset_list"]),
+    myStyles () {
+        return {
+          width: this.widgetWidth - 50 + 'px',
+          height: '100%',
+          position: 'relative',
+          overflow: 'auto',
+        }
+      },
     isLoading: {
       get() {
         return this.loading;
       },
       set(value) {
         this.loading = value;
-      }
+      },
     },
+
+    active_preset: function(){
+      return this.preset_list[this.station.id];
+    }
   },
   watch: {
     selectedChannels: function () {
       this.setLineData();
       this.drawGraph();
+    },
+    lineChartHidden: function () {
+      /* If the Chart was hidden before and is now visible and no Data has been loaded before, the Data gets fetched */
+      if(!this.lineChartHidden && this.rawData == null && this.parsedData == null){
+        EvaAPI.fetchFieldClimateDailyData(this.station.id).then(rawData => {
+        this.rawDates = rawData.data.dates;
+        this.parsedData = this.parseData(rawData.data)
+        this.selectedChannels = this.getPresetChannels(this.active_preset);
+      }) 
+      }
+    },
+    active_preset: function () {
+      this.setIndex(this.active_preset)
     }
+    
   },
   methods: {
-    ...mapMutations(["removeSelectedStation"]),
+    ...mapMutations(["removeSelectedStation", "setPreset"]),
     setLineData() {
       this.lineData = [];
 
-      this.selectedTime.start = Date.now();
-      this.selectedTime.end = 0;
+      if(this.selectedTime.start == null && this.selectedTime.end == null){
+        this.selectedTime.start = Date.now() - this.defaultTimespanInMS;
+        this.selectedTime.end = Date.now();
+      }
+     
 
       for (const selectedChannel of this.selectedChannels) {
         const aggregations = Object.keys(selectedChannel.aggr);
         const minIndex = aggregations.findIndex(x => x === "min");
         const maxIndex = aggregations.findIndex(x => x === "max");
-        const color = this.sensorColors.hasOwnProperty(selectedChannel.name) ? this.sensorColors[selectedChannel.name] : [0, 0, 0];
+        let color = this.sensorColors.hasOwnProperty(selectedChannel.name) ? this.sensorColors[selectedChannel.name] : [0, 0, 0];
+
+
         for (let aggregation of aggregations) {
           // const color = this.aggregationColors[aggregation] || "#000000";
 
@@ -161,6 +223,19 @@ export default {
           else
             rgba = "rgba(" + color[0] + "," + color[1] + "," + color[2] + "," + .4 + ")"
 
+          for (let i = 1; i <= Object.keys(this.presets).length; i++) {  
+            if (this.presets[i].test(selectedChannel.customName)){
+              let colorPallette = i-1;
+            
+            if(/\d.1/.test(label)){
+            rgba = this.getDataColors(colorPallette)[0];
+           }else if(/\d.2/.test(label)){
+             rgba = this.getDataColors(colorPallette)[1];
+           }else if(/\d.3/.test(label)){
+             rgba = this.getDataColors(colorPallette)[2];
+           }
+            }
+          } 
           const line = {
             label: label,
             data: selectedChannel.aggr[aggregation],
@@ -177,6 +252,9 @@ export default {
           if (this.barCharts.has(selectedChannel.name))
             line.type = "bar";
 
+          if (this.lineCharts.has(selectedChannel.name))
+            line.type = "line";
+
           if (aggregation === "min" || aggregation === "max")
             line.pointRadius = 0;
           // if (minIndex > 0 && maxIndex > 0 && aggregation === "max")
@@ -185,10 +263,9 @@ export default {
           const startTime = selectedChannel.aggr[aggregation][0].t;
           const endTime = selectedChannel.aggr[aggregation][selectedChannel.aggr[aggregation].length - 1].t;
 
-          this.selectedTime.start = Math.min(this.selectedTime.start, startTime);
-          this.selectedTime.end = Math.max(this.selectedTime.end, endTime.Ticks);
-
-          this.lineData.push(line);
+          if(! (aggregation === "min" || aggregation === "max"))
+            this.lineData.push(line);
+         
         }
       }
     },
@@ -199,14 +276,45 @@ export default {
       };
       const yAxes = [];
       const existingAxes = {};
+
+      //renames the Temperature Axis to Temperature is more than one different Temp-Sensor is selected
+      let has5TE;
+      let hasHCAir;
+      this.has5TE = false;
+      this.hasHCAir = false;
+      for (const channel of this.selectedChannels) {
+        if(channel.name == "5TE Soil temperature")
+          this.has5TE = true;
+        if(channel.name == "HC Air temperature")
+          this.hasHCAir = true;  
+      }
+      this.hasMultipleTemperatures = this.has5TE && this.hasHCAir;
+
+
       for (const line of this.lineData) {
         if (existingAxes.hasOwnProperty(line.channel.name)) {
           line.yAxisID = existingAxes[line.channel.name];
           continue
         }
+        if (line.channel.name == "5TE Water content" && existingAxes.hasOwnProperty("PI54a (VWC)")){
+          //lets the 5TE Sensor use the same Axis as the PI54a Sensors
+          line.yAxisID = existingAxes["PI54a (VWC)"];
+          continue;
+        }
+        if ((line.channel.name == "5TE Soil temperature" && existingAxes.hasOwnProperty("HC Air temperature"))){
+          //lets the Temperature Sensors use the same y-Axis
+          line.yAxisID = existingAxes["HC Air temperature"];
+          continue;
+        }
+        if ((line.channel.name == "HC Air temperature" && existingAxes.hasOwnProperty("5TE Soil temperature"))){
+          //lets the Temperature Sensors use the same y-Axis
+          line.yAxisID = existingAxes["5TE Soil temperature"];
+          continue;
+        }
+       
         existingAxes[line.channel.name] = yAxes.length;
         line.yAxisID = existingAxes[line.channel.name];
-        yAxes.push({
+        let axis = {
           id: existingAxes[line.channel.name],
           gridLines: {
             display: existingAxes.size === 1,
@@ -222,7 +330,13 @@ export default {
             fontColor: line.backgroundColor,
             padding: -5,
           }
-        })
+        };
+          
+        if(this.hasMultipleTemperatures && (line.channel.name == "5TE Soil temperature" ||  line.channel.name == "HC Air temperature")){
+          axis.scaleLabel.labelString = "Temperatur in " + line.channel.unit + "";
+        }
+
+        yAxes.push(axis)
       }
 
       this.chartOptions = {
@@ -273,6 +387,7 @@ export default {
               //     animationDuration: 1000
               // },
               mode: 'x',
+              speed: 0.1,
               onZoomComplete: chart => this.chartDragComplete(chart)
             },
             pan: {
@@ -280,8 +395,9 @@ export default {
               mode: 'x',
               onPanComplete: chart => this.chartDragComplete(chart)
             }
-          }
-        }
+          },
+        },
+       
       }
     },
     /**
@@ -364,7 +480,7 @@ export default {
           )
       }
 
-      return parsedData;
+    return parsedData;
     },
 
     translateChannel(channel) {
@@ -374,17 +490,56 @@ export default {
       return description;
     },
 
-    setDefaultChannels() {
-      const selectedChannels = [];
-      for (const channel of Object.values(this.parsedData).reverse()) {
-        if (this.defaultChannels.has(channel.name))
-          selectedChannels.push(channel);
+    setIndex(index){
+      let settings = {
+        index: index,
+        station_id: this.station.id
       }
-      this.selectedChannels = selectedChannels;
+      this.selectedChannels = this.getPresetChannels(index);
+      this.setPreset(settings)
+    },
+
+
+    getPresetChannels(index){
+      let presetChannels = [];
+
+      if(this.parsedData == null)
+        return presetChannels;
+
+      for (const channel of Object.values(this.parsedData).reverse()) {
+         if (this.defaultChannels.has(channel.name) || this.presets[index].test(channel.customName))
+          presetChannels.push(channel); 
+      }
+      return presetChannels;
+    },
+
+    setPresetDescription(){
+      for (let i = 1; i <= Object.keys(this.presets).length; i++) {  
+        let presetChannels = this.getPresetChannels(i);
+        let description = "Ausgewählte Variablen: \r\n";
+        presetChannels.sort((a,b) => a.translation.localeCompare(b.translation));
+
+        presetChannels.forEach(channel => {
+          description += channel.translation + " \r\n ";
+        });
+        this.preset_descriptions[i] = description;
+      }
+    },
+
+    getPresetDescription(index){
+      this.setPresetDescription();
+      return this.preset_descriptions[index];
     }
   }
 }
 </script>
+
+<style>
+
+.tooltip-inner {
+    white-space: pre-line;
+}
+</style>
 
 <style scoped>
 .container {
@@ -409,6 +564,11 @@ export default {
   font-size: .75em;
 }
 
+.liveline-dropdown /deep/ #dropdown__BV_toggle_ {
+  padding: 5px;
+  font-size: 15px;
+}
+
 
 #display-station-container {
   height: 27rem;
@@ -428,13 +588,42 @@ export default {
   grid-area: graph;
 }
 
-#choose-date-container {
-  grid-area: select-date;
-}
-
 .remove-station-button {
   padding: 5px;
   font-size: 15px;
 }
 
+#choose-date-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.date-input {
+  flex: 1 1 20px;
+}
+
+#settings > button {
+ margin-inline: 0.2rem;
+ align-content: space-between;
+ margin-bottom: 2px;
+ flex: 1 1 auto
+}
+
+#settings {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: baseline;
+}
+
+.preset-button {
+  padding: 5px;
+  font-size: 15px;
+}
+
+.active{
+  background-color: #007bff !important;
+}
 </style>

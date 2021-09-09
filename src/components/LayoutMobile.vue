@@ -1,6 +1,5 @@
 <template>
-  <div @mouseup="resizeWidgetsEnd($event)"
-       @mousemove="isResizing ? resizeWidgets($event) : null">
+  <div>
     <div id="layout">
       <div id="selection-container">
         <SettingsMobile v-click-outside-app="closeMenu"/>
@@ -24,11 +23,14 @@
             <VariableLineChart/>
           </WidgetShell>
 
-          <WidgetShell widgetName="Sensordaten" v-if="selectedStations.length!==0">
+          <WidgetShell :widgetName="this.infoWidgetName" v-if="selectedStations.length!==0">
+            <StationsInformationenCarousel></StationsInformationenCarousel>
+          </WidgetShell>
+
+          <WidgetShell :widgetName="this.dataWidgetName" v-if="selectedStations.length!==0" :hideHandler=toggle :showDefault=false>
             <LiveLineCarousel/>
           </WidgetShell>
 
-          <div id="drag" @mousedown="resizeWidgetsStart($event)"></div>
         </div>
       </div>
     </div>
@@ -44,7 +46,8 @@ import WidgetShell from "./Widgets/WidgetShell";
 import WeatherCarousel from "./Widgets/WeatherCarousel";
 import InformationText from "./Widgets/InformationText";
 import LiveLineCarousel from "@/components/Widgets/StationLineChartCarousel";
-import {mapState} from "vuex";
+import StationsInformationenCarousel from "@/components/Widgets/StationsInformationenCarousel";
+import {mapState, mapMutations} from "vuex";
 
 export default {
   name: "LayoutMobile",
@@ -56,7 +59,8 @@ export default {
     WeatherCarousel,
     LiveLineCarousel,
     InformationText,
-    SettingsMobile
+    SettingsMobile,
+    StationsInformationenCarousel
   },
   data() {
     return {
@@ -67,7 +71,32 @@ export default {
     }
   },
   computed: {
-    ...mapState(["selectedCells", "selectedStations", "variable", "selectionUri"]),
+    ...mapState(["selectedCells", "selectedStations", "activeStation", "variable", "selectionUri", "lineChartHidden", "widgetWidth"]),
+    
+    infoWidgetName: function(){
+      let stations = this.selectedStations;
+      let active = stations[this.activeStation];
+
+      if(active == undefined && this.activeStation > 0){
+        active = stations[this.activeStation-1]
+      } else if(active == undefined){
+         return "Informationen zur Messstation"  
+      }
+
+      return "Informationen zur Messstation (" + active.name + ")";
+    },
+    dataWidgetName: function(){
+      let stations = this.selectedStations;
+      let active = stations[this.activeStation];
+
+      if(active == undefined && this.activeStation > 0){
+        active = stations[this.activeStation-1]
+      } else if(active == undefined){
+         return "Daten zur Messstation"  
+      }
+
+      return "Daten zur Messstation (" + active.name + ")";
+    }
   },
   mounted() {
     // reload old widgets container width from local storage
@@ -78,42 +107,25 @@ export default {
     this.$nextTick(() => {
       window.addEventListener('resize', this.onResize);
     })
+
+    this.setWidgetWidth(this.windowWidth)
   },
+
+  watch: {
+    windowWidth: function(){
+      this.setWidgetWidth(this.windowWidth);
+    } ,
+  },
+
   methods: {
+    ...mapMutations(["setWidgetWidth", "setLineChartHidden"]),
+
     onResize() {
       this.windowWidth = window.innerWidth;
     },
-
-    /**
-     * Enables the widget container resizing listener by setting isResizing to true and saves the mouse start position
-     * @param event HTML mouse event (mousedown)
-     */
-    resizeWidgetsStart(event) {
-      event.preventDefault(); // prevent text selection
-      this.isResizing = true; // enable resizing listener
-      this.resizeStart = event.x;
+    toggle(state){
+      this.setLineChartHidden(state);
     },
-
-    /**
-     * Ends the widget container resizing listener and saves changes to local storage
-     * @param event HTML mouse event (mouseup)
-     */
-    resizeWidgetsEnd(event) {
-      this.isResizing = false; // disable resizing listener
-      localStorage.setItem("widgetsContainerWidth", JSON.stringify(this.widgetsContainerStyle));
-    },
-
-    /**
-     * Calculates and sets a new widget container width from the mouse's delta x
-     * @param event HTML mouse event (mousemove)
-     */
-    resizeWidgets(event) {
-      const dx = this.resizeStart - event.x; // new additional width
-      const containerWidth = parseInt(getComputedStyle(this.$refs.widgets).width); // old width
-      this.widgetsContainerStyle = {"width": (containerWidth + dx) + "px !important"}; // bound by vue
-      this.resizeStart = event.x; // save new width for next delta
-    },
-
      closeMenu() {
       this.$root.$emit("closeMenu"); // emitted event
     }
@@ -185,9 +197,6 @@ body {
     width: 100vw;
   }
 
-  #drag {
-    display: none;
-  }
 
   #widgets-container {
     grid-area: widgets;

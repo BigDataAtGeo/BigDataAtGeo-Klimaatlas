@@ -24,13 +24,19 @@ export default {
 
   data: function () {
     return {
-      showWidget: true,
+      showWidget: this.showDefault,
       widgetId: this.widgetName.replace(/\W/, "")
     }
+  },
+  mounted(){
+    if(this.hideHandler)
+        this.hideHandler(!this.showWidget);
   },
   methods: {
     hideWidget() {
       this.showWidget = !this.showWidget;
+      if(this.hideHandler)
+        this.hideHandler(!this.showWidget);
     }
   },
 
@@ -39,7 +45,17 @@ export default {
       type: String,
       required: true,
       default: 'widgetName'
-    }
+    },
+    /* This Handler is e.g. used to disable fetching of LineChartData, when the Widget is hidden. */
+    hideHandler: {
+      type: Function,
+    },
+    /* This optional Prop allows to set if a widget is hiddden or shown after the Page is loaded */
+    showDefault: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   }
 }
 </script>

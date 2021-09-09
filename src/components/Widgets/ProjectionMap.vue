@@ -270,7 +270,7 @@ export default {
       if(this.mobile){
         var legendheight = 150,
         legendwidth = 60,
-        margin = {top: 8, right: 35, bottom: 8, left: 2};
+        margin = {top: 8, right: 50, bottom: 8, left: 2};
       }else{
         var legendheight = 200,
         legendwidth = 80,

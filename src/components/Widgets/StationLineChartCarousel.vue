@@ -1,14 +1,14 @@
 <template>
   <div>
     <vueper-slides :touchable=false :arrows=false class="no-shadow" fixedHeight="30rem"
-                   :bullets-outside="selectedStations.length!==1" :key="selectedStations.length">
+                   :bullets-outside="selectedStations.length!==1" :key="selectedStations.length" @slide="setActive('slide', $event)" @ready="setActive('slide', $event)" >
       <vueper-slide v-for="station in selectedStations" :key="station.id">
         <template v-slot:content>
           <LiveLinegraph :station="station"/>
         </template>
       </vueper-slide>
-      <template v-slot:bullet="{ active, slideIndex, index }">
-        <i class="default-bullet" v-bind:style="getBulletStyle(slideIndex, active)"></i>
+      <template  v-slot:bullet="{ active, slideIndex, index }">
+        <i v-b-tooltip.hover.bottom :title='getStationName(index)' class="default-bullet" v-bind:style="getBulletStyle(slideIndex, active)"></i>
       </template>
     </vueper-slides>
   </div>
@@ -17,7 +17,7 @@
 
 <script>
 import LiveLinegraph from "@/components/Widgets/StationLineChart";
-import {mapState} from "vuex";
+import {mapMutations, mapState} from "vuex";
 import {VueperSlides, VueperSlide} from 'vueperslides'
 import 'vueperslides/dist/vueperslides.css'
 
@@ -29,10 +29,11 @@ export default {
   components: {LiveLinegraph, VueperSlides, VueperSlide},
 
   computed: {
-    ...mapState(["selectedStations"])
+    ...mapState(["selectedStations", "activeStation"])
   },
 
   methods: {
+    ...mapMutations(["setActiveStation"]),
     /**
      * Set the bullet point styling for each slide
      * Indicate if a slide is selected, i. e. active, by showing a thick border
@@ -47,6 +48,15 @@ export default {
         border: active ? "2px solid #454545" : "0"
       }
     },
+
+    getStationName(stationIndex) {
+      return this.selectedStations[stationIndex-1].name;
+    },
+
+    setActive(eventName, params) {
+      let index = params.currentSlide.index;
+      this.setActiveStation(index);
+  }
   }
 }
 </script>
