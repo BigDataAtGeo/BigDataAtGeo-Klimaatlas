@@ -43,7 +43,7 @@
       <div id="choose-date-container" v-if="parsedData">
         <div class="date-input input-group input-group-md mb-1">
           <div class="input-group-prepend">
-            <span class="input-group-text">Von:</span>
+            <span class="input-group-text" style="height:calc(1.5em + .75rem + 2px)">Von:</span>
           </div>
           <input type="date" class="form-control"
                  :value="getLineTimeAsString('start')"
@@ -51,7 +51,7 @@
         </div>
         <div class="date-input input-group input-group-md mb-1">
           <div class="input-group-prepend">
-            <span class="input-group-text">Bis:</span>
+            <span class="input-group-text" style="height:calc(1.5em + .75rem + 2px)">Bis:</span>
           </div>
           <input type="date" class="form-control"
                  :value="getLineTimeAsString('end')"
