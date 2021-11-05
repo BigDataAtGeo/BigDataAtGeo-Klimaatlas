@@ -124,6 +124,7 @@ export default {
       this.windowWidth = window.innerWidth;
     },
     toggle(state){
+      /* Is used in StationLineChart, so it should only load new data when necessary */
       this.setLineChartHidden(state);
     },
      closeMenu() {

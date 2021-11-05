@@ -38,8 +38,8 @@ Folgende Abbildung zeigt grob, wie die Abhängigkeiten der Anwendung verlaufen.
 ### App
 
 Enthält Willkommensnachricht mit Anleitung zur Bedienung.
-Bindet außerdem das Layout für den Inhalt ein, bisher gibt es nur ein Layout für Browser: *LayoutBrowser*.
-Es wäre allerdings denkbar, Layouts für unterschiedliche Clients durch weitere Schichten zu unterstützen, z. B. *LayoutMobile*.
+Bindet außerdem das Layout für den Inhalt ein: entweder *LayoutBrowser* für Browser oder das Layout für kleinere mobile Geräte: *LayoutMobile*
+
 
 ### LayoutBrowser
 
@@ -54,9 +54,14 @@ Das ist über den eingezeichneten roten Bereich möglich.
 
 ![LayoutBrowser](docs/img/layout-browser.png)
 
-Das Layout bricht über einfache Media-Queries bei zu kleiner Fensterweite um, so dass der Inhalt stattdessen vertikal sequenziell angezeigt wird.
 
-![LayoutBrowser](docs/img/layout-browser-vertical.png)
+
+### LayoutMobile
+
+Verantwortlich für die räumliche Komposition aller Komponenten auf mobilen Endgeräten. Die aus dem BrowserLayout bekannten Kompenenten Widgets werden hier am unteren Bildschirmrand angezeigt, und können durch runter scrollen erreicht werden. Die Einstellungsregler können über den Knopf in der oberen Leiste aufgeklappt werden. Die *SettingsMobile* ersetzen im mobilen Layout die Funktionalität der *SettingsSelection*.
+
+![LayoutMobile](docs/img/layout-mobile.png)
+
 
 ### ProjectionMap
 
@@ -65,7 +70,7 @@ Hier werden die Klimaprojektionen pro Koordinaten in Form von kleinen Zellen ang
 Außerdem sind Icons für die Bodenfeuchtemessstationen enthalten.
 
 Zellen und Stationen können mittels Linksklick ausgewählt werden, um weitere Informationen in anderen Widgets dazu anzuzeigen.
-Durch Rechtsklick werden ausgewählte Zellen/Stationen aus der Auswahl entfernt und nicht ausgewählt der Auswahl hinzugefügt.
+Durch Rechtsklick (langes Berühren bei Mobile) werden ausgewählte Zellen/Stationen aus der Auswahl entfernt und nicht ausgewählt der Auswahl hinzugefügt.
 
 ![ProjectionMap](docs/img/projection-map.png)
 
@@ -80,6 +85,7 @@ Das Menü bietet als Dropdown die Optionen:
 - das Impressum zu besuchen,
 - den Datenschutz zu besuchen,
 - einen Link mit den aktuellen Einstellungen zu generieren, z. B. um eine bestimmte Ansicht mit Kollegen zu teilen,
+- Feeback mittels eines Kontaktformulars zu geben,
 - und alle Einstellungen zurückzusetzen.
 
 ![SettingsSelection](docs/img/settings-selection.png)
@@ -106,21 +112,31 @@ also einer Kombination aus *Variable*, *Szenario* und *Zeitraum*, in Form eines 
 ### StationLineChartCarousel
 
 Das ist ein Wrapper, um für jede ausgewählte Station ein *StationLineChart* in Form einer Slideshow anzuzeigen.
-Über die Bulletpoints unten können die Slides für jede Station gewechselt werden.
+Über die Bulletpoints am unteren Rand des Widgets können die Stationen gewechselt werden. Über den Knopf in der oberen linken Ecke des Widgets können dann einzelne Sationen wieder entfernt oder das ganze Widget geschlossen werden.
 
-![StationLineChartCarousel](docs/img/station-chart-carousel.png)
+<!-- ![StationLineChartCarousel](docs/img/station-chart-carousel.png) -->
 
-### StationLineChartCarousel
+### StationLineChart
 
 Dieses Widget zeigt die Sensorinformationen einer Station an. 
 Hierbei können verschiedene Sensoren beliebig kombiniert werden.
-Die Vorauswahl besteht aus Bodentemperatur, Niederschlag und Volumetric Water Content.
+Je Station werden 2-3 Profile mit vorausgewählten Sensoren erzeugt, welche mit den jeweiligen Informationen im *StationInformation* Widget korrelieren. Die Profile beinhalten jeweils die Lufttemperatur, Niederschlag und mehrere Volumetric Water Content Sensoren.
+
 Über die Date-Inputs unterhalb des Plots kann das Min- und Maximum der X-Achse eingestellt werden.
 
 Die Daten werden beim Laden des Widgets dafür von der API abgefragt. 
 Da verschiedene Sensor-IDs zum selben Datensatz gehören, müssen diese in der Implementierung nachträglich kombiniert werden.
 
 ![StationLineChart](docs/img/station-chart.png)
+
+### StationInformation
+
+Diese Widget zeigt zur jeweils ausgewählten Station und dem aktuellen Profil, eine Beschreibung und Grafik zu der aktuellen Station. Diese beinhalten Informationen wie die Tiefe der Sensoren, eine Kurzbeschreibung der Bodenbeschaffenheit, ...
+
+Dieses Widget zeigt zudem immer die Daten zu der Station und dem Profil an, welche aktuell auch im *StationLineChart* aktiv sind.
+
+![StationInformation](docs/img/station-information.png)
+
 
 ### WeatherCarousel
 
@@ -138,6 +154,6 @@ wie Temperatur, Luftfeuchtigkeit oder Luftdruck, anzuzeigen.
 Instanz eines VueX-Stores, der die Einstellungen, wie ausgewählte Zellen/Stationen, Variable, Szenario, Zeitraum, ..., enthält.
 Änderungen werden im Localstorage des Browsers gespeichert und beim nächsten Laden der Seite wiederhergestellt.
 Enthält die URL beim Laden der Seite einen gültigen *?state=...*-Parameter, wird dieser stattdessen zur Initialisierung des Zustands verwendet.
-Nur *SettingsSelection* und *ProjectionMap* schreiben in den *Store*.
-Widgets warten auf Änderungen des Zustands und erstellen dann eine lokale Kopie davon.
+Nur *SettingsSelection*, *SettingsMobile* und *ProjectionMap* und die *StationsWidgets* schreiben in den *Store*.
+Andere Widgets warten auf Änderungen des Zustands und erstellen dann eine lokale Kopie davon.
 Die lokale Kopie wird dann intern in den Widgets weiterverwendet.

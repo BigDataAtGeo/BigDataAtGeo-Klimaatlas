@@ -1,4 +1,5 @@
 <template>
+<!-- Currently not really necessary, could be removed in future-->
   <div>
         <StationsInformationen :station="selectedStations[this.activeStation]" :index_prop=1 />
   </div>

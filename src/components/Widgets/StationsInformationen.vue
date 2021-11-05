@@ -1,4 +1,6 @@
 <template>
+<!-- This template is used to display the information for each station and profile -->
+<!-- It uses gets the information in form of a json, and then uses v-for to display these information -->
   <div>
     <div id="settings" class="">
           <b-button class="btn remove-station-button"
@@ -13,9 +15,6 @@
           Profil {{n}}
           </b-button>
   </div>      
-
-<!-- :class="[index == n ? {backgroundColor: 'grey' } : {backgroundColor: 'darkgrey'}]"> -->
-<!-- class="btn remove-station-button preset-button" -->
 
   <div id="content">
     <div class="image-div">
@@ -148,6 +147,7 @@ export default {
 
   watch: {
     station: function () {
+      /* If the currently active station changes, this functino fetches the information about the new station from the backend */
       EvaAPI.fetchStationInformation(this.station.id)
         .then((response) => {
           this.json_data = response.data;
@@ -157,6 +157,7 @@ export default {
     },
   },
   created() {
+    /* Fetches the Information about the station from the Backend */
     EvaAPI.fetchStationInformation(this.station.id)
       .then((response) => {
         this.json_data = response.data;
