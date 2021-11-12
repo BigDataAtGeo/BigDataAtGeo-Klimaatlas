@@ -77,6 +77,10 @@
             <b-icon icon="shield-lock-fill"></b-icon>
             Datenschutz
           </b-dropdown-item>
+          <b-dropdown-item v-b-modal.modal-copyright>
+            <b-icon icon="info-circle-fill"></b-icon>
+            Copyright Hinweis
+          </b-dropdown-item>
           <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item v-on:click="shareConfiguration">
             <b-icon icon="reply-fill"></b-icon>
@@ -101,6 +105,11 @@
       <!-- Datengrundlage Modal -->
       <b-modal id="m3" :title="'Datengrundlage'" size="xl" :hide-footer="true">
         <Datengrundlage/>
+      </b-modal>
+
+      <!-- Copyright Modal -->
+      <b-modal id="modal-copyright" :title="'Copyright Hinweis'" size="xl" :hide-footer="true">
+        <copyright-notice/>
       </b-modal>
 
       <!-- Feedback Modal -->
@@ -155,11 +164,12 @@ import axios from 'axios';
 import {colorGenerate} from '../mixins/colorGenerate';
 import Datengrundlage from "./Datengrundlage";
 import Kontaktformular from './Kontaktformular.vue';
+import CopyrightNotice from './CopyrightNotice.vue';
 
 export default {
   name: 'SettingsSelection',
   mixins: [colorGenerate],
-  components: {Datengrundlage, Kontaktformular},
+  components: {Datengrundlage, Kontaktformular, CopyrightNotice},
   data() {
     return {
   
