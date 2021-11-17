@@ -1,5 +1,9 @@
 # BigData@Geo Webplattform
 
+### API
+
+Der Backend-Code kann [hier](https://github.com/BigDataAtGeo/BigDataAtGeo-API) gefunden werden.
+
 ## Installation
 
 Konsole öffnen und in das Verzeichnis des Projekts wechseln, dann Abhängigkeiten installieren
