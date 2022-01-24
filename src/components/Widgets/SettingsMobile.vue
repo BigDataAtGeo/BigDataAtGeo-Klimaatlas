@@ -9,7 +9,13 @@
         </a>
       </div>
 
-    
+      <!-- EU-Logo -->
+      <div class="col-auto element">
+        <a href="https://ec.europa.eu">
+           <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="35px">
+        </a>
+      </div>
+
       <!-- Menu Dropdown -->
       <div class="col-auto form-group element">
        
@@ -63,10 +69,6 @@
           <b-dropdown-item class="wrap" variant="danger" v-on:click="resetSettings">
             <b-icon icon="gear"></b-icon>
             Einstellungen und ausgewählte Zellen zurücksetzen
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item class="wrap" href="https://ec.europa.eu">
-            <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="40px">
           </b-dropdown-item>
         </b-dropdown>
       </div>
@@ -267,7 +269,13 @@ a.settings-wrapper {
   cursor: pointer;
 }
 
-
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -5px;
+  margin-left: -5px;
+  align-items: center;
+}
 
 #timerange {
   display: flex;

@@ -8,6 +8,13 @@
         </a>
       </div>
 
+      <!-- EU-Logo -->
+      <div class="col-auto element">
+        <a href="https://ec.europa.eu">
+           <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="50px">
+        </a>
+      </div>
+
       <!-- Variable Input -->
       <div class="col-auto form-group element">
         <label for="select-variable" class="h6">Variable:</label>
@@ -100,10 +107,6 @@
           <b-dropdown-item variant="danger" v-on:click="resetSettings">
             <b-icon icon="gear"></b-icon>
             Einstellungen und ausgewählte Zellen zurücksetzen
-          </b-dropdown-item>
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item href="https://ec.europa.eu">
-            <img src="assets/EFRE-Foerderhinweis.svg" alt="EFRE Förderungshinweis" height="40px">
           </b-dropdown-item>
         </b-dropdown>
       </div>
@@ -371,6 +374,7 @@ export default {
 
 .settings-container .form-row {
   flex-direction: row;
+  align-items: center;
 }
 
 @media only screen and (max-width: 768px) {
