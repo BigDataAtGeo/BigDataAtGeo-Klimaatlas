@@ -1,7 +1,7 @@
 <template>
   <div class="container" >
     <div id="display-station-container">
-      <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">
+      <div class="form-group d-flex flex-row align-items-center" id="choose-variable-container">        
         <div id="settings" class="flex">
           <b-button class="btn remove-station-button"
                   v-on:click="removeSelectedStation(station)"
@@ -142,6 +142,11 @@ export default {
         }
     }
 
+    if(this.station.id == '000017E0'){
+      this.selectedTime.end = Date.UTC(2021, 9, 31)
+      this.selectedTime.start = this.selectedTime.end - this.defaultTimespanInMS;
+    }
+
     /* Only load the Data if the Widget is not hidden */
     if(!this.lineChartHidden && this.parsedData == null){
       EvaAPI.fetchFieldClimateDailyData(this.station.id).then(rawData => {
@@ -260,8 +265,6 @@ export default {
           // if (minIndex > 0 && maxIndex > 0 && aggregation === "max")
           //   line.fill = minIndex;
 
-          const startTime = selectedChannel.aggr[aggregation][0].t;
-          const endTime = selectedChannel.aggr[aggregation][selectedChannel.aggr[aggregation].length - 1].t;
 
           if(! (aggregation === "min" || aggregation === "max"))
             this.lineData.push(line);
@@ -277,7 +280,7 @@ export default {
       const yAxes = [];
       const existingAxes = {};
 
-      //renames the Temperature Axis to Temperature is more than one different Temp-Sensor is selected
+      //renames the Temperature Axis to Temperature if more than one different Temp-Sensor is selected
       let has5TE;
       let hasHCAir;
       this.has5TE = false;
@@ -478,6 +481,18 @@ export default {
           channel.aggr[aggregation] = channel.aggr[aggregation].sort(
               (a, b) => (a.t > b.t) ? 1 : ((b.t > a.t) ? -1 : 0)
           )
+      }
+
+      if(this.station.id == '000017E0'){
+        /** Removes all the data after 10/2021 for the Station in Herchsheim */
+
+        let endtimeInMs = Date.UTC(2021, 9, 31)
+
+        for (const channel of Object.values(parsedData)) {
+          for (const aggregation of Object.keys(channel.aggr)){
+            channel.aggr[aggregation] = channel.aggr[aggregation].filter((el => el.t < endtimeInMs))
+          }
+        }
       }
 
     return parsedData;

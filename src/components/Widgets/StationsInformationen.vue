@@ -2,6 +2,7 @@
 <!-- This template is used to display the information for each station and profile -->
 <!-- It uses gets the information in form of a json, and then uses v-for to display these information -->
   <div>
+    <p v-if="station.id == '000017E0'" class="station-notice">Diese Messstation ist nicht mehr aktiv. Die Daten aus dem Zeitraum bis Oktober 2021 stehen Ihnen natürlich weiterhin zur Verfügung.</p>
     <div id="settings" class="">
           <b-button class="btn remove-station-button"
                   v-on:click="removeSelectedStation(station)"
@@ -235,5 +236,11 @@ img {
 .remove-station-button {
   padding: 5px;
   font-size: 15px;
+}
+.station-notice {
+  font-weight: 500;
+  font-size: 15px;
+  width: 95%;
+  text-align: center;
 }
 </style>
